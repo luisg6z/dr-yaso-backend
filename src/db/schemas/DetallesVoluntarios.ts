@@ -2,7 +2,7 @@ import { pgTable, varchar, serial, char, check} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { timestamp } from "drizzle-orm/pg-core";
 
-export const Voluntarios = pgTable("Voluntarios", 
+export const DetallesVoluntarios = pgTable("DetallesVoluntarios", 
 {
   id: serial().primaryKey(),
   nombres: varchar({ length: 100 }).notNull(),
