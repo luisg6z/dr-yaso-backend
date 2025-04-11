@@ -2,8 +2,7 @@ import { Router } from "express";
 
 import { volunteerController } from "./volunteer.controller";
 
-const router = Router();
+const volunteersRouter = Router();
+volunteersRouter.get("/", volunteerController);
 
-router.get("/", volunteerController);
-
-export default router;
+export default volunteersRouter;
