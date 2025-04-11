@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, serial, unique } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, serial } from "drizzle-orm/pg-core";
 import { Estados } from "./Estados";
 
 export const Ciudades = pgTable("Ciudades", {
