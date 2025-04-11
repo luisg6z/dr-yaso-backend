@@ -1,5 +1,5 @@
 import express from 'express';
-import volunteersRouter from './volunteers/volunteer.router';
+import router from './router';
 
 const app = express();
 const port = 3000;
@@ -9,9 +9,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('dist'));
 
-app.use("/api/volunteers", volunteersRouter);
+app.use("/api", router);
 
-app.get('/api', (_req, res) => {
+app.get('/', (_req, res) => {
   res.json({ message: 'Goodbye Wold!' });
 });
 
