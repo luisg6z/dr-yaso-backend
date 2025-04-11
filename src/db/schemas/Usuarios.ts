@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, serial, unique, text, check } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, serial, text, check } from "drizzle-orm/pg-core";
 import { Franquicias } from "./Franquicias";
 import { sql } from "drizzle-orm";
 
