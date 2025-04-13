@@ -1,7 +1,10 @@
-import { pgTable, varchar, serial,text, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, varchar, serial, text, pgEnum } from "drizzle-orm/pg-core";
 
 export const tipoUsuarioEnum = pgEnum("TipoUsuario", [
-     "Superusuario","Comite","Registrador de visita","Coordinador"
+  "Superusuario",
+  "Comite",
+  "Registrador de visita",
+  "Coordinador",
 ]);
 
 export const Usuarios = pgTable("Usuarios", {
@@ -9,7 +12,5 @@ export const Usuarios = pgTable("Usuarios", {
   nombre: varchar({ length: 100 }).notNull(),
   contraseña: text().notNull(),
   tipo: tipoUsuarioEnum("TipoUsuario").notNull(),
-  correo: varchar({length: 120}),
-}
-);
-
+  correo: varchar({ length: 120 }),
+});
