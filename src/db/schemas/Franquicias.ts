@@ -3,7 +3,8 @@ import { Ciudades } from "./Ciudades";
 import { Voluntarios } from "./Voluntarios";
 
 export const Franquicias = pgTable("Franquicias", {
-  id: serial().primaryKey().unique(),
+  id: serial().primaryKey(),
+  rif: varchar({length:12}).notNull(),
   nombre: varchar({ length: 100 }).notNull(),
   direccion: varchar({length: 120}).notNull(),
   telefono: varchar({length: 12}).notNull(),
