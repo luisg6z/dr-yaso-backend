@@ -4,5 +4,8 @@ import { Paises } from "./Paises";
 export const Estados = pgTable("Estados", {
   id: serial().primaryKey(),
   nombre: varchar({ length: 100 }).notNull(),
-  idPais: integer("idPais").references(() => Paises.id, {onUpdate: 'cascade',onDelete: 'restrict'}),
+  idPais: integer("idPais").references(() => Paises.id, {
+    onUpdate: "cascade",
+    onDelete: "restrict",
+  }),
 });

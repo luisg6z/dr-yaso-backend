@@ -1,0 +1,468 @@
+{
+  "id": "dc3005d3-e31f-4b71-aecd-66d5a4bba118",
+  "prevId": "9f367f7d-8411-41e7-a98c-bd060e765f86",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.Cargos": {
+      "name": "Cargos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "Cargos_nombre_unique": {
+          "name": "Cargos_nombre_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nombre"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Ciudades": {
+      "name": "Ciudades",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idEstado": {
+          "name": "idEstado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Ciudades_idEstado_Estados_id_fk": {
+          "name": "Ciudades_idEstado_Estados_id_fk",
+          "tableFrom": "Ciudades",
+          "tableTo": "Estados",
+          "columnsFrom": [
+            "idEstado"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.detalles_voluntarios": {
+      "name": "detalles_voluntarios",
+      "schema": "",
+      "columns": {
+        "id_voluntario": {
+          "name": "id_voluntario",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tipoSangre": {
+          "name": "tipoSangre",
+          "type": "TipoSangre",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estadoCivil": {
+          "name": "estadoCivil",
+          "type": "EstadoCivil",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "char",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre_payaso": {
+          "name": "nombre_payaso",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "talla_camisa": {
+          "name": "talla_camisa",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tiene_camisa_con_logo": {
+          "name": "tiene_camisa_con_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tiene_bata_con_logo": {
+          "name": "tiene_bata_con_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre_contacto_emergencia": {
+          "name": "nombre_contacto_emergencia",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "detalles_voluntarios_id_voluntario_Voluntarios_id_fk": {
+          "name": "detalles_voluntarios_id_voluntario_Voluntarios_id_fk",
+          "tableFrom": "detalles_voluntarios",
+          "tableTo": "Voluntarios",
+          "columnsFrom": [
+            "id_voluntario"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Estados": {
+      "name": "Estados",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idPais": {
+          "name": "idPais",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Estados_idPais_Paises_id_fk": {
+          "name": "Estados_idPais_Paises_id_fk",
+          "tableFrom": "Estados",
+          "tableTo": "Paises",
+          "columnsFrom": [
+            "idPais"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Franquicias": {
+      "name": "Franquicias",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "direccion": {
+          "name": "direccion",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idCiudad": {
+          "name": "idCiudad",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idCoordinador": {
+          "name": "idCoordinador",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Franquicias_idCiudad_Ciudades_id_fk": {
+          "name": "Franquicias_idCiudad_Ciudades_id_fk",
+          "tableFrom": "Franquicias",
+          "tableTo": "Ciudades",
+          "columnsFrom": [
+            "idCiudad"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        },
+        "Franquicias_idCoordinador_Voluntarios_id_fk": {
+          "name": "Franquicias_idCoordinador_Voluntarios_id_fk",
+          "tableFrom": "Franquicias",
+          "tableTo": "Voluntarios",
+          "columnsFrom": [
+            "idCoordinador"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "Franquicias_id_unique": {
+          "name": "Franquicias_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Paises": {
+      "name": "Paises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "Paises_nombre_unique": {
+          "name": "Paises_nombre_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nombre"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Usuarios": {
+      "name": "Usuarios",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contraseña": {
+          "name": "contraseña",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "TipoUsuario": {
+          "name": "TipoUsuario",
+          "type": "TipoUsuario",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Voluntarios": {
+      "name": "Voluntarios",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nombres": {
+          "name": "nombres",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "apellidos": {
+          "name": "apellidos",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "TipoCedula": {
+          "name": "TipoCedula",
+          "type": "TipoCedula",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numeroCedula": {
+          "name": "numeroCedula",
+          "type": "varchar(9)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fechaNacimiento": {
+          "name": "fechaNacimiento",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profesion": {
+          "name": "profesion",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Estatus": {
+          "name": "Estatus",
+          "type": "Estatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Generos": {
+          "name": "Generos",
+          "type": "Generos",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
