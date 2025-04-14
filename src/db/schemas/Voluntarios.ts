@@ -1,4 +1,4 @@
-import { pgTable, varchar, serial, char, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, varchar, serial, pgEnum } from "drizzle-orm/pg-core";
 import { timestamp } from "drizzle-orm/pg-core";
 
 export const tipoCedulaEnum = pgEnum("TipoCedula", ["V", "E"]);
