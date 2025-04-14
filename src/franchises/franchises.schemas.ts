@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const franchiseSchema = z.object({
     id: z.number().int().positive(),
+    rif: z.string().max(12),
     name: z.string().min(1).max(100),
     address: z.string().min(1).max(120),
     phone: z.string().min(1).max(12),

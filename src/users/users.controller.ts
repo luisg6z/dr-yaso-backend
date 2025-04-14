@@ -5,7 +5,6 @@ import { idParamSchema } from "../types";
 
 export const createUserHandler = async (req: Request, res: Response) => {
     try {
-        console.log(req.body)
         res.status(201).json({
             data: await createUser(req.body)
         })

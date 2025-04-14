@@ -31,6 +31,7 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
 
     return await db.insert(Franquicias).values({
         nombre: franchise.name,
+        rif: franchise.rif,
         direccion: franchise.address,
         telefono: franchise.phone,
         correo: franchise.email,
@@ -42,6 +43,7 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
 export const getAllFranchises = async () => {
     return await db.select({
         id: Franquicias.id,
+        rif: Franquicias.rif,
         name: Franquicias.nombre,
         address: Franquicias.direccion,
         phone: Franquicias.telefono,
@@ -55,6 +57,7 @@ export const getAllFranchises = async () => {
 export const getFranchiseById = async (id: number) => {
     return await db.select({
         id: Franquicias.id,
+        rif: Franquicias.rif,
         name: Franquicias.nombre,
         address: Franquicias.direccion,
         phone: Franquicias.telefono,
@@ -93,6 +96,7 @@ export const updateFranchise = async (id: number, franchise: FranchiseUpdate) =>
 
     return await db.update(Franquicias).set({
         nombre: franchise.name,
+        rif: franchise.rif,
         direccion: franchise.address,
         telefono: franchise.phone,
         correo: franchise.email,
