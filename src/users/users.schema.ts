@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 export const userSchema = z.object({
     id: z.number().int().positive(),
     name: z.string().min(1).max(100),
     password: z.string().min(1).max(120),
-    type: z.enum(['Superusuario','Comite','Registrador de visita','Coordinador']),
+    type: z.enum(tipoUsuarioEnum.enumValues),
     email: z.string().email().max(120).optional(),
     franchiseId: z.number().int().positive().optional(),
 })
