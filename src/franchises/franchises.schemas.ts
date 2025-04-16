@@ -14,6 +14,7 @@ export const franchiseSchema = z.object({
 })
 
 export const createFranchiseSchema = franchiseSchema.omit({ id: true });
+
 export const updateFranchiseSchema = createFranchiseSchema.partial()
 
 export type Franchise = z.infer<typeof franchiseSchema>;
@@ -21,3 +22,4 @@ export type Franchise = z.infer<typeof franchiseSchema>;
 export type FranchiseCreate = z.infer<typeof createFranchiseSchema>;
 
 export type FranchiseUpdate = z.infer<typeof updateFranchiseSchema>;
+

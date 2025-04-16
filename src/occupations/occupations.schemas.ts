@@ -7,7 +7,11 @@ export const OccupationSchema = z.object({
 });
 
 export const createOccupationSchema = OccupationSchema.omit({ id: true });
+export const updateOccupationSchema = createOccupationSchema.partial();
 
 export type Occupation = z.infer<typeof OccupationSchema>;
 
 export type OccupationCreate = z.infer<typeof createOccupationSchema>;
+
+export type OccupationUpdate = z.infer<typeof updateOccupationSchema>;
+
