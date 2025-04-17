@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.service";
-import { idParamSchema } from "../types";
+import { idParamSchema, Pagination } from "../types";
 
 
 export const createUserHandler = async (req: Request, res: Response) => {
@@ -17,11 +17,13 @@ export const createUserHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllUsersHandler = async (_req: Request, res: Response) => {
+export const getAllUsersHandler = async (req: Request, res: Response) => {
     try {
-        res.status(200).json({
-            data: await getAllUsers()
-        })
+        const pagination: Pagination = {
+            page: +(req.query.page || 1),
+            limit: +(req.query.limit || 10),
+        }
+        res.status(200).json(await getAllUsers(pagination))
     } catch (error) {
         res.status(500).json({
             message: "Internal server error",
@@ -32,8 +34,7 @@ export const getAllUsersHandler = async (_req: Request, res: Response) => {
 
 export const getUserByIdHandler = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const parsedId = idParamSchema.parse(+id);
+        const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
             data: await getUserById(parsedId),
         })
@@ -47,8 +48,7 @@ export const getUserByIdHandler = async (req: Request, res: Response) => {
 
 export const updateUserHandler = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const parsedId = idParamSchema.parse(+id);
+        const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
             data: await updateUser(parsedId, req.body),
         })
@@ -62,8 +62,7 @@ export const updateUserHandler = async (req: Request, res: Response) => {
 
 export const deleteUserHandler = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const parsedId = idParamSchema.parse(+id);
+        const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
             data: await deleteUser(parsedId),
         })

@@ -6,6 +6,7 @@ import { UserCreate, UserUpdate } from "./users.schema";
 import { db } from "../db/db";
 import { Usuarios } from "../db/schemas/Usuarios";
 import { eq } from "drizzle-orm";
+import { Pagination } from "../types";
 
 
 export const createUser = async (user: UserCreate) => {
@@ -29,17 +30,33 @@ export const createUser = async (user: UserCreate) => {
 
 }
 
-export const getAllUsers = async () => {
-    return await db
+export const getAllUsers = async (pagination: Pagination) => {
+    const { page, limit } = pagination;
+    const offset = (page - 1) * limit;
+    const users = await db
     .select({
         id: Usuarios.id,
         name: Usuarios.nombre,
-        password: Usuarios["contraseña"],
         type: Usuarios.tipo,
         email: Usuarios.correo,
         franchiseId: Usuarios.idFranquicia
     })
-    .from(Usuarios);
+    .from(Usuarios)
+    .limit(limit)
+    .offset(offset);
+
+    const totalItems = await db.$count(Usuarios);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+        items: users,
+        paginate: {
+            page,
+            limit,
+            totalItems,
+            totalPages,
+        }
+    }
 }
 
 export const getUserById = async (id: number) => {
@@ -47,7 +64,6 @@ export const getUserById = async (id: number) => {
     .select({
         id: Usuarios.id,
         name: Usuarios.nombre,
-        password: Usuarios["contraseña"],
         type: Usuarios.tipo,
         email: Usuarios.correo,
         franchiseId: Usuarios.idFranquicia
@@ -86,7 +102,13 @@ export const updateUser = async (id: number, user: UserUpdate) => {
         idFranquicia: user.franchiseId,
     })
     .where(eq(Usuarios.id, id))
-    .returning();
+    .returning({
+        id: Usuarios.id,
+        name: Usuarios.nombre,
+        type: Usuarios.tipo,
+        email: Usuarios.correo,
+        franchiseId: Usuarios.idFranquicia
+    });
 }
 
 export const deleteUser = async (id: number) => {
