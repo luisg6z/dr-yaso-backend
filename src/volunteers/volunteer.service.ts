@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, isNull } from "drizzle-orm";
 import { VolunteerCreate, VolunteerUpdate } from "./volunteer.schemas";
 import { db } from "../db/db";
 import { Voluntarios } from "../db/schemas/Voluntarios";
@@ -63,15 +63,60 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
   });
 };
 
-// export const getAllVolunteers = async () => {
-//   return await db
-//     .select({
-//       id: Voluntarios.id,
-//       description: Voluntarios.descripcion,
-//       franchiseId: Voluntarios.idFranquicia,
-//     })
-//     .from(Voluntarios);
-// };
+export const getAllVolunteers = async () => {
+  return await db
+    .select({
+      id: Voluntarios.id,
+      firstName: Voluntarios.nombres,
+      lastName: Voluntarios.apellidos,
+      idType: Voluntarios.tipoCedula,
+      idNumber: Voluntarios.numeroCedula,
+      birthDate: Voluntarios.fechaNacimiento,
+      profession: Voluntarios.profesion,
+      status: Voluntarios.estatus,
+      gender: Voluntarios.genero,
+      bloodType: DetallesVoluntarios.tipoSangre,
+      maritalStatus: DetallesVoluntarios.estadoCivil,
+      phoneNumbers: DetallesVoluntarios.telefonos,
+      clownName: DetallesVoluntarios.nombrePayaso,
+      shirtSize: DetallesVoluntarios.tallaCamisa,
+      hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
+      hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
+      allergies: DetallesVoluntarios.alergias,
+      disability: DetallesVoluntarios.discapacidad,
+      notes: DetallesVoluntarios.observacion,
+      socialMedia: {
+        facebook: DetallesVoluntarios.facebook,
+        x: DetallesVoluntarios.x,
+        instagram: DetallesVoluntarios.instagram,
+        tikTok: DetallesVoluntarios.tiktok,
+      },
+      emergencyContact: {
+        name: DetallesVoluntarios.nombreContactoEmergencia,
+        phone: DetallesVoluntarios.telefonoContactoEmergencia,
+      },
+      franchise: {
+        id: Pertenecen.idFranquicia,
+        name: Franquicias.nombre, // Join with Franquicias to get the name
+      },
+    })
+    .from(Voluntarios)
+    .innerJoin(
+      DetallesVoluntarios,
+      eq(DetallesVoluntarios.idVoluntario, Voluntarios.id)
+    )
+    .innerJoin(
+      Pertenecen,
+      and(
+        eq(Pertenecen.idVoluntario, Voluntarios.id),
+        isNull(Pertenecen.fechaHoraEgreso) // Filter where fechaHoraEgreso is NULL
+      )
+    )
+    .innerJoin(
+      Franquicias,
+      eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
+    );
+};
 
 export const getVolunteerById = async (id: number) => {
   return await db
@@ -116,44 +161,101 @@ export const getVolunteerById = async (id: number) => {
       DetallesVoluntarios,
       eq(DetallesVoluntarios.idVoluntario, Voluntarios.id)
     )
-    .innerJoin(Pertenecen, eq(Pertenecen.idVoluntario, Voluntarios.id))
+    .innerJoin(
+      Pertenecen,
+      and(
+        eq(Pertenecen.idVoluntario, Voluntarios.id),
+        isNull(Pertenecen.fechaHoraEgreso) // Filter where fechaHoraEgreso is NULL
+      )
+    )
     .innerJoin(
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
-    )
-    .orderBy(desc(Pertenecen.fechaHoraIngreso)) // Ensure the latest franchise is selected
-    .limit(1); // Only get the most recent franchise
+    );
 };
 
-// export const updateVolunteer = async (
-//   id: number,
-//   Volunteer: VolunteerUpdate
-// ) => {
-//   const VolunteerToUpdate = await getVolunteerById(id);
-//   if (VolunteerToUpdate.length < 1) throw new Error("Volunteer not found");
+export const updateVolunteer = async (
+  id: number,
+  volunteer: VolunteerUpdate
+) => {
+  // Verificar si el voluntario existe
+  const [existingVolunteer] = await getVolunteerById(id);
+  if (!existingVolunteer) throw new Error("Volunteer not found");
 
-//   if (Volunteer.franchiseId) {
-//     const existing = await db
-//       .select()
-//       .from(Voluntarios)
-//       .where(eq(Voluntarios.idFranquicia, Volunteer.franchiseId));
+  // Actualizar la tabla Voluntarios
+  await db
+    .update(Voluntarios)
+    .set({
+      nombres: volunteer.firstName,
+      apellidos: volunteer.lastName,
+      tipoCedula: volunteer.idType,
+      numeroCedula: volunteer.idNumber,
+      fechaNacimiento: new Date(
+        volunteer.birthDate ?? existingVolunteer.birthDate
+      ),
+      profesion: volunteer.profession,
+      estatus: volunteer.status,
+      genero: volunteer.gender,
+    })
+    .where(eq(Voluntarios.id, id));
 
-//     if (existing.length < 1) throw { message: "Franchise not found" };
-//   }
+  // Actualizar la tabla DetallesVoluntarios
+  await db
+    .update(DetallesVoluntarios)
+    .set({
+      tipoSangre: volunteer.bloodType,
+      estadoCivil: volunteer.maritalStatus,
+      telefonos: volunteer.phoneNumbers,
+      nombrePayaso: volunteer.clownName,
+      tallaCamisa: volunteer.shirtSize,
+      tieneCamisaConLogo: volunteer.hasShirtWithLogo,
+      tieneBataConLogo: volunteer.hasCoatWithLogo,
+      nombreContactoEmergencia: volunteer.emergencyContactName,
+      telefonoContactoEmergencia: volunteer.emergencyContactPhone,
+      alergias: volunteer.allergies,
+      discapacidad: volunteer.disability,
+      observacion: volunteer.notes,
+      facebook: volunteer.facebook,
+      x: volunteer.x,
+      instagram: volunteer.instagram,
+      tiktok: volunteer.tikTok,
+    })
+    .where(eq(DetallesVoluntarios.idVoluntario, id));
 
-//   return await db
-//     .update(Voluntarios)
-//     .set({
-//       descripcion: Volunteer.description,
-//       idFranquicia: Volunteer.franchiseId,
-//     })
-//     .where(eq(Voluntarios.id, id))
-//     .returning();
-// };
+  // Actualizar la tabla Pertenecen si franchiseId cambia
+  if (
+    volunteer.franchiseId &&
+    existingVolunteer.franchise.id &&
+    volunteer.franchiseId !== existingVolunteer.franchise.id
+  ) {
+    // Update the current franchise's exit date
+    await db
+      .update(Pertenecen)
+      .set({
+        fechaHoraEgreso: new Date(),
+      })
+      .where(
+        and(
+          eq(Pertenecen.idVoluntario, id),
+          eq(Pertenecen.idFranquicia, existingVolunteer.franchise.id)
+        )
+      );
 
-// export const deleteVolunteer = async (id: number) => {
-//   const existingVolunteer = await getVolunteerById(id);
-//   if (existingVolunteer.length < 1) throw { message: "Volunteer not found" };
+    // Insert a new record in Pertenecen for the new franchise
+    await db.insert(Pertenecen).values({
+      idVoluntario: id,
+      idFranquicia: volunteer.franchiseId,
+      fechaHoraIngreso: new Date(),
+    });
+  }
 
-//   return await db.delete(Voluntarios).where(eq(Voluntarios.id, id)).returning();
-// };
+  // Devolver el voluntario actualizado en el mismo formato que getVolunteerById
+  return await getVolunteerById(id);
+};
+
+export const deleteVolunteer = async (id: number) => {
+  const existingVolunteer = await getVolunteerById(id);
+  if (existingVolunteer.length < 1) throw { message: "Volunteer not found" };
+
+  return await db.delete(Voluntarios).where(eq(Voluntarios.id, id)).returning();
+};
