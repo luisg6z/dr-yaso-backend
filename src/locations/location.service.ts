@@ -1,81 +1,75 @@
 import { eq } from "drizzle-orm";
-import { OccupationCreate, OccupationUpdate } from "./locations.schemas";
+import { LocationCreate, LocationUpdate } from "./locations.schemas";
 import { db } from "../db/db";
-import { Cargos } from "../db/schemas/Cargos";
+import { Locaciones } from "../db/schemas/Locaciones";
+import { Franquicias } from "../db/schemas/Franquicias";
 
-export const createOccupation = async (Occupation: OccupationCreate) => {
-  // Check if the name is unique
-  const existing = await db
-    .select()
-    .from(Cargos)
-    .where(eq(Cargos.nombre, Occupation.name));
+export const createLocation = async (location: LocationCreate) => {
+  if (location.franchiseId) {
+    const franchise = await db
+      .select()
+      .from(Franquicias)
+      .where(eq(Franquicias.id, location.franchiseId));
 
-  if (existing.length === 1) {
-    throw {
-      message: "Occupation already exists",
-    };
+    if (franchise.length < 1) throw { message: "Franchise not found" };
   }
 
   return await db
-    .insert(Cargos)
+    .insert(Locaciones)
     .values({
-      nombre: Occupation.name,
-      descripcion: Occupation.description,
+      descripcion: location.description,
+      idFranquicia: location.franchiseId,
     })
     .returning();
 };
 
-export const getAllOccupations = async () => {
+export const getAllLocations = async () => {
   return await db
     .select({
-      id: Cargos.id,
-      name: Cargos.nombre,
-      description: Cargos.descripcion,
+      id: Locaciones.id,
+      description: Locaciones.descripcion,
+      franchiseId: Locaciones.idFranquicia,
     })
-    .from(Cargos);
+    .from(Locaciones);
 };
 
-export const getOccupationById = async (id: number) => {
+export const getLocationById = async (id: number) => {
   return await db
     .select({
-      id: Cargos.id,
-      name: Cargos.nombre,
-      description: Cargos.descripcion,
+      id: Locaciones.id,
+      description: Locaciones.descripcion,
+      franchiseId: Locaciones.idFranquicia,
     })
-    .from(Cargos)
-    .where(eq(Cargos.id, id));
+    .from(Locaciones)
+    .where(eq(Locaciones.id, id));
 };
 
-export const updateOccupation = async (
-  id: number,
-  occupation: OccupationUpdate
-) => {
-  const occupationToUpdate = await getOccupationById(id);
-  if (occupationToUpdate.length < 1) throw new Error("Occupation not found");
+export const updateLocation = async (id: number, location: LocationUpdate) => {
+  const locationToUpdate = await getLocationById(id);
+  if (locationToUpdate.length < 1) throw new Error("Location not found");
 
-  if (occupation.name) {
+  if (location.franchiseId) {
     const existing = await db
       .select()
-      .from(Cargos)
-      .where(eq(Cargos.nombre, occupation.name));
+      .from(Locaciones)
+      .where(eq(Locaciones.idFranquicia, location.franchiseId));
 
-    if (existing.length > 0)
-      throw { message: "Occupation name already exists" };
+    if (existing.length < 1) throw { message: "Franchise not found" };
   }
 
   return await db
-    .update(Cargos)
+    .update(Locaciones)
     .set({
-      nombre: occupation.name,
-      descripcion: occupation.description,
+      descripcion: location.description,
+      idFranquicia: location.franchiseId,
     })
-    .where(eq(Cargos.id, id))
+    .where(eq(Locaciones.id, id))
     .returning();
 };
 
-export const deleteOccupation = async (id: number) => {
-  const existingOccupation = await getOccupationById(id);
-  if (existingOccupation.length < 1) throw { message: "Occupation not found" };
+export const deleteLocation = async (id: number) => {
+  const existingLocation = await getLocationById(id);
+  if (existingLocation.length < 1) throw { message: "Location not found" };
 
-  return await db.delete(Cargos).where(eq(Cargos.id, id)).returning();
+  return await db.delete(Locaciones).where(eq(Locaciones.id, id)).returning();
 };

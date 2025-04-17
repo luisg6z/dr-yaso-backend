@@ -1,34 +1,34 @@
 import { Router } from "express";
 import { validate } from "../middleware/validate";
 import {
-  createOccupationSchema,
-  updateOccupationSchema,
+  createLocationSchema,
+  updateLocationSchema,
 } from "./locations.schemas";
 import {
-  createOccupationHandler,
-  updateOccupationHandler,
-  getAllOccupationsHandler,
-  getOccupationByIdHandler,
-  deleteOccupationHandler,
+  createLocationHandler,
+  updateLocationHandler,
+  getAllLocationsHandler,
+  getLocationByIdHandler,
+  deleteLocationHandler,
 } from "./locations.controller";
 
-const occupationRouter = Router();
+const locationRouter = Router();
 
-occupationRouter.post(
+locationRouter.post(
   "/",
-  validate(createOccupationSchema),
-  createOccupationHandler
+  validate(createLocationSchema),
+  createLocationHandler
 );
-occupationRouter.get("/", getAllOccupationsHandler);
+locationRouter.get("/", getAllLocationsHandler);
 
-occupationRouter.get("/:id", getOccupationByIdHandler);
+locationRouter.get("/:id", getLocationByIdHandler);
 
-occupationRouter.put(
+locationRouter.put(
   "/:id",
-  validate(updateOccupationSchema),
-  updateOccupationHandler
+  validate(updateLocationSchema),
+  updateLocationHandler
 );
 
-occupationRouter.delete("/:id", deleteOccupationHandler);
+locationRouter.delete("/:id", deleteLocationHandler);
 
-export default occupationRouter;
+export default locationRouter;
