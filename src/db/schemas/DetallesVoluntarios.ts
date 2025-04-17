@@ -24,15 +24,17 @@ export const estadoCivilEnum = pgEnum("EstadoCivil", [
   "Divorciado/a",
   "Viudo/a",
   "Unión Libre",
-  "Separado/a",
 ]);
 
 export const tallaCamisaEnum = pgEnum("TallasCamisa", [
-  "SS",
+  "XS",
   "S",
   "M",
   "L",
   "XL",
+  "XXL",
+  "XXXL",
+  "XXXXL",
 ]);
 
 export const DetallesVoluntarios = pgTable("DetallesVoluntarios", {
@@ -44,14 +46,14 @@ export const DetallesVoluntarios = pgTable("DetallesVoluntarios", {
     .primaryKey(),
   tipoSangre: tipoSangreEnum("tipoSangre").notNull(),
   estadoCivil: estadoCivilEnum("estadoCivil").notNull(),
-  telefonos: varchar({ length: 12 }).array().notNull().default([]),
+  telefonos: varchar({ length: 20 }).array().notNull().default([]),
   nombrePayaso: varchar("nombrePayaso", { length: 120 }).notNull(),
   tallaCamisa: tallaCamisaEnum("tallaCamisa").notNull(),
   tieneCamisaConLogo: boolean("tieneCamisaConLogo").notNull(),
   tieneBataConLogo: boolean("tieneBataConLogo").notNull(),
   nombreContactoEmergencia: varchar("nobreContactoEmergencia", { length: 60 }),
   telefonoContactoEmergencia: varchar("telefonoContactoEmergencia", {
-    length: 12,
+    length: 20,
   }),
   alergias: varchar({ length: 200 }),
   discapacidad: varchar({ length: 200 }),

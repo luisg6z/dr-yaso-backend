@@ -14,4 +14,5 @@ router.use("/users", usersRouter);
 router.use("/occupations", occupationRouter);
 router.use("/locations", locationRouter);
 
+
 export default router;
