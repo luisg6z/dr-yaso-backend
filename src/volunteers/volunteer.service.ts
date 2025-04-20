@@ -5,6 +5,7 @@ import { Voluntarios } from "../db/schemas/Voluntarios";
 import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
 import { Franquicias } from "../db/schemas/Franquicias";
 import { Pertenecen } from "../db/schemas/Pertenecen";
+import { Pagination } from "../types";
 
 export const createVolunteer = async (volunteer: VolunteerCreate) => {
   if (volunteer.franchiseId) {
@@ -63,8 +64,11 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
   });
 };
 
-export const getAllVolunteers = async () => {
-  return await db
+export const getAllVolunteers = async (pagination: Pagination) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+  const volunteers = await db
     .select({
       id: Voluntarios.id,
       firstName: Voluntarios.nombres,
@@ -115,7 +119,22 @@ export const getAllVolunteers = async () => {
     .innerJoin(
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
-    );
+    )
+    .limit(limit)
+    .offset(offset);
+
+  const totalItems = await db.$count(Voluntarios);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: volunteers,
+    paginate: {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    },
+  };
 };
 
 export const getVolunteerById = async (id: number) => {

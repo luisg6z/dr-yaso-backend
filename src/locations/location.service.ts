@@ -3,6 +3,7 @@ import { LocationCreate, LocationUpdate } from "./locations.schemas";
 import { db } from "../db/db";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Franquicias } from "../db/schemas/Franquicias";
+import { Pagination } from "../types";
 
 export const createLocation = async (location: LocationCreate) => {
   if (location.franchiseId) {
@@ -23,14 +24,32 @@ export const createLocation = async (location: LocationCreate) => {
     .returning();
 };
 
-export const getAllLocations = async () => {
-  return await db
+export const getAllLocations = async (pagination: Pagination) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+  const locations = await db
     .select({
       id: Locaciones.id,
       description: Locaciones.descripcion,
       franchiseId: Locaciones.idFranquicia,
     })
-    .from(Locaciones);
+    .from(Locaciones)
+    .limit(limit)
+    .offset(offset);
+
+  const totalItems = await db.$count(Locaciones);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: locations,
+    paginate: {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    },
+  };
 };
 
 export const getLocationById = async (id: number) => {

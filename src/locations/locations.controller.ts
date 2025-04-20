@@ -7,6 +7,7 @@ import {
   updateLocation,
 } from "./location.service";
 import { idParamSchema } from "../types";
+import { Pagination } from "../types";
 
 export const createLocationHandler = async (req: Request, res: Response) => {
   try {
@@ -22,14 +23,14 @@ export const createLocationHandler = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllLocationsHandler = async (
-  _req: Request,
-  res: Response
-) => {
+export const getAllLocationsHandler = async (_req: Request, res: Response) => {
   try {
-    res.status(200).json({
-      data: await getAllLocations(),
-    });
+    const pagination: Pagination = {
+      page: +(_req.query.page || 1),
+      limit: +(_req.query.limit || 10),
+    };
+
+    res.status(200).json(await getAllLocations(pagination));
   } catch (error) {
     res.status(500).json({
       message: "Error retrieving Locations",

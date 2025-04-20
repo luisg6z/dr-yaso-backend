@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { OccupationCreate, OccupationUpdate } from "./occupations.schemas";
 import { db } from "../db/db";
 import { Cargos } from "../db/schemas/Cargos";
+import { Pagination } from "../types";
 
 export const createOccupation = async (Occupation: OccupationCreate) => {
   // Check if the name is unique
@@ -25,14 +26,32 @@ export const createOccupation = async (Occupation: OccupationCreate) => {
     .returning();
 };
 
-export const getAllOccupations = async () => {
-  return await db
+export const getAllOccupations = async (pagination: Pagination) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+  const occupations = await db
     .select({
       id: Cargos.id,
       name: Cargos.nombre,
       description: Cargos.descripcion,
     })
-    .from(Cargos);
+    .from(Cargos)
+    .limit(limit)
+    .offset(offset);
+
+  const totalItems = await db.$count(Cargos);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: occupations,
+    paginate: {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    },
+  };
 };
 
 export const getOccupationById = async (id: number) => {
@@ -59,7 +78,8 @@ export const updateOccupation = async (
       .from(Cargos)
       .where(eq(Cargos.nombre, occupation.name));
 
-    if (existing.length > 0) throw { message: "Occupation name already exists" };
+    if (existing.length > 0)
+      throw { message: "Occupation name already exists" };
   }
 
   return await db

@@ -6,7 +6,7 @@ import {
   getOccupationById,
   updateOccupation,
 } from "./occupations.service";
-import { idParamSchema } from "../types";
+import { idParamSchema, Pagination } from "../types";
 
 export const createOccupationHandler = async (req: Request, res: Response) => {
   try {
@@ -27,9 +27,12 @@ export const getAllOccupationsHandler = async (
   res: Response
 ) => {
   try {
-    res.status(200).json({
-      data: await getAllOccupations(),
-    });
+    const pagination: Pagination = {
+      page: +(_req.query.page || 1),
+      limit: +(_req.query.limit || 10),
+    };
+
+    res.status(200).json(await getAllOccupations(pagination));
   } catch (error) {
     res.status(500).json({
       message: "Error retrieving occupations",

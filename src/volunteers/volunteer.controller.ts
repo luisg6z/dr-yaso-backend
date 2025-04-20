@@ -6,7 +6,7 @@ import {
   deleteVolunteer,
   updateVolunteer,
 } from "./volunteer.service";
-import { idParamSchema } from "../types";
+import { idParamSchema, Pagination } from "../types";
 
 export const createVolunteerHandler = async (req: Request, res: Response) => {
   try {
@@ -24,9 +24,11 @@ export const createVolunteerHandler = async (req: Request, res: Response) => {
 
 export const getAllVolunteersHandler = async (_req: Request, res: Response) => {
   try {
-    res.status(200).json({
-      data: await getAllVolunteers(),
-    });
+    const pagination: Pagination = {
+      page: +(_req.query.page || 1),
+      limit: +(_req.query.limit || 10),
+    };
+    res.status(200).json(await getAllVolunteers(pagination));
   } catch (error) {
     res.status(500).json({
       message: "Error retrieving Volunteers",
