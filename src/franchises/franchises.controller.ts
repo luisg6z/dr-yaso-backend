@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { createFranchise, deleteFranchise, getAllFranchises, getFranchiseById, updateFranchise } from "./franchises.service";
-import { idParamSchema } from "../types";
+import { createFranchise, deleteFranchise, getActiveFranchises, getFranchiseById, updateFranchise, getAllFranchises } from "./franchises.service";
+import { idParamSchema, Pagination } from "../types";
 
 
 export const createFranchiseHandler = async (req: Request, res: Response) => {
@@ -17,11 +17,28 @@ export const createFranchiseHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllFranchisesHandler = async (_req: Request, res: Response) => {
+export const getAllFranchisesHandler = async (req: Request, res: Response) => {
     try {
-        res.status(200).json({
-            data: await getAllFranchises(),
+        const pagination: Pagination = {
+            page: +(req.query.page || 1),
+            limit: +(req.query.limit || 10),
+        }
+        res.status(200).json(await getAllFranchises(pagination))
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving franchises",
+            details: error,
         })
+    }
+}
+
+export const getActivesFranchisesHandler = async (req: Request, res: Response) => {
+    try {
+        const pagination: Pagination = {
+            page: +(req.query.page || 1),
+            limit: +(req.query.limit || 10),
+        }
+        res.status(200).json(await getActiveFranchises(pagination))
     } catch (error) {
         res.status(500).json({
             message: "Error retrieving franchises",
@@ -47,9 +64,8 @@ export const getFranchiseByIdHandler = async (req: Request, res: Response) => {
 
 export const updateFranchiseHandler = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
         const franchise = req.body;
-        const parsedId = idParamSchema.parse(+id);
+        const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
             data: await updateFranchise(parsedId, franchise),
         })
@@ -63,8 +79,7 @@ export const updateFranchiseHandler = async (req: Request, res: Response) => {
 
 export const deleteFranchiseHandler = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const parsedId = idParamSchema.parse(+id);
+        const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
             data: await deleteFranchise(parsedId),
         })
