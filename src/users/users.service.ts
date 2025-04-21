@@ -92,6 +92,13 @@ export const updateUser = async (id: number, user: UserUpdate) => {
             idFranquicia: user.franchiseId,
         })
         .where(eq(Usuarios.id, id))
+        .returning({
+            id: Usuarios.id,
+            name: Usuarios.nombre,
+            type: Usuarios.tipo,
+            email: Usuarios.correo,
+            franchiseId: Usuarios.idFranquicia,
+        })
     }
 
     return await db
@@ -107,7 +114,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
         name: Usuarios.nombre,
         type: Usuarios.tipo,
         email: Usuarios.correo,
-        franchiseId: Usuarios.idFranquicia
+        franchiseId: Usuarios.idFranquicia,
     });
 }
 
