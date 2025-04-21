@@ -1,6 +1,12 @@
-import { pgTable, integer, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, integer, primaryKey, pgEnum } from "drizzle-orm/pg-core";
 import { Visitas } from "./Visitas";
 import { Voluntarios } from "./Voluntarios";
+
+export const responsabilitiesEnum = pgEnum("Responsabilidades", [
+  "Pasillero",
+  "Payaso",
+  "Coordinador",
+])
 
 export const Realizan = pgTable(
   "Realizan",
@@ -13,6 +19,7 @@ export const Realizan = pgTable(
       onUpdate: "cascade",
       onDelete: "restrict",
     }),
+    responsabilidad: responsabilitiesEnum("Responsabilidades").notNull(),
   },
   (table) => [
     {
