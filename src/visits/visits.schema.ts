@@ -18,7 +18,7 @@ export const createVisitSchema = visitsSchema.omit({ id: true }).merge(z.object(
     clownsIds: z.array(z.number().int().positive()).optional(),
     hallwaysIds: z.array(z.number().int().positive()).optional(),
 }));
-export const updateVisitSchema = visitsSchema.omit({ id: true }).partial();
+export const updateVisitSchema = createVisitSchema.partial();
 
 export type Visit = z.infer<typeof visitsSchema>;
 export type VisitCreate = z.infer<typeof createVisitSchema>;
