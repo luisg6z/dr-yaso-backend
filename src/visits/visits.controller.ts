@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.service";
+import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
 import { idParamSchema, Pagination } from "../types";
 
 
-export const createUserHandler = async (req: Request, res: Response) => {
+export const createVisitsHandler = async (req: Request, res: Response) => {
     try {
         res.status(201).json({
-            data: await createUser(req.body)
-        })
+            items: await createVisit(req.body)
+        } )
     } catch (error) {
         res.status(500).json({
             message: "Internal server error",
@@ -16,13 +16,13 @@ export const createUserHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllUsersHandler = async (req: Request, res: Response) => {
+export const getAllVisitsHandler = async (req: Request, res: Response) => {
     try {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
         }
-        res.status(200).json(await getAllUsers(pagination))
+        res.status(200).json(await getAllVisits(pagination))
     } catch (error) {
         res.status(500).json({
             message: "Internal server error",
@@ -31,11 +31,11 @@ export const getAllUsersHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getUserByIdHandler = async (req: Request, res: Response) => {
+export const getVisitByIdHandler = async (req: Request, res: Response) => {
     try {
         const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
-            data: await getUserById(parsedId),
+            items: await getVisitById(parsedId)
         })
     } catch (error) {
         res.status(500).json({
@@ -45,11 +45,11 @@ export const getUserByIdHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const updateUserHandler = async (req: Request, res: Response) => {
+export const updateVisitHandler = async (req: Request, res: Response) => {
     try {
         const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
-            data: await updateUser(parsedId, req.body),
+            items: await updateVisit(parsedId, req.body)
         })
     } catch (error) {
         res.status(500).json({
@@ -59,11 +59,11 @@ export const updateUserHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteUserHandler = async (req: Request, res: Response) => {
+export const deleteVisitHandler = async (req: Request, res: Response) => {
     try {
         const parsedId = idParamSchema.parse(+req.params.id);
         res.status(200).json({
-            data: await deleteUser(parsedId),
+            items: await deleteVisit(parsedId)
         })
     } catch (error) {
         res.status(500).json({
@@ -72,4 +72,3 @@ export const deleteUserHandler = async (req: Request, res: Response) => {
         })
     }
 }
-
