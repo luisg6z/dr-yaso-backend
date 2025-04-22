@@ -5,6 +5,8 @@ import { FranchiseCreate, FranchiseUpdate } from "./franchises.schemas";
 import { Ciudades } from "../db/schemas/Ciudades";
 import { Franquicias } from "../db/schemas/Franquicias";
 import { Pagination } from "../types";
+import { Estados } from "../db/schemas/Estados";
+import { Paises } from "../db/schemas/Paises";
 
 
 export const createFranchise = async (franchise: FranchiseCreate) => {
@@ -111,7 +113,8 @@ export const getAllFranchises = async (pagination: Pagination) => {
 }
 
 export const getFranchiseById = async (id: number) => {
-    return await db.select({
+    return await db
+    .select({
         id: Franquicias.id,
         rif: Franquicias.rif,
         name: Franquicias.nombre,
@@ -119,9 +122,29 @@ export const getFranchiseById = async (id: number) => {
         phone: Franquicias.telefono,
         email: Franquicias.correo,
         isActive: Franquicias.estaActivo,
-        cityId: Franquicias.idCiudad,
-        coordinatorId: Franquicias.idCoordinador,
-    }).from(Franquicias).where(eq(Franquicias.id, id)).limit(1);
+        city: {
+            id: Franquicias.idCiudad,
+            name: Ciudades.nombre,
+        },
+        state: {
+            id: Estados.id,
+            name: Estados.nombre,
+        },
+        country: {
+            id: Paises.id,
+            name: Paises.nombre,
+        },
+        coordinator: {
+            id: Franquicias.idCoordinador,
+            name: Voluntarios.nombres,
+        },
+    })
+    .from(Franquicias)
+    .leftJoin(Voluntarios, eq(Franquicias.idCoordinador, Voluntarios.id))
+    .leftJoin(Ciudades, eq(Franquicias.idCiudad, Ciudades.id))
+    .leftJoin(Estados, eq(Ciudades.idEstado, Estados.id))
+    .leftJoin(Paises, eq(Estados.idPais, Paises.id))
+    .where(eq(Franquicias.id, id));
 }
 
 export const updateFranchise = async (id: number, franchise: FranchiseUpdate) => {
