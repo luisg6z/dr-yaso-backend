@@ -1,0 +1,74 @@
+import { Request, Response } from "express";
+import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
+import { idParamSchema, Pagination } from "../types";
+
+
+export const createVisitsHandler = async (req: Request, res: Response) => {
+    try {
+        res.status(201).json({
+            items: await createVisit(req.body)
+        } )
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            details: error,
+        })
+    }
+}
+
+export const getAllVisitsHandler = async (req: Request, res: Response) => {
+    try {
+        const pagination: Pagination = {
+            page: +(req.query.page || 1),
+            limit: +(req.query.limit || 10),
+        }
+        res.status(200).json(await getAllVisits(pagination))
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            details: error,
+        })
+    }
+}
+
+export const getVisitByIdHandler = async (req: Request, res: Response) => {
+    try {
+        const parsedId = idParamSchema.parse(+req.params.id);
+        res.status(200).json({
+            items: await getVisitById(parsedId)
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            details: error,
+        })
+    }
+}
+
+export const updateVisitHandler = async (req: Request, res: Response) => {
+    try {
+        const parsedId = idParamSchema.parse(+req.params.id);
+        res.status(200).json({
+            items: await updateVisit(parsedId, req.body)
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            details: error,
+        })
+    }
+}
+
+export const deleteVisitHandler = async (req: Request, res: Response) => {
+    try {
+        const parsedId = idParamSchema.parse(+req.params.id);
+        res.status(200).json({
+            items: await deleteVisit(parsedId)
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            details: error,
+        })
+    }
+}
