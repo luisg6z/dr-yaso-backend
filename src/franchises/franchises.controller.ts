@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createFranchise, deleteFranchise, getActiveFranchises, getFranchiseById, updateFranchise, getAllFranchises } from "./franchises.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
 
 
 export const createFranchiseHandler = async (req: Request, res: Response) => {
@@ -23,12 +23,15 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
         }
-        res.status(200).json(await getAllFranchises(pagination))
+        const franchises = await getAllFranchises(pagination)
+        res.status(200).json(franchises)
     } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving franchises",
-            details: error,
-        })
+        if (!res.headersSent) {
+            res.status(500).json({
+                message: "Error retrieving franchises",
+                details: error,
+            });
+        }
     }
 }
 

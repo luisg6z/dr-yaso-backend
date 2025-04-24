@@ -4,7 +4,7 @@ import { Voluntarios } from "../db/schemas/Voluntarios";
 import { FranchiseCreate, FranchiseUpdate } from "./franchises.schemas";
 import { Ciudades } from "../db/schemas/Ciudades";
 import { Franquicias } from "../db/schemas/Franquicias";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 import { Estados } from "../db/schemas/Estados";
 import { Paises } from "../db/schemas/Paises";
 
