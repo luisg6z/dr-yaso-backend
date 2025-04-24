@@ -5,10 +5,12 @@ import usersRouter from "./users/users.router";
 import occupationRouter from "./occupations/occupations.router";
 import locationRouter from "./locations/locations.router";
 import visitsRouter from "./visits/visits.router";
+import authRouter from "./auth/auth.router";
 
 
 const router = Router();
 
+router.use("/auth", authRouter);
 router.use("/franchises", franchiseRouter);
 router.use("/volunteers", volunteersRouter);
 router.use("/users", usersRouter);

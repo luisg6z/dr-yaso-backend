@@ -6,7 +6,8 @@ import {
   getOccupationById,
   updateOccupation,
 } from "./occupations.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createOccupationHandler = async (req: Request, res: Response) => {
   try {
@@ -15,10 +16,19 @@ export const createOccupationHandler = async (req: Request, res: Response) => {
       data: await createOccupation(Occupation),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error creating ocupation",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      res.status(500).json({
+        message: "Error creating ocupation",
+        details: error,
+      });
+    }
   }
 };
 
@@ -34,10 +44,19 @@ export const getAllOccupationsHandler = async (
 
     res.status(200).json(await getAllOccupations(pagination));
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving occupations",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      res.status(500).json({
+        message: "Error retrieving ocupations",
+        details: error,
+      });
+    }
   }
 };
 
@@ -49,10 +68,19 @@ export const getOccupationByIdHandler = async (req: Request, res: Response) => {
       data: await getOccupationById(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving occupation",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      res.status(500).json({
+        message: "Error retrieving ocupation",
+        details: error,
+      });
+    }
   }
 };
 
@@ -66,10 +94,19 @@ export const updateOccupationHandler = async (req: Request, res: Response) => {
       data: await updateOccupation(parseId, occupation),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error updating occupation",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      res.status(500).json({
+        message: "Error updating ocupation",
+        details: error,
+      });
+    }
   }
 };
 
@@ -81,9 +118,18 @@ export const deleteOccupationHandler = async (req: Request, res: Response) => {
       data: await deleteOccupation(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error deleting occupation",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      res.status(500).json({
+        message: "Error deleting ocupation",
+        details: error,
+      });
+    }
   }
 };

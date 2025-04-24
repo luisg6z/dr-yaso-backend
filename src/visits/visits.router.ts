@@ -2,14 +2,17 @@ import { Router } from "express";
 import { validate } from "../middleware/validate";
 import { createVisitSchema, updateVisitSchema } from "./visits.schema";
 import { createVisitsHandler, deleteVisitHandler, getAllVisitsHandler, getVisitByIdHandler, updateVisitHandler } from "./visits.controller";
+import { authenticate } from "../auth/middlewares/auth.middleware";
+import { authorize } from "../auth/middlewares/authorize.middleware";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 const visitsRouter = Router();
 
-visitsRouter.post("/", validate(createVisitSchema), createVisitsHandler);
-visitsRouter.get("/", getAllVisitsHandler)
-visitsRouter.get("/:id", getVisitByIdHandler);
-visitsRouter.patch("/:id", validate(updateVisitSchema), updateVisitHandler);
-visitsRouter.delete("/:id", deleteVisitHandler);
+visitsRouter.post("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(createVisitSchema), createVisitsHandler);
+visitsRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getAllVisitsHandler)
+visitsRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getVisitByIdHandler);
+visitsRouter.patch("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(updateVisitSchema), updateVisitHandler);
+visitsRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteVisitHandler);
 
 export default visitsRouter;

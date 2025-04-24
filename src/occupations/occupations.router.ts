@@ -11,24 +11,31 @@ import {
   getOccupationByIdHandler,
   deleteOccupationHandler,
 } from "./occupations.controller";
+import { authenticate } from "../auth/middlewares/auth.middleware";
+import { authorize } from "../auth/middlewares/authorize.middleware";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 const occupationRouter = Router();
 
 occupationRouter.post(
   "/",
+  authenticate,
+  authorize([tipoUsuarioEnum.enumValues[0]]),
   validate(createOccupationSchema),
   createOccupationHandler
 );
-occupationRouter.get("/", getAllOccupationsHandler);
+occupationRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getAllOccupationsHandler);
 
-occupationRouter.get("/:id", getOccupationByIdHandler);
+occupationRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getOccupationByIdHandler);
 
 occupationRouter.put(
   "/:id",
+  authenticate,
+  authorize([tipoUsuarioEnum.enumValues[0]]),
   validate(updateOccupationSchema),
   updateOccupationHandler
 );
 
-occupationRouter.delete("/:id", deleteOccupationHandler);
+occupationRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteOccupationHandler);
 
 export default occupationRouter;

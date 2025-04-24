@@ -6,8 +6,9 @@ import {
   getLocationById,
   updateLocation,
 } from "./location.service";
-import { idParamSchema } from "../types";
-import { Pagination } from "../types";
+import { idParamSchema } from "../types/types";
+import { Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createLocationHandler = async (req: Request, res: Response) => {
   try {
@@ -16,10 +17,18 @@ export const createLocationHandler = async (req: Request, res: Response) => {
       data: await createLocation(location),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error creating location",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error creating location",
+        details: error,
+      });
+    }
   }
 };
 
@@ -32,10 +41,18 @@ export const getAllLocationsHandler = async (_req: Request, res: Response) => {
 
     res.status(200).json(await getAllLocations(pagination));
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving Locations",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error retrieving locations",
+        details: error,
+      });
+    }
   }
 };
 
@@ -47,10 +64,18 @@ export const getLocationByIdHandler = async (req: Request, res: Response) => {
       data: await getLocationById(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving Location",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error retreaving location",
+        details: error,
+      });
+    }
   }
 };
 
@@ -64,10 +89,18 @@ export const updateLocationHandler = async (req: Request, res: Response) => {
       data: await updateLocation(parseId, location),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error updating Location",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error updating location",
+        details: error,
+      });
+    }
   }
 };
 
@@ -79,9 +112,17 @@ export const deleteLocationHandler = async (req: Request, res: Response) => {
       data: await deleteLocation(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error deleting Location",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error deleting location",
+        details: error,
+      });
+    }
   }
 };

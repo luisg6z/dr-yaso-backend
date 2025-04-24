@@ -11,24 +11,31 @@ import {
   getLocationByIdHandler,
   deleteLocationHandler,
 } from "./locations.controller";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
+import { authenticate } from "../auth/middlewares/auth.middleware";
+import { authorize } from "../auth/middlewares/authorize.middleware";
 
 const locationRouter = Router();
 
 locationRouter.post(
   "/",
+  authenticate,
+  authorize([tipoUsuarioEnum.enumValues[0]]),
   validate(createLocationSchema),
   createLocationHandler
 );
-locationRouter.get("/", getAllLocationsHandler);
+locationRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getAllLocationsHandler);
 
-locationRouter.get("/:id", getLocationByIdHandler);
+locationRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getLocationByIdHandler);
 
 locationRouter.put(
   "/:id",
+  authenticate,
+  authorize([tipoUsuarioEnum.enumValues[0]]),
   validate(updateLocationSchema),
   updateLocationHandler
 );
 
-locationRouter.delete("/:id", deleteLocationHandler);
+locationRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteLocationHandler);
 
 export default locationRouter;

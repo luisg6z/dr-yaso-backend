@@ -3,7 +3,8 @@ import { LocationCreate, LocationUpdate } from "./locations.schemas";
 import { db } from "../db/db";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Franquicias } from "../db/schemas/Franquicias";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createLocation = async (location: LocationCreate) => {
   if (location.franchiseId) {
@@ -12,7 +13,7 @@ export const createLocation = async (location: LocationCreate) => {
       .from(Franquicias)
       .where(eq(Franquicias.id, location.franchiseId));
 
-    if (franchise.length < 1) throw { message: "Franchise not found" };
+    if (franchise.length < 1) throw new AppError(400, "Franchise not found");
   }
 
   return await db
@@ -65,7 +66,7 @@ export const getLocationById = async (id: number) => {
 
 export const updateLocation = async (id: number, location: LocationUpdate) => {
   const locationToUpdate = await getLocationById(id);
-  if (locationToUpdate.length < 1) throw new Error("Location not found");
+  if (locationToUpdate.length < 1) throw new AppError(404, "Location not found");
 
   if (location.franchiseId) {
     const existing = await db
@@ -73,7 +74,7 @@ export const updateLocation = async (id: number, location: LocationUpdate) => {
       .from(Locaciones)
       .where(eq(Locaciones.idFranquicia, location.franchiseId));
 
-    if (existing.length < 1) throw { message: "Franchise not found" };
+    if (existing.length < 1) throw new AppError(400, "Franchise not found");
   }
 
   return await db
@@ -88,7 +89,7 @@ export const updateLocation = async (id: number, location: LocationUpdate) => {
 
 export const deleteLocation = async (id: number) => {
   const existingLocation = await getLocationById(id);
-  if (existingLocation.length < 1) throw { message: "Location not found" };
+  if (existingLocation.length < 1) throw new AppError(404, "Location not found");
 
   return await db.delete(Locaciones).where(eq(Locaciones.id, id)).returning();
 };
