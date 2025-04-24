@@ -9,11 +9,11 @@ import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 const franchiseRouter = Router();
 
-franchiseRouter.post("/", validate(createFranchiseSchema) ,createFranchiseHandler);
+franchiseRouter.post("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(createFranchiseSchema) ,createFranchiseHandler);
 franchiseRouter.get("/all", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]),  getAllFranchisesHandler);
-franchiseRouter.get("/", getActivesFranchisesHandler);
-franchiseRouter.get("/:id", getFranchiseByIdHandler);
-franchiseRouter.patch("/:id", validate(updateFranchiseSchema), updateFranchiseHandler);
-franchiseRouter.delete("/:id", deleteFranchiseHandler);
+franchiseRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getActivesFranchisesHandler);
+franchiseRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getFranchiseByIdHandler);
+franchiseRouter.patch("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(updateFranchiseSchema), updateFranchiseHandler);
+franchiseRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteFranchiseHandler);
 
 export default franchiseRouter;

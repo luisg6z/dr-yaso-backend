@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createFranchise, deleteFranchise, getActiveFranchises, getFranchiseById, updateFranchise, getAllFranchises } from "./franchises.service";
 import { idParamSchema, Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 
 export const createFranchiseHandler = async (req: Request, res: Response) => {
@@ -10,10 +11,18 @@ export const createFranchiseHandler = async (req: Request, res: Response) => {
             data: await createFranchise(franchise)
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Error creating franchise",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
+            res.status(500).json({
+                message: "Error creating franchise",
+                details: error,
+            });
+        }
     }
 }
 
@@ -27,8 +36,14 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
         res.status(200).json(franchises)
     } catch (error) {
         if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
             res.status(500).json({
-                message: "Error retrieving franchises",
+                message: "Error retreaving franchises",
                 details: error,
             });
         }
@@ -43,10 +58,18 @@ export const getActivesFranchisesHandler = async (req: Request, res: Response) =
         }
         res.status(200).json(await getActiveFranchises(pagination))
     } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving franchises",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
+            res.status(500).json({
+                message: "Error retreaving franchises",
+                details: error,
+            });
+        }
     }
 }
 
@@ -58,10 +81,18 @@ export const getFranchiseByIdHandler = async (req: Request, res: Response) => {
             data: await getFranchiseById(parsedId),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving franchise",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
+            res.status(500).json({
+                message: "Error retreaving franchise",
+                details: error,
+            });
+        }
     }
 }
 
@@ -73,10 +104,18 @@ export const updateFranchiseHandler = async (req: Request, res: Response) => {
             data: await updateFranchise(parsedId, franchise),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Error updating franchise",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
+            res.status(500).json({
+                message: "Error updating franchise",
+                details: error,
+            });
+        }
     }
 }
 
@@ -87,9 +126,17 @@ export const deleteFranchiseHandler = async (req: Request, res: Response) => {
             data: await deleteFranchise(parsedId),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Error deleting franchise",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                });
+            }
+            res.status(500).json({
+                message: "Error deleting franchise",
+                details: error,
+            });
+        }
     }
 }

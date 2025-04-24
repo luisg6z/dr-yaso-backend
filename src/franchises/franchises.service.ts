@@ -7,6 +7,7 @@ import { Franquicias } from "../db/schemas/Franquicias";
 import { Pagination } from "../types/types";
 import { Estados } from "../db/schemas/Estados";
 import { Paises } from "../db/schemas/Paises";
+import { AppError } from "../common/errors/errors";
 
 
 export const createFranchise = async (franchise: FranchiseCreate) => {
@@ -19,7 +20,7 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
         .where(eq(Voluntarios.id, franchise.coordinatorId));
 
 
-        if(!coordinator) throw new Error("Coordinator not found");
+        if(!coordinator) throw new AppError(400, "Coordinator not found");
     }
 
     if(franchise.cityId){
@@ -28,7 +29,7 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
             name: Ciudades.nombre,
         }).from(Ciudades).where(eq(Ciudades.id, franchise.cityId));
 
-        if(!city) throw new Error("City not found");
+        if(!city) throw new AppError(400, "City not found");
     }
 
 
@@ -150,7 +151,7 @@ export const getFranchiseById = async (id: number) => {
 export const updateFranchise = async (id: number, franchise: FranchiseUpdate) => {
     
     const franchiseToUpdate = await getFranchiseById(id);
-    if(franchiseToUpdate.length < 1) throw new Error("Franchise not found");
+    if(franchiseToUpdate.length < 1) throw new AppError(404, "Franchise not found");
 
     if(franchise.coordinatorId){
         const coordinator = await db.select({
@@ -161,7 +162,7 @@ export const updateFranchise = async (id: number, franchise: FranchiseUpdate) =>
         .where(eq(Voluntarios.id, franchise.coordinatorId));
 
 
-        if(!coordinator) throw new Error("Coordinator not found");
+        if(!coordinator) throw new AppError(400, "Coordinator not found");
     }
 
     if(franchise.cityId){
@@ -170,7 +171,7 @@ export const updateFranchise = async (id: number, franchise: FranchiseUpdate) =>
             name: Ciudades.nombre,
         }).from(Ciudades).where(eq(Ciudades.id, franchise.cityId));
 
-        if(!city) throw new Error("City not found");
+        if(!city) throw new AppError(400, "City not found");
     }
 
     return await db.update(Franquicias).set({
@@ -186,6 +187,10 @@ export const updateFranchise = async (id: number, franchise: FranchiseUpdate) =>
 }
 
 export const deleteFranchise = async (id: number) => {
+    const existingFranchise = await getFranchiseById(id);
+    if (existingFranchise.length === 0) {
+        throw new AppError(404, "Franchise not found");
+    }
     return await db.update(Franquicias)
     .set({
         estaActivo: false,

@@ -7,6 +7,7 @@ import { db } from "../db/db";
 import { Usuarios } from "../db/schemas/Usuarios";
 import { eq } from "drizzle-orm";
 import { Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 
 export const createUser = async (user: UserCreate) => {
@@ -77,7 +78,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
     const existingUser = await getUserById(id);
 
     if (existingUser.length === 0) {
-        throw new Error("User not found");
+        throw new AppError(404, "User not found");
     }
 
     if (user.password) {
@@ -123,7 +124,7 @@ export const deleteUser = async (id: number) => {
     const existingUser = await getUserById(id);
 
     if (existingUser.length === 0) {
-        throw new Error("User not found");
+        throw new AppError(404, "User not found");
     }
 
     return await db

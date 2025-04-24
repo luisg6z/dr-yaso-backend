@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.service";
 import { idParamSchema, Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 
 export const createUserHandler = async (req: Request, res: Response) => {
@@ -9,10 +10,18 @@ export const createUserHandler = async (req: Request, res: Response) => {
             data: await createUser(req.body)
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -24,10 +33,18 @@ export const getAllUsersHandler = async (req: Request, res: Response) => {
         }
         res.status(200).json(await getAllUsers(pagination))
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -38,10 +55,18 @@ export const getUserByIdHandler = async (req: Request, res: Response) => {
             data: await getUserById(parsedId),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -52,10 +77,18 @@ export const updateUserHandler = async (req: Request, res: Response) => {
             data: await updateUser(parsedId, req.body),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -66,10 +99,18 @@ export const deleteUserHandler = async (req: Request, res: Response) => {
             data: await deleteUser(parsedId),
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 

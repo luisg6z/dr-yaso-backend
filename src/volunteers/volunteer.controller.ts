@@ -7,6 +7,7 @@ import {
   updateVolunteer,
 } from "./volunteer.service";
 import { idParamSchema, Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createVolunteerHandler = async (req: Request, res: Response) => {
   try {
@@ -15,10 +16,20 @@ export const createVolunteerHandler = async (req: Request, res: Response) => {
       data: await createVolunteer(Volunteer),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error creating Volunteer",
-      details: error,
-    });
+
+    if (!res.headersSent) {
+
+      if(error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error creating Volunteer",
+        details: error,
+      });
+    }
   }
 };
 
@@ -30,10 +41,18 @@ export const getAllVolunteersHandler = async (_req: Request, res: Response) => {
     };
     res.status(200).json(await getAllVolunteers(pagination));
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving Volunteers",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error retrieving Volunteers",
+        details: error,
+      });
+    }
   }
 };
 
@@ -45,10 +64,18 @@ export const getVolunteerByIdHandler = async (req: Request, res: Response) => {
       data: await getVolunteerById(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error retrieving Volunteer",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error retrieving Volunteer",
+        details: error,
+      });
+    }
   }
 };
 
@@ -62,10 +89,18 @@ export const updateVolunteerHandler = async (req: Request, res: Response) => {
       data: await updateVolunteer(parseId, Volunteer),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error updating Volunteer",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error updating Volunteer",
+        details: error,
+      });
+    }
   }
 };
 
@@ -77,9 +112,17 @@ export const deleteVolunteerHandler = async (req: Request, res: Response) => {
       data: await deleteVolunteer(parseId),
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error deleting Volunteer",
-      details: error,
-    });
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error deleting Volunteer",
+        details: error,
+      });
+    }
   }
 };
