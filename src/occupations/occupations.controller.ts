@@ -6,7 +6,7 @@ import {
   getOccupationById,
   updateOccupation,
 } from "./occupations.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
 
 export const createOccupationHandler = async (req: Request, res: Response) => {
   try {

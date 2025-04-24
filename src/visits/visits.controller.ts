@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
 
 
 export const createVisitsHandler = async (req: Request, res: Response) => {

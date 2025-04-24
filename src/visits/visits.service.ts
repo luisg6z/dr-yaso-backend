@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { Visitas } from "../db/schemas/Visitas";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 import { VisitCreate, VisitUpdate } from "./visits.schema";
 import { Realizan, responsabilitiesEnum } from "../db/schemas/Realizan";
 import { Locaciones } from "../db/schemas/Locaciones";

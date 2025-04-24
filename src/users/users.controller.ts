@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
 
 
 export const createUserHandler = async (req: Request, res: Response) => {

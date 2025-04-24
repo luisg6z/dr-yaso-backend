@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { OccupationCreate, OccupationUpdate } from "./occupations.schemas";
 import { db } from "../db/db";
 import { Cargos } from "../db/schemas/Cargos";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 
 export const createOccupation = async (Occupation: OccupationCreate) => {
   // Check if the name is unique

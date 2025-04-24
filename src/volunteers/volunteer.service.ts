@@ -5,7 +5,7 @@ import { Voluntarios } from "../db/schemas/Voluntarios";
 import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
 import { Franquicias } from "../db/schemas/Franquicias";
 import { Pertenecen } from "../db/schemas/Pertenecen";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 
 export const createVolunteer = async (volunteer: VolunteerCreate) => {
   if (volunteer.franchiseId) {

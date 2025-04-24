@@ -6,7 +6,7 @@ import {
   deleteVolunteer,
   updateVolunteer,
 } from "./volunteer.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
 
 export const createVolunteerHandler = async (req: Request, res: Response) => {
   try {

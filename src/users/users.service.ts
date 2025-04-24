@@ -6,7 +6,7 @@ import { UserCreate, UserUpdate } from "./users.schema";
 import { db } from "../db/db";
 import { Usuarios } from "../db/schemas/Usuarios";
 import { eq } from "drizzle-orm";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 
 
 export const createUser = async (user: UserCreate) => {

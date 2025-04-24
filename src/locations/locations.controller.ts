@@ -6,8 +6,8 @@ import {
   getLocationById,
   updateLocation,
 } from "./location.service";
-import { idParamSchema } from "../types";
-import { Pagination } from "../types";
+import { idParamSchema } from "../types/types";
+import { Pagination } from "../types/types";
 
 export const createLocationHandler = async (req: Request, res: Response) => {
   try {

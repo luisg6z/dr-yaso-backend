@@ -3,7 +3,7 @@ import { LocationCreate, LocationUpdate } from "./locations.schemas";
 import { db } from "../db/db";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Franquicias } from "../db/schemas/Franquicias";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 
 export const createLocation = async (location: LocationCreate) => {
   if (location.franchiseId) {
