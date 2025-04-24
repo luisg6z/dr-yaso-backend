@@ -6,7 +6,11 @@ export const authorize = (roles: string[]) =>
         const userRole = res.locals.user.type;
 
         if (!roles.includes(userRole)) {
-            res.status(403).json({ message: "Forbidden" });
+            res.status(403).json({
+                statusCode: 403,
+                message: "You are not authorized to access this resource",
+                details: `User role ${userRole} is not allowed to access this resource`, 
+            });
         }
 
         next();
