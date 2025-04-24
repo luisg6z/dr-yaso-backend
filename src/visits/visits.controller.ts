@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
-import { idParamSchema, Pagination } from "../types";
+import { idParamSchema, Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 
 export const createVisitsHandler = async (req: Request, res: Response) => {
@@ -9,10 +10,18 @@ export const createVisitsHandler = async (req: Request, res: Response) => {
             items: await createVisit(req.body)
         } )
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if(error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -24,10 +33,18 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
         }
         res.status(200).json(await getAllVisits(pagination))
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if(error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -38,10 +55,19 @@ export const getVisitByIdHandler = async (req: Request, res: Response) => {
             items: await getVisitById(parsedId)
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if(error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+            
+        }
     }
 }
 
@@ -52,10 +78,18 @@ export const updateVisitHandler = async (req: Request, res: Response) => {
             items: await updateVisit(parsedId, req.body)
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if(error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }
 
@@ -66,9 +100,17 @@ export const deleteVisitHandler = async (req: Request, res: Response) => {
             items: await deleteVisit(parsedId)
         })
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error",
-            details: error,
-        })
+        if (!res.headersSent) {
+            if(error instanceof AppError) {
+                res.status(error.statusCode).json({
+                    message: error.message,
+                    details: error.details,
+                })
+            }
+            res.status(500).json({
+                message: "Internal server error",
+                details: error,
+            })
+        }
     }
 }

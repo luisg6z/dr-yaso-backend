@@ -1,11 +1,12 @@
-import { eq, desc, and, isNull } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { VolunteerCreate, VolunteerUpdate } from "./volunteer.schemas";
 import { db } from "../db/db";
 import { Voluntarios } from "../db/schemas/Voluntarios";
 import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
 import { Franquicias } from "../db/schemas/Franquicias";
 import { Pertenecen } from "../db/schemas/Pertenecen";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createVolunteer = async (volunteer: VolunteerCreate) => {
   if (volunteer.franchiseId) {
@@ -14,7 +15,7 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
       .from(Franquicias)
       .where(eq(Franquicias.id, volunteer.franchiseId));
 
-    if (franchise.length < 1) throw { message: "Franchise not found" };
+    if (franchise.length < 1) throw new AppError(400, "Franchise not found");
   }
 
   const [newVolunteer] = await db
@@ -33,7 +34,7 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
       id: Voluntarios.id,
     });
 
-  if (!newVolunteer) throw new Error("Error creating volunteer");
+  if (!newVolunteer) throw new AppError(500, "Error creating volunteer");
 
   //Insert into DetallesVoluntarios using the newVolunteer.id
   await db.insert(DetallesVoluntarios).values({
@@ -199,7 +200,7 @@ export const updateVolunteer = async (
 ) => {
   // Verificar si el voluntario existe
   const [existingVolunteer] = await getVolunteerById(id);
-  if (!existingVolunteer) throw new Error("Volunteer not found");
+  if (!existingVolunteer) throw new AppError(404, "Volunteer not found");
 
   // Actualizar la tabla Voluntarios
   await db

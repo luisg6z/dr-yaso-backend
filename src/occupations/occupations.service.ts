@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { OccupationCreate, OccupationUpdate } from "./occupations.schemas";
 import { db } from "../db/db";
 import { Cargos } from "../db/schemas/Cargos";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
+import { AppError } from "../common/errors/errors";
 
 export const createOccupation = async (Occupation: OccupationCreate) => {
   // Check if the name is unique
@@ -12,9 +13,7 @@ export const createOccupation = async (Occupation: OccupationCreate) => {
     .where(eq(Cargos.nombre, Occupation.name));
 
   if (existing.length === 1) {
-    throw {
-      message: "Occupation already exists",
-    };
+    throw new AppError(400, "Occupation name already exists");
   }
 
   return await db
@@ -70,7 +69,7 @@ export const updateOccupation = async (
   occupation: OccupationUpdate
 ) => {
   const occupationToUpdate = await getOccupationById(id);
-  if (occupationToUpdate.length < 1) throw new Error("Occupation not found");
+  if (occupationToUpdate.length < 1) throw new AppError(404, "Occupation not found");
 
   if (occupation.name) {
     const existing = await db
@@ -94,7 +93,7 @@ export const updateOccupation = async (
 
 export const deleteOccupation = async (id: number) => {
   const existingOccupation = await getOccupationById(id);
-  if (existingOccupation.length < 1) throw { message: "Occupation not found" };
+  if (existingOccupation.length < 1) throw new AppError(404, "Occupation not found");
 
   return await db.delete(Cargos).where(eq(Cargos.id, id)).returning();
 };

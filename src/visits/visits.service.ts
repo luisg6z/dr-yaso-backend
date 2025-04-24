@@ -1,11 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { Visitas } from "../db/schemas/Visitas";
-import { Pagination } from "../types";
+import { Pagination } from "../types/types";
 import { VisitCreate, VisitUpdate } from "./visits.schema";
 import { Realizan, responsabilitiesEnum } from "../db/schemas/Realizan";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Voluntarios } from "../db/schemas/Voluntarios";
+import { AppError } from "../common/errors/errors";
 
 
 export const createVisit = async (visit: VisitCreate) => {
@@ -19,7 +20,7 @@ export const createVisit = async (visit: VisitCreate) => {
         .where(eq(Locaciones.id, visit.locationId));
 
         if(location.length < 1) {
-            throw new Error("Location not found")
+            throw new AppError(400, "Location not found");
         }
     }
 
@@ -97,7 +98,7 @@ export const getVisitById = async (id: number) => {
 
 
     if (visit.length === 0) {
-         throw new Error("Visit not found");
+         throw new AppError(404, "Visit not found");
      }
 
     const volunteers = await db
@@ -181,7 +182,7 @@ export const updateVisit = async (id: number, visit: VisitUpdate) => {
         .from(Locaciones)
         .where(eq(Locaciones.id, visit.locationId));
 
-        if(location.length === 0) throw new Error("Location not found");
+        if(location.length === 0) throw new AppError(400, "Location not found");
     }
 
     const existingVisit = await db
@@ -193,7 +194,7 @@ export const updateVisit = async (id: number, visit: VisitUpdate) => {
     .where(eq(Visitas.id, id));
 
     if (existingVisit.length === 0) {
-        throw new Error("Visit not found");
+        throw new AppError(404, "Visit not found");
     }
 
     await db.transaction(async (tx) =>{
@@ -264,7 +265,7 @@ export const deleteVisit = async (id: number) => {
     .where(eq(Visitas.id, id));
 
     if (existingVisit.length === 0) {
-        throw new Error("Visit not found");
+        throw new AppError(404, "Visit not found");
     }
 
     return await db.delete(Visitas)

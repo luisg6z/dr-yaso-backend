@@ -1,0 +1,44 @@
+import "dotenv/config";
+import { eq } from "drizzle-orm";
+import { db } from "../db/db";
+import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
+import { Usuarios } from "../db/schemas/Usuarios";
+import { LoginSchema } from "./auth.schemas";
+
+
+export const login = async (data: LoginSchema) => {
+    const user = await db
+    .select({
+        name: Usuarios.nombre,
+        password: Usuarios.contraseña,
+        type: Usuarios.tipo,
+        email: Usuarios.correo,
+    })
+    .from(Usuarios)
+    .where(eq(Usuarios.nombre, data.name));
+
+    if (!user[0]) {
+        throw new Error("Usuario no encontrado");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+        data.password,
+        user[0].password
+    )
+
+    if (!isPasswordValid) {
+        throw new Error("Contraseña incorrecta");
+    }
+
+    const token = jwt.sign({
+        name: user[0].name,
+        type: user[0].type,
+        email: user[0].email,
+    }, process.env.JWT_SECRET as string, {
+        expiresIn: parseInt(process.env.JWT_EXPIRATION_TIME || "3600", 10) || "1h",
+    })
+    return {
+        accessToken: token,
+    }
+}
