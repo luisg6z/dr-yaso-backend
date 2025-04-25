@@ -13,8 +13,8 @@ export const createVisit = async (visit: VisitCreate) => {
 
     if(visit.locationId){
         const location = await db.select({
-            id: Visitas.idLocacion,
-            name: Visitas.idLocacion,
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
         })
         .from(Locaciones)
         .where(eq(Locaciones.id, visit.locationId));

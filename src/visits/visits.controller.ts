@@ -9,7 +9,7 @@ export const createVisitsHandler = async (req: Request, res: Response) => {
         res.status(201).json({
             items: await createVisit(req.body)
         } )
-    } catch (error) {
+    } catch (error: any) {
         if (!res.headersSent) {
             if(error instanceof AppError) {
                 res.status(error.statusCode).json({
@@ -19,7 +19,7 @@ export const createVisitsHandler = async (req: Request, res: Response) => {
             }
             res.status(500).json({
                 message: "Internal server error",
-                details: error,
+                details: error.message,
             })
         }
     }
