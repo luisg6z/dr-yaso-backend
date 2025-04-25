@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { login } from "./auth.service";
+import { AppError } from "../common/errors/errors";
 
 
 export const loginHandler = async (req: Request, res: Response) => {
@@ -7,9 +8,12 @@ export const loginHandler = async (req: Request, res: Response) => {
         const data = req.body;
         res.status(200).json(await login(data))
     } catch (error) {
-        res.status(401).json({
-            message: "Error logging in",
-            details: error,
-        })
+        if (error instanceof AppError) {
+            res.status(error.statusCode).json({
+                statusCode: error.statusCode,
+                message: error.message,
+                details: error.details,
+            })
+        }
     }
 }

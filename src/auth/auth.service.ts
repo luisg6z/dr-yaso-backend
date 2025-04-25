@@ -5,6 +5,7 @@ import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { Usuarios } from "../db/schemas/Usuarios";
 import { LoginSchema } from "./auth.schemas";
+import { AppError } from "../common/errors/errors";
 
 
 export const login = async (data: LoginSchema) => {
@@ -19,7 +20,7 @@ export const login = async (data: LoginSchema) => {
     .where(eq(Usuarios.nombre, data.name));
 
     if (!user[0]) {
-        throw new Error("Usuario no encontrado");
+        throw new AppError(404, "User not found", "User not found in the database");
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -28,7 +29,7 @@ export const login = async (data: LoginSchema) => {
     )
 
     if (!isPasswordValid) {
-        throw new Error("Contraseña incorrecta");
+        throw new AppError(401, "Invalid password", "The provided password is incorrect");
     }
 
     const token = jwt.sign({
