@@ -5,6 +5,7 @@ import {
   getAllVolunteers,
   deleteVolunteer,
   updateVolunteer,
+  getVolunteersByOccupation,
 } from "./volunteer.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
@@ -16,10 +17,8 @@ export const createVolunteerHandler = async (req: Request, res: Response) => {
       data: await createVolunteer(Volunteer),
     });
   } catch (error) {
-
     if (!res.headersSent) {
-
-      if(error instanceof AppError) {
+      if (error instanceof AppError) {
         res.status(error.statusCode).json({
           message: error.message,
           details: error.details,
@@ -121,6 +120,30 @@ export const deleteVolunteerHandler = async (req: Request, res: Response) => {
       }
       res.status(500).json({
         message: "Error deleting Volunteer",
+        details: error,
+      });
+    }
+  }
+};
+
+export const getVolunteersByOccupationHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const parseId = idParamSchema.parse(+id);
+    res.status(200).json(await getVolunteersByOccupation(parseId));
+  } catch (error) {
+    if (!res.headersSent) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          message: error.message,
+          details: error.details,
+        });
+      }
+      res.status(500).json({
+        message: "Error al obtener voluntarios por cargo",
         details: error,
       });
     }
