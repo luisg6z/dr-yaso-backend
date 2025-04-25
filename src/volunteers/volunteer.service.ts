@@ -303,6 +303,20 @@ export const updateVolunteer = async (
     });
   }
 
+  if (volunteer.occupations) {
+        
+    await db.delete(Tienen)
+      .where(eq(Tienen.idVoluntario, id))
+
+    volunteer.occupations.forEach(async (ocupationId: number) => {
+        await db.insert(Tienen).values({
+          idVoluntario: id,
+          idCargo: ocupationId,
+          esCargoPrincipal: false,
+        });
+    })
+  }
+
   // Devolver el voluntario actualizado en el mismo formato que getVolunteerById
   return await getVolunteerById(id);
 };

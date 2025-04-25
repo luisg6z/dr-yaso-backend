@@ -88,7 +88,7 @@ export const updateVolunteerHandler = async (req: Request, res: Response) => {
     res.status(200).json({
       data: await updateVolunteer(parseId, Volunteer),
     });
-  } catch (error) {
+  } catch (error: any) {
     if (!res.headersSent) {
       if (error instanceof AppError) {
         res.status(error.statusCode).json({
@@ -96,9 +96,10 @@ export const updateVolunteerHandler = async (req: Request, res: Response) => {
           details: error.details,
         });
       }
+      console.error(error)
       res.status(500).json({
         message: "Error updating Volunteer",
-        details: error,
+        details: error.message,
       });
     }
   }
