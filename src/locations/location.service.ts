@@ -33,9 +33,13 @@ export const getAllLocations = async (pagination: Pagination) => {
     .select({
       id: Locaciones.id,
       description: Locaciones.descripcion,
-      franchiseId: Locaciones.idFranquicia,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre,
+      }
     })
     .from(Locaciones)
+    .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
     .limit(limit)
     .offset(offset);
 
@@ -58,9 +62,13 @@ export const getLocationById = async (id: number) => {
     .select({
       id: Locaciones.id,
       description: Locaciones.descripcion,
-      franchiseId: Locaciones.idFranquicia,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre,
+      }
     })
     .from(Locaciones)
+    .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
     .where(eq(Locaciones.id, id));
 };
 
