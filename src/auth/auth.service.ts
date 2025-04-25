@@ -14,7 +14,7 @@ export const login = async (data: LoginSchema) => {
         id: Usuarios.id,
         name: Usuarios.nombre,
         password: Usuarios.contraseña,
-        type: Usuarios.tipo,
+        role: Usuarios.tipo,
         email: Usuarios.correo,
     })
     .from(Usuarios)
@@ -35,7 +35,7 @@ export const login = async (data: LoginSchema) => {
 
     const token = jwt.sign({
         name: user[0].name,
-        type: user[0].type,
+        role: user[0].role,
         email: user[0].email,
     }, process.env.JWT_SECRET as string, {
         expiresIn: parseInt(process.env.JWT_EXPIRATION_TIME || "3600", 10) || "1h",
@@ -44,6 +44,6 @@ export const login = async (data: LoginSchema) => {
         token: token,
         id: user[0].id,
         name: user[0].name,
-        type: user[0].type,
+        role: user[0].role,
     }
 }
