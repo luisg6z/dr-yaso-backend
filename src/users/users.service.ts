@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { hash } from "bcrypt";
 
 import { UserCreate, UserUpdate } from "./users.schema";
@@ -8,10 +6,11 @@ import { Usuarios } from "../db/schemas/Usuarios";
 import { eq } from "drizzle-orm";
 import { Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { envs } from "../config/envs";
 
 
 export const createUser = async (user: UserCreate) => {
-    const hashedPassword = await hash(user.password, Number(process.env.SALT_ROUNDS) || 10);
+    const hashedPassword = await hash(user.password, envs.saltRounds);
     
     const newUser = {
         ...user,
@@ -82,7 +81,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
     }
 
     if (user.password) {
-        const hashedPassword = await hash(user.password, Number(process.env.SALT_ROUNDS) || 10);
+        const hashedPassword = await hash(user.password, envs.saltRounds);
 
         return await db
         .update(Usuarios)
