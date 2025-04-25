@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import router from "./router";
+import { envs } from "./config/envs";
 
 const app = express();
-const port = 3000;
 
 app.use(cors());
 
@@ -18,6 +18,6 @@ app.get("/", (_req, res) => {
   res.json({ message: "Goodbye World!" });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(envs.port, () => {
+  console.log(`Server is running on port ${envs.port}`);
 });
