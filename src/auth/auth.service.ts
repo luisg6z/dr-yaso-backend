@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { eq } from "drizzle-orm";
 import { db } from "../db/db";
 import * as bcrypt from "bcrypt";
@@ -6,6 +5,7 @@ import * as jwt from "jsonwebtoken";
 import { Usuarios } from "../db/schemas/Usuarios";
 import { LoginSchema } from "./auth.schemas";
 import { AppError } from "../common/errors/errors";
+import { envs } from "../config/envs";
 
 
 export const login = async (data: LoginSchema) => {
@@ -38,12 +38,13 @@ export const login = async (data: LoginSchema) => {
         role: user[0].role,
         email: user[0].email,
     }, process.env.JWT_SECRET as string, {
-        expiresIn: parseInt(process.env.JWT_EXPIRATION_TIME || "3600", 10) || "1h",
+        expiresIn: envs.jwtExpirationTime,
     })
     return {
         token: token,
         id: user[0].id,
         name: user[0].name,
         role: user[0].role,
+        expiresIn: envs.jwtExpirationTime,
     }
 }

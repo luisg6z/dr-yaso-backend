@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../common/errors/errors";
+import { envs } from "../../config/envs";
 
 
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
@@ -16,7 +17,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
         if (typeof token !== "string") {
             throw new Error("Invalid token format");
         }
-        const verifiedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const verifiedToken = jwt.verify(token, envs.jwtSecret);
          res.locals.user = verifiedToken;
         return next();
     } catch (error) {
