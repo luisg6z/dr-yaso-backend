@@ -11,6 +11,7 @@ import { AppError } from "../common/errors/errors";
 export const login = async (data: LoginSchema) => {
     const user = await db
     .select({
+        id: Usuarios.id,
         name: Usuarios.nombre,
         password: Usuarios.contraseña,
         type: Usuarios.tipo,
@@ -40,6 +41,9 @@ export const login = async (data: LoginSchema) => {
         expiresIn: parseInt(process.env.JWT_EXPIRATION_TIME || "3600", 10) || "1h",
     })
     return {
-        accessToken: token,
+        token: token,
+        id: user[0].id,
+        name: user[0].name,
+        type: user[0].type,
     }
 }
