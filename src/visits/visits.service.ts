@@ -155,9 +155,13 @@ export const getAllVisits = async (pagination: Pagination) => {
         directBeneficiaries: Visitas.beneficiariosDirectos,
         indirectBeneficiaries: Visitas.beneficiariosIndirectos,
         healthPersonnelCount: Visitas.cantPersonalDeSalud,
-        locationId: Visitas.idLocacion,
+        location: {
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
+        },
     })
     .from(Visitas)
+    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
     .limit(limit)
     .offset(offset)
 
