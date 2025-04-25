@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
 import { envs } from "../config/envs";
+import { Franquicias } from "../db/schemas/Franquicias";
 
 
 export const createUser = async (user: UserCreate) => {
@@ -39,9 +40,13 @@ export const getAllUsers = async (pagination: Pagination) => {
         name: Usuarios.nombre,
         type: Usuarios.tipo,
         email: Usuarios.correo,
-        franchiseId: Usuarios.idFranquicia
+        franchise: {
+            id: Usuarios.idFranquicia,
+            name: Franquicias.nombre,
+        }
     })
     .from(Usuarios)
+    .leftJoin(Franquicias, eq(Usuarios.idFranquicia, Franquicias.id))
     .limit(limit)
     .offset(offset);
 
@@ -66,9 +71,13 @@ export const getUserById = async (id: number) => {
         name: Usuarios.nombre,
         type: Usuarios.tipo,
         email: Usuarios.correo,
-        franchiseId: Usuarios.idFranquicia
+        franchise: {
+            id: Usuarios.idFranquicia,
+            name: Franquicias.nombre,
+        }
     })
     .from(Usuarios)
+    .leftJoin(Franquicias, eq(Usuarios.idFranquicia, Franquicias.id))
     .where(eq(Usuarios.id, id))
 }
 
