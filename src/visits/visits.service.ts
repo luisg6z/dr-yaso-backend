@@ -7,6 +7,7 @@ import { Realizan, responsabilitiesEnum } from "../db/schemas/Realizan";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Voluntarios } from "../db/schemas/Voluntarios";
 import { AppError } from "../common/errors/errors";
+import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
 
 
 export const createVisit = async (visit: VisitCreate) => {
@@ -110,9 +111,11 @@ export const getVisitById = async (id: number) => {
         idType: Voluntarios.tipoCedula,
         status: Voluntarios.estatus,
         responsibility: Realizan.responsabilidad,
+        clownName: DetallesVoluntarios.nombrePayaso,
     })
     .from(Realizan)
     .leftJoin(Voluntarios, eq(Voluntarios.id, Realizan.idVoluntario))
+    .leftJoin(DetallesVoluntarios, eq(DetallesVoluntarios.idVoluntario, Voluntarios.id))
     .where(eq(Realizan.idVisita, id));
 
     const coordinator = volunteers.find((volunteer) => volunteer.responsibility === responsabilitiesEnum.enumValues[2]);
@@ -129,6 +132,7 @@ export const getVisitById = async (id: number) => {
             idNumber: clown.idNumber,
             idType: clown.idType,
             status: clown.status,
+            clownName: clown.clownName
         })),
         hallways: hallways.map((hallway) => ({
             id: hallway.id,
