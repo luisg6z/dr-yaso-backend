@@ -33,7 +33,7 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
             limit: +(req.query.limit || 10),
         }
         if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
-            res.status(200).json(await getAllVisitsForFranchise(pagination, res.locals.user.locationId))
+            res.status(200).json(await getAllVisitsForFranchise(pagination, res.locals.user.franchiseId))
         }
         res.status(200).json(await getAllVisits(pagination))
     } catch (error) {
