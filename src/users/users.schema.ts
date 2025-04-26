@@ -12,9 +12,7 @@ export const userSchema = z.object({
 })
 
 export const createUserSchema = userSchema.omit({ id: true });
-export const updateUserSchema = createUserSchema.partial().omit({
-    type: true,
-});
+export const updateUserSchema = createUserSchema.partial();
 
 export type User = z.infer<typeof userSchema>;
 export type UserCreate = z.infer<typeof createUserSchema>;

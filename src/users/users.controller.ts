@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.service";
+import { createUser, deleteUser, getAllUsers, getAllUsersNoSudo, getUserById, updateUser } from "./users.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 export const createUserHandler = async (req: Request, res: Response) => {
@@ -31,6 +32,11 @@ export const getAllUsersHandler = async (req: Request, res: Response) => {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
         }
+
+        if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
+            res.status(200).json(await getAllUsersNoSudo(pagination))
+        }
+
         res.status(200).json(await getAllUsers(pagination))
     } catch (error) {
         if (!res.headersSent) {
