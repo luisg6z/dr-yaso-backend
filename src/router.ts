@@ -6,7 +6,7 @@ import occupationRouter from "./occupations/occupations.router";
 import locationRouter from "./locations/locations.router";
 import visitsRouter from "./visits/visits.router";
 import authRouter from "./auth/auth.router";
-
+import meetingsRouter from "./meetings/meetings.router";
 
 const router = Router();
 
@@ -17,5 +17,6 @@ router.use("/users", usersRouter);
 router.use("/occupations", occupationRouter);
 router.use("/locations", locationRouter);
 router.use("/visits", visitsRouter);
+router.use("/meetings", meetingsRouter);
 
 export default router;
