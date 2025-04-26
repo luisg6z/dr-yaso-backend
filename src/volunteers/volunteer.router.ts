@@ -21,7 +21,7 @@ const volunteersRouter = Router();
 volunteersRouter.post(
   "/",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
   validate(createVolunteerSchema),
   createVolunteerHandler
 );
@@ -29,21 +29,21 @@ volunteersRouter.post(
 volunteersRouter.get(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
   getVolunteerByIdHandler
 );
 
 volunteersRouter.get(
   "/",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
   getAllVolunteersHandler
 );
 
 volunteersRouter.put(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
   validate(updateVolunteerSchema),
   updateVolunteerHandler
 );
@@ -51,7 +51,7 @@ volunteersRouter.put(
 volunteersRouter.delete(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
   deleteVolunteerHandler
 );
 

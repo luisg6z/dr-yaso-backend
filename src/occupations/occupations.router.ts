@@ -24,9 +24,9 @@ occupationRouter.post(
   validate(createOccupationSchema),
   createOccupationHandler
 );
-occupationRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getAllOccupationsHandler);
+occupationRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]), getAllOccupationsHandler);
 
-occupationRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getOccupationByIdHandler);
+occupationRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]), getOccupationByIdHandler);
 
 occupationRouter.put(
   "/:id",

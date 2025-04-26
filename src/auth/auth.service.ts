@@ -16,6 +16,7 @@ export const login = async (data: LoginSchema) => {
         password: Usuarios.contraseña,
         role: Usuarios.tipo,
         email: Usuarios.correo,
+        franchiseId: Usuarios.idFranquicia,
     })
     .from(Usuarios)
     .where(eq(Usuarios.nombre, data.name));
@@ -37,6 +38,7 @@ export const login = async (data: LoginSchema) => {
         name: user[0].name,
         role: user[0].role,
         email: user[0].email,
+        franchiseId: user[0].franchiseId
     }, process.env.JWT_SECRET as string, {
         expiresIn: envs.jwtExpirationTime,
     })

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
+import { createVisit, deleteVisit, getAllVisits, getAllVisitsForFranchise, getVisitById, updateVisit } from "./visits.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 export const createVisitsHandler = async (req: Request, res: Response) => {
@@ -30,6 +31,9 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+        }
+        if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
+            res.status(200).json(await getAllVisitsForFranchise(pagination, res.locals.user.locationId))
         }
         res.status(200).json(await getAllVisits(pagination))
     } catch (error) {

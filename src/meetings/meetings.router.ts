@@ -17,33 +17,33 @@ const meetingsRouter = Router();
 meetingsRouter.post(
   "/",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[3]]),
   validate(createMeetingSchema),
   createMeetingHandler
 );
 meetingsRouter.get(
   "/",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[3]]),
   getAllMeetingsHandler
 );
 meetingsRouter.get(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[3]]),
   getMeetingByIdHandler
 );
 meetingsRouter.patch(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1]]),
   validate(updateMeetingSchema),
   updateMeetingHandler
 );
 meetingsRouter.delete(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0]]),
+  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1]]),
   deleteMeetingHandler
 );
 

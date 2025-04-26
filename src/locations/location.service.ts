@@ -25,6 +25,39 @@ export const createLocation = async (location: LocationCreate) => {
     .returning();
 };
 
+export const getAllLocationsForFranchise = async (pagination: Pagination, franchiseId: number) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+  const locations = await db
+    .select({
+      id: Locaciones.id,
+      description: Locaciones.descripcion,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre,
+      }
+    })
+    .from(Locaciones)
+    .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
+    .where(eq(Locaciones.idFranquicia, franchiseId))
+    .limit(limit)
+    .offset(offset);
+
+  const totalItems = await db.$count(Locaciones);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: locations,
+    paginate: {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    },
+  };
+};
+
 export const getAllLocations = async (pagination: Pagination) => {
   const { page, limit } = pagination;
   const offset = (page - 1) * limit;

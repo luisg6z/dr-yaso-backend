@@ -3,12 +3,14 @@ import {
   createLocation,
   deleteLocation,
   getAllLocations,
+  getAllLocationsForFranchise,
   getLocationById,
   updateLocation,
 } from "./location.service";
 import { idParamSchema } from "../types/types";
 import { Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 export const createLocationHandler = async (req: Request, res: Response) => {
   try {
@@ -38,6 +40,10 @@ export const getAllLocationsHandler = async (_req: Request, res: Response) => {
       page: +(_req.query.page || 1),
       limit: +(_req.query.limit || 10),
     };
+
+    if(!(res.locals.user.role === tipoUsuarioEnum.enumValues[0])){
+      res.status(200).json(await getAllLocationsForFranchise(pagination, res.locals.user.franchiseId))
+    }
 
     res.status(200).json(await getAllLocations(pagination));
   } catch (error) {

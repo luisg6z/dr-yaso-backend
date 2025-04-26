@@ -10,8 +10,8 @@ import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 const usersRouter = Router();
 
 usersRouter.post("/", validate(createUserSchema), createUserHandler)
-usersRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getAllUsersHandler);
-usersRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getUserByIdHandler);
+usersRouter.get("/", authenticate, authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[3]]), getAllUsersHandler);
+usersRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[3]]), getUserByIdHandler);
 usersRouter.patch("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(updateUserSchema), updateUserHandler);
 usersRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteUserHandler);
 

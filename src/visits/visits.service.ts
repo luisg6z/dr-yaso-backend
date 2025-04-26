@@ -132,7 +132,7 @@ export const getVisitById = async (id: number) => {
             idNumber: clown.idNumber,
             idType: clown.idType,
             status: clown.status,
-            clownName: clown.clownName
+            clownName: clown.clownName,
         })),
         hallways: hallways.map((hallway) => ({
             id: hallway.id,
@@ -142,6 +142,42 @@ export const getVisitById = async (id: number) => {
             idType: hallway.idType,
             status: hallway.status,
         })),
+    }
+}
+
+export const getAllVisitsForFranchise = async (pagination: Pagination, franchiseId: number) => {
+
+    const { page, limit } = pagination;
+    const offset = (page - 1) * limit;
+
+    const visits = await db
+    .select({
+        id: Visitas.id,
+        type: Visitas.tipo,
+        observations: Visitas.observacion,
+        date: Visitas.fechaHora,
+        directBeneficiaries: Visitas.beneficiariosDirectos,
+        indirectBeneficiaries: Visitas.beneficiariosIndirectos,
+        healthPersonnelCount: Visitas.cantPersonalDeSalud,
+        location: {
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
+        },
+    })
+    .from(Visitas)
+    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+    .where(eq(Locaciones.idFranquicia, franchiseId))
+    .limit(limit)
+    .offset(offset)
+
+    return {
+        items : visits,
+        paginate: {
+            page,
+            limit,
+            totalItems: visits.length,
+            totalPages: Math.ceil(visits.length / limit),
+        }
     }
 }
 

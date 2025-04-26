@@ -6,9 +6,11 @@ import {
   deleteVolunteer,
   updateVolunteer,
   getVolunteersByOccupation,
+  getAllVolunteersForFranchise,
 } from "./volunteer.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 export const createVolunteerHandler = async (req: Request, res: Response) => {
   try {
@@ -38,6 +40,11 @@ export const getAllVolunteersHandler = async (_req: Request, res: Response) => {
       page: +(_req.query.page || 1),
       limit: +(_req.query.limit || 10),
     };
+
+    if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]){
+      res.status(200).json(await getAllVolunteersForFranchise(pagination, res.locals.user.franchiseId));
+    }
+
     res.status(200).json(await getAllVolunteers(pagination));
   } catch (error) {
     if (!res.headersSent) {

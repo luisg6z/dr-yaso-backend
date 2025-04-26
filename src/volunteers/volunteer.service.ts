@@ -172,6 +172,100 @@ export const getAllVolunteers = async (pagination: Pagination) => {
   };
 };
 
+export const getAllVolunteersForFranchise = async (pagination: Pagination, franchiseId: number) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+  const volunteers = await db
+    .select({
+      id: Voluntarios.id,
+      firstName: Voluntarios.nombres,
+      lastName: Voluntarios.apellidos,
+      idType: Voluntarios.tipoCedula,
+      idNumber: Voluntarios.numeroCedula,
+      birthDate: Voluntarios.fechaNacimiento,
+      profession: Voluntarios.profesion,
+      status: Voluntarios.estatus,
+      gender: Voluntarios.genero,
+      bloodType: DetallesVoluntarios.tipoSangre,
+      maritalStatus: DetallesVoluntarios.estadoCivil,
+      phoneNumbers: DetallesVoluntarios.telefonos,
+      clownName: DetallesVoluntarios.nombrePayaso,
+      shirtSize: DetallesVoluntarios.tallaCamisa,
+      hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
+      hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
+      allergies: DetallesVoluntarios.alergias,
+      disability: DetallesVoluntarios.discapacidad,
+      notes: DetallesVoluntarios.observacion,
+      socialMedia: {
+        facebook: DetallesVoluntarios.facebook,
+        x: DetallesVoluntarios.x,
+        instagram: DetallesVoluntarios.instagram,
+        tikTok: DetallesVoluntarios.tiktok,
+      },
+      emergencyContact: {
+        name: DetallesVoluntarios.nombreContactoEmergencia,
+        phone: DetallesVoluntarios.telefonoContactoEmergencia,
+      },
+      franchise: {
+        id: Pertenecen.idFranquicia,
+        name: Franquicias.nombre, // Join with Franquicias to get the name
+      },
+    })
+    .from(Voluntarios)
+    .innerJoin(
+      DetallesVoluntarios,
+      eq(DetallesVoluntarios.idVoluntario, Voluntarios.id)
+    )
+    .innerJoin(
+      Pertenecen,
+      and(
+        eq(Pertenecen.idVoluntario, Voluntarios.id),
+        isNull(Pertenecen.fechaHoraEgreso) // Filter where fechaHoraEgreso is NULL
+      )
+    )
+    .innerJoin(
+      Franquicias,
+      eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
+    )
+    .where(eq(Franquicias.id, franchiseId))
+    .limit(limit)
+    .offset(offset);
+
+  volunteers.forEach(async (volunteer: any) => {
+    const vcharges = await db
+      .select({
+        volunteerId: Tienen.idVoluntario,
+        occupations: {
+          id: Cargos.id,
+          name: Cargos.descripcion,
+        },
+      })
+      .from(Tienen)
+      .leftJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
+      .where(eq(Tienen.idVoluntario, volunteer.id));
+
+    const chargesIds = vcharges.map((e) => e.occupations);
+
+    console.log(chargesIds);
+
+    volunteer.occupations = chargesIds || [];
+  });
+
+  const totalItems = await db.$count(Voluntarios);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: volunteers,
+    paginate: {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    },
+  };
+};
+
 export const getVolunteerById = async (id: number) => {
   return await db
     .select({
