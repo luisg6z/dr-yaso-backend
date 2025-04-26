@@ -124,21 +124,21 @@ export const getAllVolunteers = async (pagination: Pagination) => {
       DetallesVoluntarios,
       eq(DetallesVoluntarios.idVoluntario, Voluntarios.id)
     )
-    .innerJoin(
+    .leftJoin(
       Pertenecen,
       and(
         eq(Pertenecen.idVoluntario, Voluntarios.id),
         isNull(Pertenecen.fechaHoraEgreso) // Filter where fechaHoraEgreso is NULL
       )
     )
-    .innerJoin(
+    .leftJoin(
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
     )
     .limit(limit)
     .offset(offset);
 
-  volunteers.forEach(async (volunteer: any) => {
+  const volunteersWithOccupation = await Promise.all(volunteers.map(async (volunteer: any) => {
     const vcharges = await db
       .select({
         volunteerId: Tienen.idVoluntario,
@@ -148,21 +148,22 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         },
       })
       .from(Tienen)
-      .leftJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
+      .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
       .where(eq(Tienen.idVoluntario, volunteer.id));
 
     const chargesIds = vcharges.map((e) => e.occupations);
 
-    console.log(chargesIds);
-
-    volunteer.occupations = chargesIds || [];
-  });
+    return {
+      ...volunteer,
+      occupations: chargesIds
+    }
+  }));
 
   const totalItems = await db.$count(Voluntarios);
   const totalPages = Math.ceil(totalItems / limit);
 
   return {
-    items: volunteers,
+    items: volunteersWithOccupation,
     paginate: {
       page,
       limit,
