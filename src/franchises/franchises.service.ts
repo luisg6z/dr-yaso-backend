@@ -67,8 +67,8 @@ export const getActiveFranchises = async (pagination: Pagination) => {
         },
         coordinator: {
             id: Franquicias.idCoordinador,
-            firtsNames: Voluntarios.nombres,
-            lastNames: Voluntarios.apellidos
+            firstName: Voluntarios.nombres,
+            lastName: Voluntarios.apellidos
         },
     })
     .from(Franquicias)
@@ -117,8 +117,8 @@ export const getAllFranchises = async (pagination: Pagination) => {
         },
         coordinator: {
             id: Franquicias.idCoordinador,
-            firtsNames: Voluntarios.nombres,
-            lastNames: Voluntarios.apellidos
+            firstName: Voluntarios.nombres,
+            lastName: Voluntarios.apellidos
         },
     })
     .from(Franquicias)
@@ -167,8 +167,8 @@ export const getFranchiseById = async (id: number) => {
         },
         coordinator: {
             id: Franquicias.idCoordinador,
-            firtsNames: Voluntarios.nombres,
-            lastNames: Voluntarios.apellidos
+            firstName: Voluntarios.nombres,
+            lastName: Voluntarios.apellidos
         },
     })
     .from(Franquicias)
