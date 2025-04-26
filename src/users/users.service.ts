@@ -12,6 +12,7 @@ import { Franquicias } from "../db/schemas/Franquicias";
 
 export const createUser = async (user: UserCreate) => {
     const hashedPassword = await hash(user.password, envs.saltRounds);
+
     
     const newUser = {
         ...user,
