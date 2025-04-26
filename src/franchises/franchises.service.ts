@@ -92,10 +92,24 @@ export const getAllFranchises = async (pagination: Pagination) => {
         phone: Franquicias.telefono,
         email: Franquicias.correo,
         isActive: Franquicias.estaActivo,
-        cityId: Franquicias.idCiudad,
-        coordinatorId: Franquicias.idCoordinador,
+        city: {
+            id: Franquicias.idCiudad,
+            name: Ciudades.nombre,
+        },
+        country: {
+            id: Paises.id,
+            name: Paises.nombre,
+        },
+        coordinator: {
+            id: Franquicias.idCoordinador,
+            name: Voluntarios.nombres,
+        },
     })
     .from(Franquicias)
+    .leftJoin(Voluntarios, eq(Franquicias.idCoordinador, Voluntarios.id))
+    .leftJoin(Ciudades, eq(Franquicias.idCiudad, Ciudades.id))
+    .leftJoin(Estados, eq(Ciudades.idEstado, Estados.id))
+    .leftJoin(Paises, eq(Estados.idPais, Paises.id))
     .limit(limit)
     .offset(offset);
 
