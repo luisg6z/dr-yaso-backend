@@ -152,6 +152,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
         nombre: user.name,
         correo: user.email,
         idFranquicia: user.franchiseId,
+        tipo: user.type
     })
     .where(eq(Usuarios.id, id))
     .returning({
