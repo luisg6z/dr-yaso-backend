@@ -16,12 +16,7 @@ franchiseRouter.get("/", authenticate, authorize([
     tipoUsuarioEnum.enumValues[2], 
     tipoUsuarioEnum.enumValues[3]])
     , getAllFranchisesHandler);
-franchiseRouter.get("/actives", authenticate, authorize([
-    tipoUsuarioEnum.enumValues[0], 
-    tipoUsuarioEnum.enumValues[1], 
-    tipoUsuarioEnum.enumValues[2], 
-    tipoUsuarioEnum.enumValues[3]])
-    , getActivesFranchisesHandler);
+franchiseRouter.get("/actives", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), getActivesFranchisesHandler);
 franchiseRouter.get("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]), getFranchiseByIdHandler);
 franchiseRouter.patch("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), validate(updateFranchiseSchema), updateFranchiseHandler);
 franchiseRouter.delete("/:id", authenticate, authorize([tipoUsuarioEnum.enumValues[0]]), deleteFranchiseHandler);
