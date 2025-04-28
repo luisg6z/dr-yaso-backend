@@ -31,7 +31,12 @@ export const createUser = async (user: UserCreate, creatorRole: UserRole) => {
         correo: newUser.email,
         idFranquicia: newUser.franchiseId,
     })
-    .returning();
+    .returning({
+        name: Usuarios.nombre,
+        type: Usuarios.tipo,
+        email: Usuarios.correo,
+        franchiseId: Usuarios.idFranquicia
+    });
 
 
 }

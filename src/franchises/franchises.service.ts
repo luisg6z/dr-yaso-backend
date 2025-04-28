@@ -61,6 +61,10 @@ export const getActiveFranchises = async (pagination: Pagination) => {
             id: Franquicias.idCiudad,
             name: Ciudades.nombre,
         },
+        state: {
+            id: Estados.id,
+            name: Estados.nombre,
+        },
         country: {
             id: Paises.id,
             name: Paises.nombre,
@@ -110,6 +114,10 @@ export const getAllFranchises = async (pagination: Pagination) => {
         city: {
             id: Franquicias.idCiudad,
             name: Ciudades.nombre,
+        },
+        state: {
+            id: Estados.id,
+            name: Estados.nombre,
         },
         country: {
             id: Paises.id,
