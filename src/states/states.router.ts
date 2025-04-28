@@ -1,6 +1,4 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-import { createStateSchema } from "./states.schemas";
 import { getStatesByCountryIdHandler } from "./states.controller";
 import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 import { authenticate } from "../auth/middlewares/auth.middleware";
