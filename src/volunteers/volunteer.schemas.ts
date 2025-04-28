@@ -35,6 +35,7 @@ export const VolunteerSchema = z.object({
   tikTok: z.string().min(1).max(200).optional(),
   emergencyContactName: z.string().min(1).max(60).optional(),
   emergencyContactPhone: z.string().min(1).max(20).optional(),
+  occupations: z.array(z.number().positive()).optional(),
 });
 
 export const createVolunteerSchema = VolunteerSchema.omit({ id: true, franchiseName: true });

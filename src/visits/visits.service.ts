@@ -7,14 +7,15 @@ import { Realizan, responsabilitiesEnum } from "../db/schemas/Realizan";
 import { Locaciones } from "../db/schemas/Locaciones";
 import { Voluntarios } from "../db/schemas/Voluntarios";
 import { AppError } from "../common/errors/errors";
+import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
 
 
 export const createVisit = async (visit: VisitCreate) => {
 
     if(visit.locationId){
         const location = await db.select({
-            id: Visitas.idLocacion,
-            name: Visitas.idLocacion,
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
         })
         .from(Locaciones)
         .where(eq(Locaciones.id, visit.locationId));
@@ -110,9 +111,11 @@ export const getVisitById = async (id: number) => {
         idType: Voluntarios.tipoCedula,
         status: Voluntarios.estatus,
         responsibility: Realizan.responsabilidad,
+        clownName: DetallesVoluntarios.nombrePayaso,
     })
     .from(Realizan)
     .leftJoin(Voluntarios, eq(Voluntarios.id, Realizan.idVoluntario))
+    .leftJoin(DetallesVoluntarios, eq(DetallesVoluntarios.idVoluntario, Voluntarios.id))
     .where(eq(Realizan.idVisita, id));
 
     const coordinator = volunteers.find((volunteer) => volunteer.responsibility === responsabilitiesEnum.enumValues[2]);
@@ -129,6 +132,7 @@ export const getVisitById = async (id: number) => {
             idNumber: clown.idNumber,
             idType: clown.idType,
             status: clown.status,
+            clownName: clown.clownName,
         })),
         hallways: hallways.map((hallway) => ({
             id: hallway.id,
@@ -138,6 +142,42 @@ export const getVisitById = async (id: number) => {
             idType: hallway.idType,
             status: hallway.status,
         })),
+    }
+}
+
+export const getAllVisitsForFranchise = async (pagination: Pagination, franchiseId: number) => {
+
+    const { page, limit } = pagination;
+    const offset = (page - 1) * limit;
+
+    const visits = await db
+    .select({
+        id: Visitas.id,
+        type: Visitas.tipo,
+        observations: Visitas.observacion,
+        date: Visitas.fechaHora,
+        directBeneficiaries: Visitas.beneficiariosDirectos,
+        indirectBeneficiaries: Visitas.beneficiariosIndirectos,
+        healthPersonnelCount: Visitas.cantPersonalDeSalud,
+        location: {
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
+        },
+    })
+    .from(Visitas)
+    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+    .where(eq(Locaciones.idFranquicia, franchiseId))
+    .limit(limit)
+    .offset(offset)
+
+    return {
+        items : visits,
+        paginate: {
+            page,
+            limit,
+            totalItems: visits.length,
+            totalPages: Math.ceil(visits.length / limit),
+        }
     }
 }
 
@@ -155,9 +195,13 @@ export const getAllVisits = async (pagination: Pagination) => {
         directBeneficiaries: Visitas.beneficiariosDirectos,
         indirectBeneficiaries: Visitas.beneficiariosIndirectos,
         healthPersonnelCount: Visitas.cantPersonalDeSalud,
-        locationId: Visitas.idLocacion,
+        location: {
+            id: Locaciones.id,
+            name: Locaciones.descripcion,
+        },
     })
     .from(Visitas)
+    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
     .limit(limit)
     .offset(offset)
 

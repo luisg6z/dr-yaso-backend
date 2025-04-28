@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { createVisit, deleteVisit, getAllVisits, getVisitById, updateVisit } from "./visits.service";
+import { createVisit, deleteVisit, getAllVisits, getAllVisitsForFranchise, getVisitById, updateVisit } from "./visits.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 export const createVisitsHandler = async (req: Request, res: Response) => {
@@ -9,7 +10,7 @@ export const createVisitsHandler = async (req: Request, res: Response) => {
         res.status(201).json({
             items: await createVisit(req.body)
         } )
-    } catch (error) {
+    } catch (error: any) {
         if (!res.headersSent) {
             if(error instanceof AppError) {
                 res.status(error.statusCode).json({
@@ -19,7 +20,7 @@ export const createVisitsHandler = async (req: Request, res: Response) => {
             }
             res.status(500).json({
                 message: "Internal server error",
-                details: error,
+                details: error.message,
             })
         }
     }
@@ -30,6 +31,9 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+        }
+        if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
+            res.status(200).json(await getAllVisitsForFranchise(pagination, res.locals.user.franchiseId))
         }
         res.status(200).json(await getAllVisits(pagination))
     } catch (error) {

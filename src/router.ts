@@ -8,6 +8,7 @@ import visitsRouter from "./visits/visits.router";
 import authRouter from "./auth/auth.router";
 import meetingsRouter from "./meetings/meetings.router";
 import StateRouter from "./states/states.router";
+import CountryRouter from "./countries/country.router";
 import CityRouter from "./cities/cities.router";
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use("/locations", locationRouter);
 router.use("/visits", visitsRouter);
 router.use("/meetings", meetingsRouter);
 router.use("/states", StateRouter);
+router.use("/countries", CountryRouter);
 router.use("/cities", CityRouter);
 
 export default router;

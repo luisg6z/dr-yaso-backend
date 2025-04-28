@@ -2,8 +2,8 @@ import { hash } from "bcrypt";
 
 import { UserCreate, UserUpdate } from "./users.schema";
 import { db } from "../db/db";
-import { Usuarios } from "../db/schemas/Usuarios";
-import { eq } from "drizzle-orm";
+import { tipoUsuarioEnum, Usuarios } from "../db/schemas/Usuarios";
+import { eq, ne } from "drizzle-orm";
 import { Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
 import { envs } from "../config/envs";
@@ -65,6 +65,40 @@ export const getAllUsers = async (pagination: Pagination) => {
     }
 }
 
+export const getAllUsersNoSudo = async (pagination: Pagination) => {
+    const { page, limit } = pagination;
+    const offset = (page - 1) * limit;
+    const users = await db
+    .select({
+        id: Usuarios.id,
+        name: Usuarios.nombre,
+        type: Usuarios.tipo,
+        email: Usuarios.correo,
+        franchise: {
+            id: Usuarios.idFranquicia,
+            name: Franquicias.nombre,
+        }
+    })
+    .from(Usuarios)
+    .leftJoin(Franquicias, eq(Usuarios.idFranquicia, Franquicias.id))
+    .where(ne(Usuarios.tipo, tipoUsuarioEnum.enumValues[0]))
+    .limit(limit)
+    .offset(offset);
+
+    const totalItems = await db.$count(Usuarios);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+        items: users,
+        paginate: {
+            page,
+            limit,
+            totalItems,
+            totalPages,
+        }
+    }
+}
+
 export const getUserById = async (id: number) => {
     return await db
     .select({
@@ -100,6 +134,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
             "contraseña": hashedPassword,
             correo: user.email,
             idFranquicia: user.franchiseId,
+            tipo: user.type
         })
         .where(eq(Usuarios.id, id))
         .returning({
@@ -117,6 +152,7 @@ export const updateUser = async (id: number, user: UserUpdate) => {
         nombre: user.name,
         correo: user.email,
         idFranquicia: user.franchiseId,
+        tipo: user.type
     })
     .where(eq(Usuarios.id, id))
     .returning({
