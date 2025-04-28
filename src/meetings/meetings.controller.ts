@@ -3,13 +3,16 @@ import {
   createMeeting,
   deleteMeeting,
   getAllMeetings,
+  getDisciplineMeetings,
   getMeetingById,
+  getMeetingsForAFranchise,
   updateMeeting,
 } from "./meetings.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
 import { createMeetingSchema } from "./meetings.schema";
 import { z } from "zod";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 export const createMeetingHandler = async (req: Request, res: Response) => {
   try {
@@ -37,7 +40,16 @@ export const getAllMeetingsHandler = async (req: Request, res: Response) => {
       page: +(req.query.page || 1),
       limit: +(req.query.limit || 10),
     };
-    res.status(200).json(await getAllMeetings(pagination));
+
+    const meetings = 
+    res.locals.user.role === tipoUsuarioEnum.enumValues[1] ? 
+    await getDisciplineMeetings(pagination, res.locals.user.franchiseId)
+    : res.locals.user.role === tipoUsuarioEnum.enumValues[0] ? 
+    await getAllMeetings(pagination)
+    : await getMeetingsForAFranchise(pagination, res.locals.user.franchiseId)
+
+
+    res.status(200).json(await meetings);
   } catch (error) {
     if (!res.headersSent) {
       if (error instanceof AppError) {

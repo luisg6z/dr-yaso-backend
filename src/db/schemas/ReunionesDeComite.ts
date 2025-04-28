@@ -7,6 +7,7 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { Voluntarios } from "./Voluntarios";
+import { Franquicias } from "./Franquicias";
 
 export const tipoReunionComiteEnum = pgEnum("TiposReunionComite", [
   "Responsable de visita",
@@ -31,4 +32,8 @@ export const ReunionesDeComite = pgTable("ReunionesDeComite", {
     onUpdate: "cascade",
     onDelete: "restrict",
   }),
+  idFranquicia: integer("idFranquicia").references(() => Franquicias.id, {
+    onUpdate: "cascade",
+    onDelete: "restrict",
+  }).notNull()
 });

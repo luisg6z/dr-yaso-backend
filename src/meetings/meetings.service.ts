@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../db/db";
-import { ReunionesDeComite } from "../db/schemas/ReunionesDeComite";
+import { ReunionesDeComite, tipoReunionComiteEnum } from "../db/schemas/ReunionesDeComite";
 import { Asisten } from "../db/schemas/Asisten";
 import { Pagination } from "../types/types";
 import { MeetingCreate, MeetingUpdate } from "./meetings.schema";
@@ -12,25 +12,40 @@ import { Pertenecen } from "../db/schemas/Pertenecen";
 import { Franquicias } from "../db/schemas/Franquicias";
 
 export const createMeeting = async (meeting: MeetingCreate) => {
-  const data = await db.transaction(async (tx) => {
-    if (meeting.responsibleId) {
-      const volunteer = await tx
-        .select({
-          id: Voluntarios.id,
-          firstName: Voluntarios.nombres,
-          lastName: Voluntarios.apellidos,
-          idNumber: Voluntarios.numeroCedula,
-          idType: Voluntarios.tipoCedula,
-          status: Voluntarios.estatus,
-        })
-        .from(Voluntarios)
-        .where(eq(Voluntarios.id, meeting.responsibleId));
 
-      if (volunteer.length < 1) {
-        throw new AppError(400, "Responsible volunteer not found");
-      }
+  if (meeting.responsibleId) {
+    const volunteer = await db
+      .select({
+        id: Voluntarios.id,
+        firstName: Voluntarios.nombres,
+        lastName: Voluntarios.apellidos,
+        idNumber: Voluntarios.numeroCedula,
+        idType: Voluntarios.tipoCedula,
+        status: Voluntarios.estatus,
+      })
+      .from(Voluntarios)
+      .where(eq(Voluntarios.id, meeting.responsibleId));
+
+    if (volunteer.length < 1) {
+      throw new AppError(400, "Responsible volunteer not found");
     }
+  }
 
+  if (meeting.franchiseId) {
+    const franchise = await db
+    .select({
+      id: Franquicias.id,
+      name: Franquicias.nombre
+    })
+    .from(Franquicias)
+    .where(eq(Franquicias.id, meeting.franchiseId));
+
+    if(franchise.length < 1) {
+      throw new AppError(400, "This franchise doesn't exists")
+    }
+  }
+
+  const data = await db.transaction(async (tx) => {
     // Crear la reunión
     const createdMeeting = await tx
       .insert(ReunionesDeComite)
@@ -39,6 +54,7 @@ export const createMeeting = async (meeting: MeetingCreate) => {
         tipoDeReunionComite: meeting.type,
         observacion: meeting.notes,
         idResponsable: meeting.responsibleId,
+        idFranquicia: meeting.franchiseId
       })
       .returning();
 
@@ -64,15 +80,22 @@ export const getMeetingById = async (id: number) => {
       notes: ReunionesDeComite.observacion,
       date: ReunionesDeComite.fecha,
       responsibleId: ReunionesDeComite.idResponsable,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre
+      }
     })
     .from(ReunionesDeComite)
+    .innerJoin(Franquicias, eq(Franquicias.id, ReunionesDeComite.idFranquicia))
     .where(eq(ReunionesDeComite.id, id));
 
   if (meeting.length === 0) {
     throw new AppError(404, "Meeting not found");
   }
 
-  const responsible = await getVolunteerById(meeting[0].responsibleId || -1);
+  const {responsibleId, ...formattedMeeting} = meeting[0]
+
+  const responsible = await getVolunteerById(responsibleId || -1);
 
   const volunteers = await db
     .select({
@@ -130,14 +153,108 @@ export const getMeetingById = async (id: number) => {
     );
 
   return {
-    id: meeting[0].id,
+    meeting: formattedMeeting,
     responsible,
-    notes: meeting[0].notes,
-    type: meeting[0].type,
-    date: meeting[0].date,
     volunteers: volunteers,
   };
 };
+
+export const getDisciplineMeetings = async (pagination: Pagination, franchiseId: number) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+  
+  // Obtener todas las reuniones con paginación
+  const meetings = await db
+    .select({
+      id: ReunionesDeComite.id,
+      type: ReunionesDeComite.tipoDeReunionComite,
+      notes: ReunionesDeComite.observacion,
+      date: ReunionesDeComite.fecha,
+      responsibleId: ReunionesDeComite.idResponsable,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre
+      }
+    })
+    .from(ReunionesDeComite)
+    .innerJoin(Franquicias, eq(Franquicias.id, ReunionesDeComite.idFranquicia))
+    .where(
+      and(
+        eq(ReunionesDeComite.tipoDeReunionComite, tipoReunionComiteEnum.enumValues[5]),
+        eq(ReunionesDeComite.idFranquicia, franchiseId)
+      )
+    )
+    .limit(limit)
+    .offset(offset);
+
+  // Obtener los responsables para cada reunión
+  const meetingsWithResponsibles = await Promise.all(
+    meetings.map(async (meeting) => {
+      const responsible = await getVolunteerById(meeting.responsibleId || -1);
+      return {
+        ...meeting,
+        responsible,
+      };
+    })
+  );
+
+  return {
+    items: meetingsWithResponsibles,
+    paginate: {
+      page,
+      limit,
+      totalItems: meetings.length,
+      totalPages: Math.ceil(meetings.length / limit),
+    },
+  };
+};
+
+export const getMeetingsForAFranchise = async (pagination: Pagination, franchiseId: number) => {
+  const { page, limit } = pagination;
+  const offset = (page - 1) * limit;
+
+
+  // Obtener todas las reuniones con paginación
+  const meetings = await db
+    .select({
+      id: ReunionesDeComite.id,
+      type: ReunionesDeComite.tipoDeReunionComite,
+      notes: ReunionesDeComite.observacion,
+      date: ReunionesDeComite.fecha,
+      responsibleId: ReunionesDeComite.idResponsable,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre,
+      }
+    })
+    .from(ReunionesDeComite)
+    .innerJoin(Franquicias, eq(Franquicias.id, ReunionesDeComite.idFranquicia))
+    .where( eq(ReunionesDeComite.idFranquicia, franchiseId))
+    .limit(limit)
+    .offset(offset);
+
+  // Obtener los responsables para cada reunión
+  const meetingsWithResponsibles = await Promise.all(
+    meetings.map(async (meeting) => {
+      const responsible = await getVolunteerById(meeting.responsibleId || -1);
+      return {
+        ...meeting,
+        responsible,
+      };
+    })
+  );
+
+  return {
+    items: meetingsWithResponsibles,
+    paginate: {
+      page,
+      limit,
+      totalItems: meetings.length,
+      totalPages: Math.ceil(meetings.length / limit),
+    },
+  };
+};
+
 export const getAllMeetings = async (pagination: Pagination) => {
   const { page, limit } = pagination;
   const offset = (page - 1) * limit;
@@ -150,8 +267,13 @@ export const getAllMeetings = async (pagination: Pagination) => {
       notes: ReunionesDeComite.observacion,
       date: ReunionesDeComite.fecha,
       responsibleId: ReunionesDeComite.idResponsable,
+      franchise: {
+        id: Franquicias.id,
+        name: Franquicias.nombre,
+      }
     })
     .from(ReunionesDeComite)
+    .innerJoin(Franquicias, eq(Franquicias.id, ReunionesDeComite.idFranquicia))
     .limit(limit)
     .offset(offset);
 
@@ -192,6 +314,20 @@ export const updateMeeting = async (id: number, meeting: MeetingUpdate) => {
     throw new AppError(404, "Meeting not found");
   }
 
+  if (meeting.franchiseId) {
+    const franchise = await db
+    .select({
+      id: Franquicias.id,
+      name: Franquicias.nombre
+    })
+    .from(Franquicias)
+    .where(eq(Franquicias.id, meeting.franchiseId));
+
+    if(franchise.length < 1) {
+      throw new AppError(400, "This franchise doesn't exists")
+    }
+  }
+
   await db.transaction(async (tx) => {
     // Actualizar la reunión
     await tx
@@ -201,6 +337,7 @@ export const updateMeeting = async (id: number, meeting: MeetingUpdate) => {
         observacion: meeting.notes,
         fecha: new Date(meeting.date ?? existingMeeting[0].date).toISOString(),
         idResponsable: meeting.responsibleId,
+        idFranquicia: meeting.franchiseId
       })
       .where(eq(ReunionesDeComite.id, id))
       .returning();
