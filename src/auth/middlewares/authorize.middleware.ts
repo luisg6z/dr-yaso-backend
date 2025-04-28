@@ -11,6 +11,7 @@ export const authorize = (roles: string[]) =>
                 message: "You are not authorized to access this resource",
                 details: `User role ${userRole} is not allowed to access this resource`, 
             });
+            return;
         }
 
         next();

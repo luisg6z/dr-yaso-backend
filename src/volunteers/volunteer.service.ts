@@ -173,9 +173,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
   };
 };
 
-export const getAllVolunteersForFranchise = async (pagination: Pagination, franchiseId: number) => {
-  const { page, limit } = pagination;
-  const offset = (page - 1) * limit;
+export const getAllVolunteersForFranchise = async ( franchiseId: number) => {
 
   const volunteers = await db
     .select({
@@ -230,8 +228,6 @@ export const getAllVolunteersForFranchise = async (pagination: Pagination, franc
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
     )
     .where(eq(Franquicias.id, franchiseId))
-    .limit(limit)
-    .offset(offset);
 
   volunteers.forEach(async (volunteer: any) => {
     const vcharges = await db
@@ -253,17 +249,8 @@ export const getAllVolunteersForFranchise = async (pagination: Pagination, franc
     volunteer.occupations = chargesIds || [];
   });
 
-  const totalItems = await db.$count(Voluntarios);
-  const totalPages = Math.ceil(totalItems / limit);
-
   return {
     items: volunteers,
-    paginate: {
-      page,
-      limit,
-      totalItems,
-      totalPages,
-    },
   };
 };
 

@@ -145,10 +145,7 @@ export const getVisitById = async (id: number) => {
     }
 }
 
-export const getAllVisitsForFranchise = async (pagination: Pagination, franchiseId: number) => {
-
-    const { page, limit } = pagination;
-    const offset = (page - 1) * limit;
+export const getAllVisitsForFranchise = async (franchiseId: number) => {
 
     const visits = await db
     .select({
@@ -167,17 +164,9 @@ export const getAllVisitsForFranchise = async (pagination: Pagination, franchise
     .from(Visitas)
     .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
     .where(eq(Locaciones.idFranquicia, franchiseId))
-    .limit(limit)
-    .offset(offset)
 
     return {
         items : visits,
-        paginate: {
-            page,
-            limit,
-            totalItems: visits.length,
-            totalPages: Math.ceil(visits.length / limit),
-        }
     }
 }
 
@@ -205,13 +194,15 @@ export const getAllVisits = async (pagination: Pagination) => {
     .limit(limit)
     .offset(offset)
 
+    const totalItems = await db.$count(Visitas)
+
     return {
         items : visits,
         paginate: {
             page,
             limit,
-            totalItems: visits.length,
-            totalPages: Math.ceil(visits.length / limit),
+            totalItems,
+            totalPages: Math.ceil(totalItems / limit),
         }
     }
 }

@@ -44,7 +44,7 @@ export const getAllLocationsForFranchise = async (pagination: Pagination, franch
     .limit(limit)
     .offset(offset);
 
-  const totalItems = await db.$count(Locaciones);
+  const totalItems = await db.$count(Locaciones, eq(Locaciones.idFranquicia, franchiseId));
   const totalPages = Math.ceil(totalItems / limit);
 
   return {

@@ -198,13 +198,18 @@ export const getDisciplineMeetings = async (pagination: Pagination, franchiseId:
     })
   );
 
+  const totalItems = await db.$count(ReunionesDeComite, and(
+    eq(ReunionesDeComite.idFranquicia, franchiseId),
+    eq(ReunionesDeComite.tipoDeReunionComite, tipoReunionComiteEnum.enumValues[5])
+  ))
+
   return {
     items: meetingsWithResponsibles,
     paginate: {
       page,
       limit,
-      totalItems: meetings.length,
-      totalPages: Math.ceil(meetings.length / limit),
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
     },
   };
 };
@@ -244,13 +249,15 @@ export const getMeetingsForAFranchise = async (pagination: Pagination, franchise
     })
   );
 
+  const totalItems = await db.$count(ReunionesDeComite, eq(ReunionesDeComite.idFranquicia, franchiseId));
+
   return {
     items: meetingsWithResponsibles,
     paginate: {
       page,
       limit,
-      totalItems: meetings.length,
-      totalPages: Math.ceil(meetings.length / limit),
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
     },
   };
 };

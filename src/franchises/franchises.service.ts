@@ -84,7 +84,7 @@ export const getActiveFranchises = async (pagination: Pagination) => {
     .limit(limit)
     .offset(offset);
 
-    const totalItems = await db.$count(Franquicias);
+    const totalItems = await db.$count(Franquicias, eq(Franquicias.estaActivo, true));
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
@@ -149,6 +149,44 @@ export const getAllFranchises = async (pagination: Pagination) => {
             totalPages,
         },
     }
+}
+
+export const getUserFranchise = async (franchiseId: number) => {
+    const franchise = await db
+    .select({
+        id: Franquicias.id,
+        rif: Franquicias.rif,
+        name: Franquicias.nombre,
+        address: Franquicias.direccion,
+        phone: Franquicias.telefono,
+        email: Franquicias.correo,
+        isActive: Franquicias.estaActivo,
+        city: {
+            id: Franquicias.idCiudad,
+            name: Ciudades.nombre,
+        },
+        state: {
+            id: Estados.id,
+            name: Estados.nombre,
+        },
+        country: {
+            id: Paises.id,
+            name: Paises.nombre,
+        },
+        coordinator: {
+            id: Franquicias.idCoordinador,
+            firstName: Voluntarios.nombres,
+            lastName: Voluntarios.apellidos
+        },
+    })
+    .from(Franquicias)
+    .leftJoin(Voluntarios, eq(Franquicias.idCoordinador, Voluntarios.id))
+    .leftJoin(Ciudades, eq(Franquicias.idCiudad, Ciudades.id))
+    .leftJoin(Estados, eq(Ciudades.idEstado, Estados.id))
+    .leftJoin(Paises, eq(Estados.idPais, Paises.id))
+    .where(eq(Franquicias.id, franchiseId));
+
+    return franchise
 }
 
 export const getFranchiseById = async (id: number) => {

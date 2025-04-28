@@ -42,7 +42,7 @@ export const getAllVolunteersHandler = async (_req: Request, res: Response) => {
     };
 
     if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]){
-      res.status(200).json(await getAllVolunteersForFranchise(pagination, res.locals.user.franchiseId));
+      res.status(200).json(await getAllVolunteersForFranchise(res.locals.user.franchiseId));
     }
 
     res.status(200).json(await getAllVolunteers(pagination));

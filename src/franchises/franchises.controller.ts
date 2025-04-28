@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { createFranchise, deleteFranchise, getActiveFranchises, getFranchiseById, updateFranchise, getAllFranchises } from "./franchises.service";
+import { createFranchise, deleteFranchise, getActiveFranchises, getFranchiseById, updateFranchise, getAllFranchises, getUserFranchise } from "./franchises.service";
 import { idParamSchema, Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
+import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 
 export const createFranchiseHandler = async (req: Request, res: Response) => {
@@ -31,6 +32,10 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+        }
+        if(res.locals.user.role !== tipoUsuarioEnum.enumValues[0]){
+            const franchise = await getUserFranchise(res.locals.user.franchiseId)
+            res.status(200).json(franchise)
         }
         const franchises = await getAllFranchises(pagination)
         res.status(200).json(franchises)
