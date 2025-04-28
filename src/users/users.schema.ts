@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
+export const typeSchema = z.enum(tipoUsuarioEnum.enumValues)
 
 export const userSchema = z.object({
     id: z.number().int().positive(),
@@ -14,6 +15,7 @@ export const userSchema = z.object({
 export const createUserSchema = userSchema.omit({ id: true });
 export const updateUserSchema = createUserSchema.partial();
 
+export type UserRole = z.infer<typeof typeSchema>
 export type User = z.infer<typeof userSchema>;
 export type UserCreate = z.infer<typeof createUserSchema>;
 export type UserUpdate = z.infer<typeof updateUserSchema>;
