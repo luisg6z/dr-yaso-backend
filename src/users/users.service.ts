@@ -1,6 +1,6 @@
 import { hash } from "bcrypt";
 
-import { UserCreate, UserUpdate } from "./users.schema";
+import { UserCreate, UserRole, UserUpdate } from "./users.schema";
 import { db } from "../db/db";
 import { tipoUsuarioEnum, Usuarios } from "../db/schemas/Usuarios";
 import { eq, ne } from "drizzle-orm";
@@ -10,10 +10,14 @@ import { envs } from "../config/envs";
 import { Franquicias } from "../db/schemas/Franquicias";
 
 
-export const createUser = async (user: UserCreate) => {
+export const createUser = async (user: UserCreate, creatorRole: UserRole) => {
+
+    if(user.type === tipoUsuarioEnum.enumValues[0] && creatorRole !== tipoUsuarioEnum.enumValues[0]){
+        throw new AppError(400, "This type of user can't create a superuser")
+    }
+
     const hashedPassword = await hash(user.password, envs.saltRounds);
 
-    
     const newUser = {
         ...user,
         password: hashedPassword,
