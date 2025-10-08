@@ -1,5 +1,118 @@
 import { z } from "zod";
-
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     VolunteerCreate:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - idType
+ *         - idNumber
+ *         - birthDate
+ *         - profession
+ *         - franchiseId
+ *         - status
+ *         - gender
+ *         - bloodType
+ *         - maritalStatus
+ *         - phoneNumbers
+ *         - clownName
+ *         - shirtSize
+ *         - hasShirtWithLogo
+ *         - hasCoatWithLogo
+ *       properties:
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         idType:
+ *           type: string
+ *           enum: [V, E]
+ *         idNumber:
+ *           type: string
+ *         birthDate:
+ *           type: string
+ *         profession:
+ *           type: string
+ *         franchiseId:
+ *           type: integer
+ *         status:
+ *           type: string
+ *           enum: [Activo, Desvinculado, De permiso]
+ *         gender:
+ *           type: string
+ *           enum: [Masculino, Femenino, Otro]
+ *         bloodType:
+ *           type: string
+ *           enum: [A+, A-, B+, B-, AB+, AB-, O+, O-]
+ *         maritalStatus:
+ *           type: string
+ *           enum: [Soltero/a, Casado/a, Divorciado/a, Viudo/a, Unión Libre]
+ *         phoneNumbers:
+ *           type: array
+ *           items:
+ *             type: string
+ *         clownName:
+ *           type: string
+ *         shirtSize:
+ *           type: string
+ *           enum: [XS, S, M, L, XL, XXL, XXXL, XXXXL]
+ *         hasShirtWithLogo:
+ *           type: boolean
+ *         hasCoatWithLogo:
+ *           type: boolean
+ *         allergies:
+ *           type: string
+ *         disability:
+ *           type: string
+ *         notes:
+ *           type: string
+ *         facebook:
+ *           type: string
+ *         x:
+ *           type: string
+ *         instagram:
+ *           type: string
+ *         tikTok:
+ *           type: string
+ *         emergencyContactName:
+ *           type: string
+ *         emergencyContactPhone:
+ *           type: string
+ *         occupations:
+ *           type: array
+ *           items:
+ *             type: integer
+ *       example:
+ *         firstName: "María"
+ *         lastName: "Pérez"
+ *         idType: "V"
+ *         idNumber: "12345678"
+ *         birthDate: "1990-05-15"
+ *         profession: "Médico"
+ *         franchiseId: 1
+ *         status: "Activo"
+ *         gender: "Femenino"
+ *         bloodType: "O+"
+ *         maritalStatus: "Soltero/a"
+ *         phoneNumbers: ["04141234567", "04161234567"]
+ *         clownName: "Payasita Risa"
+ *         shirtSize: "M"
+ *         hasShirtWithLogo: true
+ *         hasCoatWithLogo: false
+ *         allergies: "Ninguna"
+ *         disability: "ceguera"
+ *         notes: "Voluntaria desde 2022"
+ *         facebook: "maria.perez"
+ *         x: "mariaperez"
+ *         instagram: "mariaperez"
+ *         tikTok: "mariaperez"
+ *         emergencyContactName: "Juan Pérez"
+ *         emergencyContactPhone: "04141231234"
+ *         occupations: [1, 2]
+ */
 export const VolunteerSchema = z.object({
   id: z.number().int().positive(),
   firstName: z.string().min(1).max(100),
@@ -22,8 +135,7 @@ export const VolunteerSchema = z.object({
   ]),
   phoneNumbers: z.array(z.string().min(1).max(20)),
   clownName: z.string().min(1).max(120),
-  shirtSize: z
-    .enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"]),
+  shirtSize: z.enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"]),
   hasShirtWithLogo: z.boolean(),
   hasCoatWithLogo: z.boolean(),
   allergies: z.string().min(1).max(200).optional(),
@@ -38,7 +150,10 @@ export const VolunteerSchema = z.object({
   occupations: z.array(z.number().positive()).optional(),
 });
 
-export const createVolunteerSchema = VolunteerSchema.omit({ id: true, franchiseName: true });
+export const createVolunteerSchema = VolunteerSchema.omit({
+  id: true,
+  franchiseName: true,
+});
 export const updateVolunteerSchema = createVolunteerSchema.partial();
 
 export type Volunteer = z.infer<typeof VolunteerSchema>;

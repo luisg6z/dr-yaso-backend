@@ -18,6 +18,29 @@ import { tipoUsuarioEnum } from "../db/schemas/Usuarios";
 
 const volunteersRouter = Router();
 
+/**
+ * @swagger
+ * /api/volunteers:
+ *   post:
+ *     summary: Crear un nuevo voluntario
+ *     tags:
+ *       - Volunteers
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VolunteerCreate'
+ *     responses:
+ *       201:
+ *         description: Voluntario creado exitosamente
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ */
 volunteersRouter.post(
   "/",
   authenticate,
@@ -29,14 +52,24 @@ volunteersRouter.post(
 volunteersRouter.get(
   "/:id",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
+  authorize([
+    tipoUsuarioEnum.enumValues[0],
+    tipoUsuarioEnum.enumValues[1],
+    tipoUsuarioEnum.enumValues[2],
+    tipoUsuarioEnum.enumValues[3],
+  ]),
   getVolunteerByIdHandler
 );
 
 volunteersRouter.get(
   "/",
   authenticate,
-  authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
+  authorize([
+    tipoUsuarioEnum.enumValues[0],
+    tipoUsuarioEnum.enumValues[1],
+    tipoUsuarioEnum.enumValues[2],
+    tipoUsuarioEnum.enumValues[3],
+  ]),
   getAllVolunteersHandler
 );
 
