@@ -17,6 +17,7 @@ import {
 } from "./schemas/DetallesVoluntarios";
 import { Franquicias } from "./schemas/Franquicias";
 import { Usuarios, tipoUsuarioEnum } from "./schemas/Usuarios";
+import { hash } from "bcrypt";
 
 const initDB = async () => {
   console.log("Starting database initialization...");
@@ -282,17 +283,20 @@ const initDB = async () => {
 
       //#region Usuarios
       console.log("Inserting users...");
+
+      const hashedAdminPassword = await hash("admin123", 10);
+      const hashedCoordPassword = await hash("coord123", 10);
       const users = [
         {
           nombre: "admin",
-          contraseña: "admin123", // En producción, esto debería estar hasheado
+          contraseña: hashedAdminPassword,
           tipo: tipoUsuarioEnum.enumValues[0], // "Superusuario"
           correo: "admin@dryaso.com",
           idFranquicia: 1,
         },
         {
           nombre: "coordinador",
-          contraseña: "coord123", // En producción, esto debería estar hasheado
+          contraseña: hashedCoordPassword,
           tipo: tipoUsuarioEnum.enumValues[3], // "Coordinador"
           correo: "coord@dryaso.com",
           idFranquicia: 1,
