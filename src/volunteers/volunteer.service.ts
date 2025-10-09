@@ -9,6 +9,9 @@ import { Pagination } from "../types/types";
 import { AppError } from "../common/errors/errors";
 import { Tienen } from "../db/schemas/Tienen";
 import { Cargos } from "../db/schemas/Cargos";
+import { Ciudades } from "../db/schemas/Ciudades";
+import { Estados } from "../db/schemas/Estados";
+import { Paises } from "../db/schemas/Paises";
 
 export const createVolunteer = async (volunteer: VolunteerCreate) => {
   if (volunteer.franchiseId) {
@@ -112,8 +115,12 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
-      direction: DetallesVoluntarios.direccion,
-      cityId: DetallesVoluntarios.idCiudad,
+      direction: {
+        direction: DetallesVoluntarios.direccion,
+        city: Ciudades.nombre,
+        state: Estados.nombre,
+        country: Paises.nombre,
+      },
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -139,29 +146,34 @@ export const getAllVolunteers = async (pagination: Pagination) => {
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
     )
+    .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
+    .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
+    .leftJoin(Paises, eq(Paises.id, Estados.idPais))
     .limit(limit)
     .offset(offset);
 
-  const volunteersWithOccupation = await Promise.all(volunteers.map(async (volunteer: any) => {
-    const vcharges = await db
-      .select({
-        volunteerId: Tienen.idVoluntario,
-        occupations: {
-          id: Cargos.id,
-          name: Cargos.descripcion,
-        },
-      })
-      .from(Tienen)
-      .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
-      .where(eq(Tienen.idVoluntario, volunteer.id));
+  const volunteersWithOccupation = await Promise.all(
+    volunteers.map(async (volunteer: any) => {
+      const vcharges = await db
+        .select({
+          volunteerId: Tienen.idVoluntario,
+          occupations: {
+            id: Cargos.id,
+            name: Cargos.descripcion,
+          },
+        })
+        .from(Tienen)
+        .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
+        .where(eq(Tienen.idVoluntario, volunteer.id));
 
-    const chargesIds = vcharges.map((e) => e.occupations);
+      const chargesIds = vcharges.map((e) => e.occupations);
 
-    return {
-      ...volunteer,
-      occupations: chargesIds
-    }
-  }));
+      return {
+        ...volunteer,
+        occupations: chargesIds,
+      };
+    })
+  );
 
   const totalItems = await db.$count(Voluntarios);
   const totalPages = Math.ceil(totalItems / limit);
@@ -177,8 +189,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
   };
 };
 
-export const getAllVolunteersForFranchise = async ( franchiseId: number) => {
-
+export const getAllVolunteersForFranchise = async (franchiseId: number) => {
   const volunteers = await db
     .select({
       id: Voluntarios.id,
@@ -206,8 +217,12 @@ export const getAllVolunteersForFranchise = async ( franchiseId: number) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
-      direction: DetallesVoluntarios.direccion,
-      cityId: DetallesVoluntarios.idCiudad,
+      direction: {
+        direction: DetallesVoluntarios.direccion,
+        city: Ciudades.nombre,
+        state: Estados.nombre,
+        country: Paises.nombre,
+      },
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -233,7 +248,10 @@ export const getAllVolunteersForFranchise = async ( franchiseId: number) => {
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
     )
-    .where(eq(Franquicias.id, franchiseId))
+    .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
+    .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
+    .leftJoin(Paises, eq(Paises.id, Estados.idPais))
+    .where(eq(Franquicias.id, franchiseId));
 
   volunteers.forEach(async (volunteer: any) => {
     const vcharges = await db
@@ -288,8 +306,12 @@ export const getVolunteerById = async (id: number) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
-      direction: DetallesVoluntarios.direccion,
-      cityId: DetallesVoluntarios.idCiudad,
+      direction: {
+        direction: DetallesVoluntarios.direccion,
+        city: Ciudades.nombre,
+        state: Estados.nombre,
+        country: Paises.nombre,
+      },
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -315,7 +337,11 @@ export const getVolunteerById = async (id: number) => {
     .innerJoin(
       Franquicias,
       eq(Franquicias.id, Pertenecen.idFranquicia) // Join with Franquicias to get franchise details
-    );
+    )
+    .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
+    .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
+    .leftJoin(Paises, eq(Paises.id, Estados.idPais))
+    ;
 };
 
 export const updateVolunteer = async (
@@ -396,17 +422,15 @@ export const updateVolunteer = async (
   }
 
   if (volunteer.occupations) {
-        
-    await db.delete(Tienen)
-      .where(eq(Tienen.idVoluntario, id))
+    await db.delete(Tienen).where(eq(Tienen.idVoluntario, id));
 
     volunteer.occupations.forEach(async (ocupationId: number) => {
-        await db.insert(Tienen).values({
-          idVoluntario: id,
-          idCargo: ocupationId,
-          esCargoPrincipal: false,
-        });
-    })
+      await db.insert(Tienen).values({
+        idVoluntario: id,
+        idCargo: ocupationId,
+        esCargoPrincipal: false,
+      });
+    });
   }
 
   // Devolver el voluntario actualizado en el mismo formato que getVolunteerById
