@@ -85,6 +85,10 @@ import { z } from "zod";
  *           type: array
  *           items:
  *             type: integer
+ *         direction:
+ *           type: string
+ *         cityId:
+ *           type: integer
  *       example:
  *         firstName: "María"
  *         lastName: "Pérez"
@@ -112,6 +116,8 @@ import { z } from "zod";
  *         emergencyContactName: "Juan Pérez"
  *         emergencyContactPhone: "04141231234"
  *         occupations: [1, 2]
+ *         direction: "Calle Falsa 123, Ciudad"
+ *         cityId: 1
  */
 export const VolunteerSchema = z.object({
   id: z.number().int().positive(),
@@ -148,6 +154,9 @@ export const VolunteerSchema = z.object({
   emergencyContactName: z.string().min(1).max(60).optional(),
   emergencyContactPhone: z.string().min(1).max(20).optional(),
   occupations: z.array(z.number().positive()).optional(),
+  direction: z.string().min(1).max(200).optional(),
+  cityId: z.number().int().positive().optional(),
+
 });
 
 export const createVolunteerSchema = VolunteerSchema.omit({

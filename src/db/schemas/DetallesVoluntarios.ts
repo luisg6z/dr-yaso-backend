@@ -6,6 +6,7 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { Voluntarios } from "./Voluntarios";
+import { Ciudades } from "./Ciudades";
 
 export const tipoSangreEnum = pgEnum("TipoSangre", [
   "A+",
@@ -62,4 +63,9 @@ export const DetallesVoluntarios = pgTable("DetallesVoluntarios", {
   x: varchar({ length: 200 }),
   instagram: varchar({ length: 200 }),
   tiktok: varchar({ length: 200 }),
+  direccion: varchar({length:200}),
+ idCiudad: integer("idCiudad").references(() => Ciudades.id, {
+    onUpdate: "cascade",
+    onDelete: "restrict",
+  }),
 });

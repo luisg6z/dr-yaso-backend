@@ -58,6 +58,8 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
       x: volunteer.x,
       instagram: volunteer.instagram,
       tiktok: volunteer.tikTok,
+      direccion: volunteer.direction,
+      idCiudad: volunteer.cityId,
     });
 
     //Insert into Pertenecen using the newVolunteer.id and franchiseId
@@ -110,6 +112,8 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
+      direction: DetallesVoluntarios.direccion,
+      cityId: DetallesVoluntarios.idCiudad,
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -202,6 +206,8 @@ export const getAllVolunteersForFranchise = async ( franchiseId: number) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
+      direction: DetallesVoluntarios.direccion,
+      cityId: DetallesVoluntarios.idCiudad,
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -282,6 +288,8 @@ export const getVolunteerById = async (id: number) => {
         instagram: DetallesVoluntarios.instagram,
         tikTok: DetallesVoluntarios.tiktok,
       },
+      direction: DetallesVoluntarios.direccion,
+      cityId: DetallesVoluntarios.idCiudad,
       emergencyContact: {
         name: DetallesVoluntarios.nombreContactoEmergencia,
         phone: DetallesVoluntarios.telefonoContactoEmergencia,
@@ -355,6 +363,8 @@ export const updateVolunteer = async (
       x: volunteer.x,
       instagram: volunteer.instagram,
       tiktok: volunteer.tikTok,
+      direccion: volunteer.direction,
+      idCiudad: volunteer.cityId,
     })
     .where(eq(DetallesVoluntarios.idVoluntario, id));
 
