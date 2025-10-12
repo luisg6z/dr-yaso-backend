@@ -1,7 +1,7 @@
-import { Router } from "express";
-import { loginHandler } from "./auth.controller";
+import { Router } from 'express'
+import { loginHandler } from './auth.controller'
 
-const authRouter = Router();
+const authRouter = Router()
 /**
  * @swagger
  * /api/auth/login:
@@ -49,6 +49,6 @@ const authRouter = Router();
  *       404:
  *         description: Usuario no encontrado
  */
-authRouter.post("/login", loginHandler);
+authRouter.post('/login', loginHandler)
 
-export default authRouter;
+export default authRouter

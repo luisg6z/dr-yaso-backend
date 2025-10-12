@@ -1,12 +1,10 @@
-import { eq } from "drizzle-orm";
-import { db } from "../db/db";
-import { Paises } from "../db/schemas/Paises";
-import { Pagination } from "../types/types";
-
+import { eq } from 'drizzle-orm'
+import { db } from '../db/db'
+import { Paises } from '../db/schemas/Paises'
+import { Pagination } from '../types/types'
 
 export const getAllCountries = async (pagination: Pagination) => {
-
-    const {page, limit} = pagination
+    const { page, limit } = pagination
 
     const offset = (page - 1) * limit
 
@@ -17,10 +15,10 @@ export const getAllCountries = async (pagination: Pagination) => {
         })
         .from(Paises)
         .limit(limit)
-        .offset(offset);
-    
-    const totalItems = await db.$count(Paises);
-    const totalPages = Math.ceil(totalItems / limit);
+        .offset(offset)
+
+    const totalItems = await db.$count(Paises)
+    const totalPages = Math.ceil(totalItems / limit)
 
     return {
         items: countries,
@@ -28,8 +26,8 @@ export const getAllCountries = async (pagination: Pagination) => {
             page,
             limit,
             totalItems,
-            totalPages
-        }
+            totalPages,
+        },
     }
 }
 
@@ -40,5 +38,5 @@ export const getCountryById = async (id: number) => {
             name: Paises.nombre,
         })
         .from(Paises)
-        .where(eq(Paises.id, id));
+        .where(eq(Paises.id, id))
 }

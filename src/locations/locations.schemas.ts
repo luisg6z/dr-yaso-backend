@@ -1,17 +1,16 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const LocationSchema = z.object({
-  id: z.number().int().positive(),
-  description: z.string().min(1).max(120),
-  franchiseId: z.number().int().positive(),
-});
+    id: z.number().int().positive(),
+    description: z.string().min(1).max(120),
+    franchiseId: z.number().int().positive(),
+})
 
-export const createLocationSchema = LocationSchema.omit({ id: true });
-export const updateLocationSchema = createLocationSchema.partial();
+export const createLocationSchema = LocationSchema.omit({ id: true })
+export const updateLocationSchema = createLocationSchema.partial()
 
-export type Location = z.infer<typeof LocationSchema>;
+export type Location = z.infer<typeof LocationSchema>
 
-export type LocationCreate = z.infer<typeof createLocationSchema>;
+export type LocationCreate = z.infer<typeof createLocationSchema>
 
-export type LocationUpdate = z.infer<typeof updateLocationSchema>;
-
+export type LocationUpdate = z.infer<typeof updateLocationSchema>

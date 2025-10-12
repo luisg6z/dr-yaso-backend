@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import { z } from 'zod'
 
 export const franchiseSchema = z.object({
     id: z.number().int().positive(),
@@ -13,13 +12,12 @@ export const franchiseSchema = z.object({
     coordinatorId: z.number().int().positive().optional(),
 })
 
-export const createFranchiseSchema = franchiseSchema.omit({ id: true });
+export const createFranchiseSchema = franchiseSchema.omit({ id: true })
 
 export const updateFranchiseSchema = createFranchiseSchema.partial()
 
-export type Franchise = z.infer<typeof franchiseSchema>;
+export type Franchise = z.infer<typeof franchiseSchema>
 
-export type FranchiseCreate = z.infer<typeof createFranchiseSchema>;
+export type FranchiseCreate = z.infer<typeof createFranchiseSchema>
 
-export type FranchiseUpdate = z.infer<typeof updateFranchiseSchema>;
-
+export type FranchiseUpdate = z.infer<typeof updateFranchiseSchema>

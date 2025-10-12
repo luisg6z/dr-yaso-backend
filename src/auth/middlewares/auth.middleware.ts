@@ -1,30 +1,39 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { AppError } from "../../common/errors/errors";
-import { envs } from "../../config/envs";
+import { NextFunction, Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+import { AppError } from '../../common/errors/errors'
+import { envs } from '../../config/envs'
 
-
-export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
-    const token = req.headers.authorization?.split(" ")[1];
+export const authenticate = (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): void => {
+    const token = req.headers.authorization?.split(' ')[1]
 
     try {
         if (!token) {
-            throw new AppError(401, "Token not provided", "Token is required for authentication");
+            throw new AppError(
+                401,
+                'Token not provided',
+                'Token is required for authentication',
+            )
         }
         if (!process.env.JWT_SECRET) {
-            throw new Error("JWT_SECRET is not defined in the environment variables");
+            throw new Error(
+                'JWT_SECRET is not defined in the environment variables',
+            )
         }
-        if (typeof token !== "string") {
-            throw new Error("Invalid token format");
+        if (typeof token !== 'string') {
+            throw new Error('Invalid token format')
         }
-        const verifiedToken = jwt.verify(token, envs.jwtSecret);
-         res.locals.user = verifiedToken;
-        return next();
+        const verifiedToken = jwt.verify(token, envs.jwtSecret)
+        res.locals.user = verifiedToken
+        return next()
     } catch (error) {
         res.status(401).json({
             statusCode: 401,
-            message: "Unauthorized",
-            details: error instanceof Error ? error.message : "Invalid token",
-        });
+            message: 'Unauthorized',
+            details: error instanceof Error ? error.message : 'Invalid token',
+        })
     }
 }

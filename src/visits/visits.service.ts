@@ -1,126 +1,131 @@
-import { and, eq } from "drizzle-orm";
-import { db } from "../db/db";
-import { Visitas } from "../db/schemas/Visitas";
-import { Pagination } from "../types/types";
-import { VisitCreate, VisitUpdate } from "./visits.schema";
-import { Realizan, responsabilitiesEnum } from "../db/schemas/Realizan";
-import { Locaciones } from "../db/schemas/Locaciones";
-import { Voluntarios } from "../db/schemas/Voluntarios";
-import { AppError } from "../common/errors/errors";
-import { DetallesVoluntarios } from "../db/schemas/DetallesVoluntarios";
-
+import { and, eq } from 'drizzle-orm'
+import { db } from '../db/db'
+import { Visitas } from '../db/schemas/Visitas'
+import { Pagination } from '../types/types'
+import { VisitCreate, VisitUpdate } from './visits.schema'
+import { Realizan, responsabilitiesEnum } from '../db/schemas/Realizan'
+import { Locaciones } from '../db/schemas/Locaciones'
+import { Voluntarios } from '../db/schemas/Voluntarios'
+import { AppError } from '../common/errors/errors'
+import { DetallesVoluntarios } from '../db/schemas/DetallesVoluntarios'
 
 export const createVisit = async (visit: VisitCreate) => {
+    if (visit.locationId) {
+        const location = await db
+            .select({
+                id: Locaciones.id,
+                name: Locaciones.descripcion,
+            })
+            .from(Locaciones)
+            .where(eq(Locaciones.id, visit.locationId))
 
-    if(visit.locationId){
-        const location = await db.select({
-            id: Locaciones.id,
-            name: Locaciones.descripcion,
-        })
-        .from(Locaciones)
-        .where(eq(Locaciones.id, visit.locationId));
-
-        if(location.length < 1) {
-            throw new AppError(400, "Location not found");
+        if (location.length < 1) {
+            throw new AppError(400, 'Location not found')
         }
     }
 
-    const date = new Date(visit.date);
+    const date = new Date(visit.date)
 
-    const data = await db.transaction(async (tx) =>{
-        
-        const createdVisit = await tx.insert(Visitas)
-        .values({
-            tipo: visit.type,
-            observacion: visit.observation,
-            fechaHora: date,
-            beneficiariosDirectos: visit.directBeneficiaries,
-            beneficiariosIndirectos: visit.indirectBeneficiaries,
-            cantPersonalDeSalud: visit.healthPersonnelCount,
-            idLocacion: visit.locationId,
-        })
-        .returning();
-
-        if(visit.coordinatorId){
-            await tx.insert(Realizan)
+    const data = await db.transaction(async (tx) => {
+        const createdVisit = await tx
+            .insert(Visitas)
             .values({
+                tipo: visit.type,
+                observacion: visit.observation,
+                fechaHora: date,
+                beneficiariosDirectos: visit.directBeneficiaries,
+                beneficiariosIndirectos: visit.indirectBeneficiaries,
+                cantPersonalDeSalud: visit.healthPersonnelCount,
+                idLocacion: visit.locationId,
+            })
+            .returning()
+
+        if (visit.coordinatorId) {
+            await tx.insert(Realizan).values({
                 idVisita: createdVisit[0].id,
                 idVoluntario: visit.coordinatorId,
-                responsabilidad: "Coordinador",
-            });
+                responsabilidad: 'Coordinador',
+            })
         }
 
-
-        if(visit.clownsIds){
-            visit.clownsIds.forEach(async element => {
-                await tx.insert(Realizan)
-                .values({
+        if (visit.clownsIds) {
+            visit.clownsIds.forEach(async (element) => {
+                await tx.insert(Realizan).values({
                     idVisita: createdVisit[0].id,
                     idVoluntario: element,
-                    responsabilidad: "Payaso",
+                    responsabilidad: 'Payaso',
                 })
-            });
+            })
         }
 
-        if(visit.hallwaysIds){
-            visit.hallwaysIds.forEach( async element => {
-                await tx.insert(Realizan)
-                .values({
+        if (visit.hallwaysIds) {
+            visit.hallwaysIds.forEach(async (element) => {
+                await tx.insert(Realizan).values({
                     idVisita: createdVisit[0].id,
                     idVoluntario: element,
-                    responsabilidad: "Pasillero",
+                    responsabilidad: 'Pasillero',
                 })
-            });
+            })
         }
-    });
+    })
 
-    return data;
+    return data
 }
 
 export const getVisitById = async (id: number) => {
-
     const visit = await db
-    .select({
-        id: Visitas.id,
-        type: Visitas.tipo,
-        observations: Visitas.observacion,
-        date: Visitas.fechaHora,
-        directBeneficiaries: Visitas.beneficiariosDirectos,
-        indirectBeneficiaries: Visitas.beneficiariosIndirectos,
-        healthPersonnelCount: Visitas.cantPersonalDeSalud,
-        location: {
-            id: Locaciones.id,
-            name: Locaciones.descripcion,
-        },
-    })
-    .from(Visitas)
-    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
-    .where(eq(Visitas.id, id));
-
+        .select({
+            id: Visitas.id,
+            type: Visitas.tipo,
+            observations: Visitas.observacion,
+            date: Visitas.fechaHora,
+            directBeneficiaries: Visitas.beneficiariosDirectos,
+            indirectBeneficiaries: Visitas.beneficiariosIndirectos,
+            healthPersonnelCount: Visitas.cantPersonalDeSalud,
+            location: {
+                id: Locaciones.id,
+                name: Locaciones.descripcion,
+            },
+        })
+        .from(Visitas)
+        .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+        .where(eq(Visitas.id, id))
 
     if (visit.length === 0) {
-         throw new AppError(404, "Visit not found");
-     }
+        throw new AppError(404, 'Visit not found')
+    }
 
     const volunteers = await db
-    .select({
-        id: Voluntarios.id,
-        firstName: Voluntarios.nombres,
-        lastName: Voluntarios.apellidos,
-        idNumber: Voluntarios.numeroCedula,
-        idType: Voluntarios.tipoCedula,
-        status: Voluntarios.estatus,
-        responsibility: Realizan.responsabilidad,
-        clownName: DetallesVoluntarios.nombrePayaso,
-    })
-    .from(Realizan)
-    .leftJoin(Voluntarios, eq(Voluntarios.id, Realizan.idVoluntario))
-    .leftJoin(DetallesVoluntarios, eq(DetallesVoluntarios.idVoluntario, Voluntarios.id))
-    .where(eq(Realizan.idVisita, id));
+        .select({
+            id: Voluntarios.id,
+            firstName: Voluntarios.nombres,
+            lastName: Voluntarios.apellidos,
+            idNumber: Voluntarios.numeroCedula,
+            idType: Voluntarios.tipoCedula,
+            status: Voluntarios.estatus,
+            responsibility: Realizan.responsabilidad,
+            clownName: DetallesVoluntarios.nombrePayaso,
+        })
+        .from(Realizan)
+        .leftJoin(Voluntarios, eq(Voluntarios.id, Realizan.idVoluntario))
+        .leftJoin(
+            DetallesVoluntarios,
+            eq(DetallesVoluntarios.idVoluntario, Voluntarios.id),
+        )
+        .where(eq(Realizan.idVisita, id))
 
-    const coordinator = volunteers.find((volunteer) => volunteer.responsibility === responsabilitiesEnum.enumValues[2]);
-    const clowns = volunteers.filter((volunteer) => volunteer.responsibility === responsabilitiesEnum.enumValues[1]);
-    const hallways = volunteers.filter((volunteer) => volunteer.responsibility === responsabilitiesEnum.enumValues[0]);
+    const coordinator = volunteers.find(
+        (volunteer) =>
+            volunteer.responsibility === responsabilitiesEnum.enumValues[2],
+    )
+    const clowns = volunteers.filter(
+        (volunteer) =>
+            volunteer.responsibility === responsabilitiesEnum.enumValues[1],
+    )
+    const hallways = volunteers.filter(
+        (volunteer) =>
+            volunteer.responsibility === responsabilitiesEnum.enumValues[0],
+    )
 
     return {
         ...visit[0],
@@ -146,95 +151,93 @@ export const getVisitById = async (id: number) => {
 }
 
 export const getAllVisitsForFranchise = async (franchiseId: number) => {
-
     const visits = await db
-    .select({
-        id: Visitas.id,
-        type: Visitas.tipo,
-        observations: Visitas.observacion,
-        date: Visitas.fechaHora,
-        directBeneficiaries: Visitas.beneficiariosDirectos,
-        indirectBeneficiaries: Visitas.beneficiariosIndirectos,
-        healthPersonnelCount: Visitas.cantPersonalDeSalud,
-        location: {
-            id: Locaciones.id,
-            name: Locaciones.descripcion,
-        },
-    })
-    .from(Visitas)
-    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
-    .where(eq(Locaciones.idFranquicia, franchiseId))
+        .select({
+            id: Visitas.id,
+            type: Visitas.tipo,
+            observations: Visitas.observacion,
+            date: Visitas.fechaHora,
+            directBeneficiaries: Visitas.beneficiariosDirectos,
+            indirectBeneficiaries: Visitas.beneficiariosIndirectos,
+            healthPersonnelCount: Visitas.cantPersonalDeSalud,
+            location: {
+                id: Locaciones.id,
+                name: Locaciones.descripcion,
+            },
+        })
+        .from(Visitas)
+        .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+        .where(eq(Locaciones.idFranquicia, franchiseId))
 
     return {
-        items : visits,
+        items: visits,
     }
 }
 
 export const getAllVisits = async (pagination: Pagination) => {
-
-    const { page, limit } = pagination;
-    const offset = (page - 1) * limit;
+    const { page, limit } = pagination
+    const offset = (page - 1) * limit
 
     const visits = await db
-    .select({
-        id: Visitas.id,
-        type: Visitas.tipo,
-        observations: Visitas.observacion,
-        date: Visitas.fechaHora,
-        directBeneficiaries: Visitas.beneficiariosDirectos,
-        indirectBeneficiaries: Visitas.beneficiariosIndirectos,
-        healthPersonnelCount: Visitas.cantPersonalDeSalud,
-        location: {
-            id: Locaciones.id,
-            name: Locaciones.descripcion,
-        },
-    })
-    .from(Visitas)
-    .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
-    .limit(limit)
-    .offset(offset)
+        .select({
+            id: Visitas.id,
+            type: Visitas.tipo,
+            observations: Visitas.observacion,
+            date: Visitas.fechaHora,
+            directBeneficiaries: Visitas.beneficiariosDirectos,
+            indirectBeneficiaries: Visitas.beneficiariosIndirectos,
+            healthPersonnelCount: Visitas.cantPersonalDeSalud,
+            location: {
+                id: Locaciones.id,
+                name: Locaciones.descripcion,
+            },
+        })
+        .from(Visitas)
+        .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+        .limit(limit)
+        .offset(offset)
 
     const totalItems = await db.$count(Visitas)
 
     return {
-        items : visits,
+        items: visits,
         paginate: {
             page,
             limit,
             totalItems,
             totalPages: Math.ceil(totalItems / limit),
-        }
+        },
     }
 }
 
 export const updateVisit = async (id: number, visit: VisitUpdate) => {
+    if (visit.locationId) {
+        const location = await db
+            .select({
+                id: Locaciones.id,
+                name: Locaciones.descripcion,
+            })
+            .from(Locaciones)
+            .where(eq(Locaciones.id, visit.locationId))
 
-    if(visit.locationId){
-        const location = await db.select({
-            id: Locaciones.id,
-            name: Locaciones.descripcion,
-        })
-        .from(Locaciones)
-        .where(eq(Locaciones.id, visit.locationId));
-
-        if(location.length === 0) throw new AppError(400, "Location not found");
+        if (location.length === 0) throw new AppError(400, 'Location not found')
     }
 
     const existingVisit = await db
-    .select({
-        id: Visitas.id,
-        type: Visitas.tipo,
-    })
-    .from(Visitas)
-    .where(eq(Visitas.id, id));
+        .select({
+            id: Visitas.id,
+            type: Visitas.tipo,
+        })
+        .from(Visitas)
+        .where(eq(Visitas.id, id))
 
     if (existingVisit.length === 0) {
-        throw new AppError(404, "Visit not found");
+        throw new AppError(404, 'Visit not found')
     }
 
-    await db.transaction(async (tx) =>{
-        
-        await tx.update(Visitas)
+    await db.transaction(async (tx) => {
+        await tx
+            .update(Visitas)
             .set({
                 tipo: visit.type,
                 observacion: visit.observation,
@@ -245,65 +248,86 @@ export const updateVisit = async (id: number, visit: VisitUpdate) => {
                 idLocacion: visit.locationId,
             })
             .where(eq(Visitas.id, id))
-            .returning();
+            .returning()
 
         if (visit.coordinatorId) {
-            await tx.update(Realizan)
-            .set({
-                idVoluntario: visit.coordinatorId,
-                responsabilidad: responsabilitiesEnum.enumValues[2],
-            })
-            .where(and(eq(Realizan.idVisita, id), eq(Realizan.responsabilidad, responsabilitiesEnum.enumValues[2])));
+            await tx
+                .update(Realizan)
+                .set({
+                    idVoluntario: visit.coordinatorId,
+                    responsabilidad: responsabilitiesEnum.enumValues[2],
+                })
+                .where(
+                    and(
+                        eq(Realizan.idVisita, id),
+                        eq(
+                            Realizan.responsabilidad,
+                            responsabilitiesEnum.enumValues[2],
+                        ),
+                    ),
+                )
         }
 
-
         if (visit.clownsIds) {
-            await tx.delete(Realizan)
-            .where(and(eq(Realizan.idVisita, id), eq(Realizan.responsabilidad, responsabilitiesEnum.enumValues[1])))
-    
+            await tx
+                .delete(Realizan)
+                .where(
+                    and(
+                        eq(Realizan.idVisita, id),
+                        eq(
+                            Realizan.responsabilidad,
+                            responsabilitiesEnum.enumValues[1],
+                        ),
+                    ),
+                )
+
             visit.clownsIds.forEach(async (element) => {
-                await tx.insert(Realizan)
-                .values({
+                await tx.insert(Realizan).values({
                     idVisita: id,
                     idVoluntario: element,
                     responsabilidad: responsabilitiesEnum.enumValues[1],
-                });
-            });
+                })
+            })
         }
-    
-        if(visit.hallwaysIds){
-            await tx.delete(Realizan)
-            .where(and(eq(Realizan.idVisita, id), eq(Realizan.responsabilidad, responsabilitiesEnum.enumValues[0])))
-    
+
+        if (visit.hallwaysIds) {
+            await tx
+                .delete(Realizan)
+                .where(
+                    and(
+                        eq(Realizan.idVisita, id),
+                        eq(
+                            Realizan.responsabilidad,
+                            responsabilitiesEnum.enumValues[0],
+                        ),
+                    ),
+                )
+
             visit.hallwaysIds.forEach(async (element) => {
-                await tx.insert(Realizan)
-                .values({
+                await tx.insert(Realizan).values({
                     idVisita: id,
                     idVoluntario: element,
                     responsabilidad: responsabilitiesEnum.enumValues[0],
-                });
-            });
+                })
+            })
         }
-    });
+    })
 
-    return await getVisitById(id);
+    return await getVisitById(id)
 }
 
 export const deleteVisit = async (id: number) => {
-
     const existingVisit = await db
-    .select({
-        id: Visitas.id,
-        type: Visitas.tipo,
-    })
-    .from(Visitas)
-    .where(eq(Visitas.id, id));
+        .select({
+            id: Visitas.id,
+            type: Visitas.tipo,
+        })
+        .from(Visitas)
+        .where(eq(Visitas.id, id))
 
     if (existingVisit.length === 0) {
-        throw new AppError(404, "Visit not found");
+        throw new AppError(404, 'Visit not found')
     }
 
-    return await db.delete(Visitas)
-    .where(eq(Visitas.id, id))
-    .returning();
+    return await db.delete(Visitas).where(eq(Visitas.id, id)).returning()
 }
