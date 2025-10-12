@@ -8,8 +8,7 @@ de Dr Yaso
 1. Crea en un gestor de base de datos Postgres una base de datos con el nombre `yasodb`.
 
 2. Crea un archivo `.env` en la raíz del proyecto con las siguientes
-variables de entorno:
-
+   variables de entorno:
 
 ```bash
 DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/nombre_basedatos
@@ -17,7 +16,8 @@ DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/nombre_basedatos
 
 También se encuentran en el archivo .env.template en la raiz del proyecto.
 
-3. Crea o actualiza el esquema de la base de datos ejecutando 
+3. Crea o actualiza el esquema de la base de datos ejecutando
+
 ```bash
 npm run db:push
 ```
@@ -39,4 +39,3 @@ npm run start:dev
 ```
 
 3. Realiza consultas sobre la api `http://localhost:3000`.
-
