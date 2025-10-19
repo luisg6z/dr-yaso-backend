@@ -4,7 +4,7 @@ import { Estados } from './schemas/Estados'
 import { Paises } from './schemas/Paises'
 import {
     Voluntarios,
-    tipoCedulaEnum,
+    tipoDocumentoEnum,
     estatusEnum,
     generoEnum,
 } from './schemas/Voluntarios'
@@ -193,8 +193,8 @@ const initDB = async () => {
                 {
                     nombres: 'Juan',
                     apellidos: 'Pérez',
-                    tipoCedula: tipoCedulaEnum.enumValues[0], // "V"
-                    numeroCedula: '12345678',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0], // "V"
+                    numeroDocumento: '12345678',
                     fechaNacimiento: new Date('1990-01-01'),
                     profesion: 'Ingeniero',
                     estatus: estatusEnum.enumValues[1], // "Activo"
@@ -203,8 +203,8 @@ const initDB = async () => {
                 {
                     nombres: 'María',
                     apellidos: 'Gómez',
-                    tipoCedula: tipoCedulaEnum.enumValues[1], // "E"
-                    numeroCedula: '87654321',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[1], // "E"
+                    numeroDocumento: '87654321',
                     fechaNacimiento: new Date('1985-05-15'),
                     profesion: 'Médico',
                     estatus: estatusEnum.enumValues[0], // "Desvinculado"
