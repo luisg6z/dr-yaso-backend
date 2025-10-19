@@ -72,6 +72,8 @@ import { z } from 'zod'
  *           type: array
  *           items:
  *             type: integer
+ *         jobPosition:
+ *          type: string
  *         direction:
  *           type: object
  *           properties:

@@ -106,6 +106,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
             shirtSize: DetallesVoluntarios.tallaCamisa,
             hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
             hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
+            jobPosition: Cargos.nombre,
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
             notes: DetallesVoluntarios.observacion,
