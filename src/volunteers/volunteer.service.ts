@@ -73,11 +73,11 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
         })
 
         if (volunteer.occupations) {
-            volunteer.occupations.forEach(async (ocupationId: number) => {
+            volunteer.occupations.forEach(async (occupation: { id: number; isMain: boolean }) => {
                 await tx.insert(Tienen).values({
                     idVoluntario: newVolunteer.id,
-                    idCargo: ocupationId,
-                    esCargoPrincipal: false,
+                    idCargo: occupation.id,
+                    esCargoPrincipal: occupation.isMain,
                 })
             })
         }
@@ -106,7 +106,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
             shirtSize: DetallesVoluntarios.tallaCamisa,
             hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
             hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
-            jobPosition: Cargos.nombre,
+            
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
             notes: DetallesVoluntarios.observacion,
@@ -159,8 +159,10 @@ export const getAllVolunteers = async (pagination: Pagination) => {
                 .select({
                     volunteerId: Tienen.idVoluntario,
                     occupations: {
-                        id: Cargos.id,
+                        occupationId: Cargos.id,
+                        volunteerId: Tienen.idVoluntario,
                         name: Cargos.descripcion,
+                        isMain: Tienen.esCargoPrincipal,
                     },
                 })
                 .from(Tienen)
@@ -259,8 +261,10 @@ export const getAllVolunteersForFranchise = async (franchiseId: number) => {
             .select({
                 volunteerId: Tienen.idVoluntario,
                 occupations: {
-                    id: Cargos.id,
+                    occupationId: Cargos.id,
+                    volunteerId: Tienen.idVoluntario,
                     name: Cargos.descripcion,
+                    isMain: Tienen.esCargoPrincipal,
                 },
             })
             .from(Tienen)
@@ -272,6 +276,8 @@ export const getAllVolunteersForFranchise = async (franchiseId: number) => {
         console.log(chargesIds)
 
         volunteer.occupations = chargesIds || []
+
+        console.log('Volunteers retrieved:', volunteers.length);
     })
 
     return {
@@ -280,7 +286,8 @@ export const getAllVolunteersForFranchise = async (franchiseId: number) => {
 }
 
 export const getVolunteerById = async (id: number) => {
-    return await db
+    // Primero obtenemos la información base del voluntario
+    const volunteer = await db
         .select({
             id: Voluntarios.id,
             firstName: Voluntarios.nombres,
@@ -319,7 +326,7 @@ export const getVolunteerById = async (id: number) => {
             },
             franchise: {
                 id: Pertenecen.idFranquicia,
-                name: Franquicias.nombre, // Join with Franquicias to get the name
+                name: Franquicias.nombre,
             },
         })
         .from(Voluntarios)
@@ -332,24 +339,44 @@ export const getVolunteerById = async (id: number) => {
             Pertenecen,
             and(
                 eq(Pertenecen.idVoluntario, Voluntarios.id),
-                isNull(Pertenecen.fechaHoraEgreso), // Filter where fechaHoraEgreso is NULL
+                isNull(Pertenecen.fechaHoraEgreso),
             ),
         )
         .innerJoin(
             Franquicias,
-            eq(Franquicias.id, Pertenecen.idFranquicia), // Join with Franquicias to get franchise details
+            eq(Franquicias.id, Pertenecen.idFranquicia),
         )
         .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
         .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
         .leftJoin(Paises, eq(Paises.id, Estados.idPais))
+        .then(rows => rows[0]) // Obtenemos solo un voluntario
+
+    if (!volunteer) return null
+
+    // Ahora obtenemos las ocupaciones del voluntario
+    const vcharges = await db
+        .select({
+            occupationId: Cargos.id,
+            name: Cargos.descripcion,
+            isMain: Tienen.esCargoPrincipal,
+        })
+        .from(Tienen)
+        .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
+        .where(eq(Tienen.idVoluntario, id))
+
+    return {
+        ...volunteer,
+        occupations: vcharges,
+    }
 }
+
 
 export const updateVolunteer = async (
     id: number,
     volunteer: VolunteerUpdate,
 ) => {
     // Verificar si el voluntario existe
-    const [existingVolunteer] = await getVolunteerById(id)
+    const existingVolunteer = await getVolunteerById(id)
     if (!existingVolunteer) throw new AppError(404, 'Volunteer not found')
 
     // Actualizar la tabla Voluntarios
@@ -424,11 +451,11 @@ export const updateVolunteer = async (
     if (volunteer.occupations) {
         await db.delete(Tienen).where(eq(Tienen.idVoluntario, id))
 
-        volunteer.occupations.forEach(async (ocupationId: number) => {
+        volunteer.occupations.forEach(async (occupation: { id: number; isMain: boolean }) => {
             await db.insert(Tienen).values({
                 idVoluntario: id,
-                idCargo: ocupationId,
-                esCargoPrincipal: false,
+                idCargo: occupation.id,
+                esCargoPrincipal: occupation.isMain,
             })
         })
     }
@@ -439,7 +466,7 @@ export const updateVolunteer = async (
 
 export const deleteVolunteer = async (id: number) => {
     const existingVolunteer = await getVolunteerById(id)
-    if (existingVolunteer.length < 1) throw { message: 'Volunteer not found' }
+    if (!existingVolunteer) throw { message: 'Volunteer not found' }
 
     return await db
         .delete(Voluntarios)
