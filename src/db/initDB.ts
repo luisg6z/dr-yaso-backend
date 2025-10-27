@@ -2,6 +2,7 @@ import { db } from './db'
 import { Ciudades } from './schemas/Ciudades'
 import { Estados } from './schemas/Estados'
 import { Paises } from './schemas/Paises'
+import { Tienen } from './schemas/Tienen'
 import {
     Voluntarios,
     tipoDocumentoEnum,
@@ -18,6 +19,7 @@ import {
 import { Franquicias } from './schemas/Franquicias'
 import { Usuarios, tipoUsuarioEnum } from './schemas/Usuarios'
 import { hash } from 'bcrypt'
+import { Pertenecen } from './schemas/Pertenecen'
 
 const initDB = async () => {
     console.log('Starting database initialization...')
@@ -25,14 +27,16 @@ const initDB = async () => {
     await db.transaction(async (tx) => {
         try {
             // Clear databases
+            await tx.delete(Tienen)
+            await tx.delete(Usuarios)
+            await tx.delete(Pertenecen)
+            await tx.delete(Franquicias)
+            await tx.delete(DetallesVoluntarios)
+            await tx.delete(Voluntarios)
+            await tx.delete(Cargos)
             await tx.delete(Ciudades)
             await tx.delete(Estados)
             await tx.delete(Paises)
-            await tx.delete(Voluntarios)
-            await tx.delete(Cargos)
-            await tx.delete(DetallesVoluntarios)
-            await tx.delete(Franquicias)
-            await tx.delete(Usuarios)
 
             //Restart sequences
             await tx.execute('ALTER SEQUENCE "Paises_id_seq" RESTART WITH 1')
@@ -197,7 +201,7 @@ const initDB = async () => {
                     numeroDocumento: '12345678',
                     fechaNacimiento: new Date('1990-01-01'),
                     profesion: 'Ingeniero',
-                    estatus: estatusEnum.enumValues[1], // "Activo"
+                    estatus: estatusEnum.enumValues[0], // "Activo"
                     genero: generoEnum.enumValues[0], // "Masculino"
                 },
                 {
@@ -207,7 +211,7 @@ const initDB = async () => {
                     numeroDocumento: '87654321',
                     fechaNacimiento: new Date('1985-05-15'),
                     profesion: 'Médico',
-                    estatus: estatusEnum.enumValues[0], // "Desvinculado"
+                    estatus: estatusEnum.enumValues[1], // "Desvinculado"
                     genero: generoEnum.enumValues[1], // "Femenino"
                 },
             ]
@@ -269,6 +273,20 @@ const initDB = async () => {
             console.log('Volunteer details inserted successfully.')
             //#end region
 
+            //#region Tienen
+            console.log('Linking volunteers with positions...')
+            const volunteerPositions = [
+                {
+                    idVoluntario: 2,
+                    idCargo: 1,
+                    esCargoPrincipal: true, // "Coordinador"
+                },
+            ]
+
+            await tx.insert(Tienen).values(volunteerPositions).returning()
+            console.log('Volunteer positions linked successfully.')
+            //#end region
+
             //#region Franquicias
             console.log('Inserting franchises...')
             const franchises = [
@@ -287,6 +305,27 @@ const initDB = async () => {
             await tx.insert(Franquicias).values(franchises).returning()
             console.log('Franchises inserted successfully.')
             //#end region
+
+            //#region Pertenecen
+            console.log('Linking volunteers to franchises...')
+
+            const VolunteerBelongsToFranchise = [
+                {
+                    idVoluntario: 1,
+                    idFranquicia: 1,
+                    fechaHoraIngreso: new Date()
+                },
+                {
+                    idVoluntario: 2,
+                    idFranquicia: 1,
+                    fechaHoraIngreso: new Date()
+                }
+            ]
+
+            await tx.insert(Pertenecen).values(VolunteerBelongsToFranchise).returning()
+            console.log('Volunteers linked to franchises successfully.')
+
+            //#endregion
 
             //#region Usuarios
             console.log('Inserting users...')
