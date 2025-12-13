@@ -15,7 +15,7 @@ import { tipoMonedaEnum } from '../db/schemas/CuentasBancarias'
  *           type: string
  *         currency:
  *           type: string
- *           enum: [VES, USD, EUR]
+ *           enum: tipoMonedaEnum.enumValues
  *         balance:
  *           type: number
  *         franchiseId:
@@ -54,7 +54,7 @@ import { tipoMonedaEnum } from '../db/schemas/CuentasBancarias'
  *           type: string
  *         currency:
  *           type: string
- *           enum: [VES, USD, EUR]
+ *           enum: tipoMonedaEnum.enumValues
  *         franchiseId:
  *           type: integer
  *         bankCode:
@@ -69,7 +69,7 @@ import { tipoMonedaEnum } from '../db/schemas/CuentasBancarias'
  *           properties:
  *             documentType:
  *               type: string
- *               enum: [V, E, J, G]
+ *               enum: tipoDocumentoEnum.enumValues
  *             documentNumber:
  *               type: string
  *             firstName:
@@ -88,6 +88,7 @@ import { tipoMonedaEnum } from '../db/schemas/CuentasBancarias'
  *           properties:
  *             documentType:
  *               type: string
+ *               enum: tipoDocumentoEnum.enumValues
  *             documentNumber:
  *               type: string
  *             firstName:

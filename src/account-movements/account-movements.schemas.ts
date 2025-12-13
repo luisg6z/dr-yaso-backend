@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { tipoMovimientoEnum } from '../db/schemas/MovimientosCuentas'
 
 /**
  * @swagger
@@ -16,7 +17,7 @@ import { z } from 'zod'
  *           type: string
  *         movementType:
  *           type: string
- *           enum: [Transferencia, Pago Móvil, Depósito, Retiro, Cheque, Tarjeta]
+ *           enum: tipoMovimientoEnum.enumValues
  *         observation:
  *           type: string
  *         income:
@@ -43,7 +44,7 @@ import { z } from 'zod'
  *           type: string
  *         movementType:
  *           type: string
- *           enum: [Transferencia, Pago Móvil, Depósito, Retiro, Cheque, Tarjeta]
+ *           enum: tipoMovimientoEnum.enumValues
  *         observation:
  *           type: string
  *         income:
@@ -58,7 +59,7 @@ export const AccountMovementSchema = z.object({
     id: z.number().int().positive(),
     date: z.string().datetime(),
     referenceNumber: z.string().min(1).max(20),
-    movementType: z.enum(['Transferencia', 'Pago Móvil', 'Depósito', 'Retiro', 'Cheque', 'Tarjeta']),
+    movementType: z.enum(tipoMovimientoEnum.enumValues),
     observation: z.string().min(1).max(30),
     income: z.number().min(0).default(0),
     expense: z.number().min(0).default(0),
@@ -69,7 +70,7 @@ export const AccountMovementSchema = z.object({
 export const createAccountMovementSchema = z.object({
     date: z.string().datetime().or(z.date().transform(d => d.toISOString())),
     referenceNumber: z.string().min(1).max(20),
-    movementType: z.enum(['Transferencia', 'Pago Móvil', 'Depósito', 'Retiro', 'Cheque', 'Tarjeta']),
+    movementType: z.enum(tipoMovimientoEnum.enumValues),
     observation: z.string().min(1).max(30),
     income: z.number().min(0).default(0),
     expense: z.number().min(0).default(0),
