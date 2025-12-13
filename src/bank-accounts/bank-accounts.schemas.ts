@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { tipoDocumentoEnum } from '../db/schemas/Voluntarios'
+import { tipoMonedaEnum } from '../db/schemas/CuentasBancarias'
 
 /**
  * @swagger
@@ -95,7 +97,7 @@ import { z } from 'zod'
  */
 
 export const ResponsibleSchema = z.object({
-    documentType: z.enum(['V', 'E', 'J', 'G']),
+    documentType: z.enum(tipoDocumentoEnum.enumValues),
     documentNumber: z.string().min(1).max(20),
     firstName: z.string().min(1).max(100),
     lastName: z.string().min(1).max(100),
@@ -104,7 +106,7 @@ export const ResponsibleSchema = z.object({
 export const BankAccountSchema = z.object({
     id: z.number().int().positive(),
     accountNumber: z.string().min(1).max(20),
-    currency: z.enum(['VES', 'USD', 'EUR']),
+    currency: z.enum(tipoMonedaEnum.enumValues),
     balance: z.number(),
     franchiseId: z.number().int().positive(),
     bankCode: z.string().length(4),
@@ -114,7 +116,7 @@ export const BankAccountSchema = z.object({
 
 export const createBankAccountSchema = z.object({
     accountNumber: z.string().min(1).max(20),
-    currency: z.enum(['VES', 'USD', 'EUR']),
+    currency: z.enum(tipoMonedaEnum.enumValues),
     franchiseId: z.number().int().positive(),
     bankCode: z.string().length(4),
     responsible: ResponsibleSchema,
