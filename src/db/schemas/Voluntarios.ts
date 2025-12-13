@@ -15,7 +15,7 @@ export const Voluntarios = pgTable('Voluntarios', {
     nombres: varchar({ length: 100 }).notNull(),
     apellidos: varchar({ length: 100 }).notNull(),
     tipoDocumento: tipoDocumentoEnum('tipoDocumento').notNull(),
-    numeroDocumento: varchar('numeroDocumento', { length: 12 }).notNull(),
+    numeroDocumento: varchar('numeroDocumento', { length: 12 }).notNull().unique(),
     fechaNacimiento: timestamp('fechaNacimiento').notNull(),
     profesion: varchar({ length: 60 }).notNull(),
     estatus: estatusEnum('estatus').notNull(),
