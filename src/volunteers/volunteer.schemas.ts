@@ -71,7 +71,12 @@ import { z } from 'zod'
  *         occupations:
  *           type: array
  *           items:
- *             type: integer
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               isMain:
+ *                 type: boolean
  *         direction:
  *           type: object
  *           properties:
@@ -83,6 +88,7 @@ import { z } from 'zod'
  *               type: string
  *             country:
  *               type: string
+ * 
  */
 export const VolunteerSchema = z.object({
     id: z.number().int().positive(),
@@ -118,7 +124,12 @@ export const VolunteerSchema = z.object({
     tikTok: z.string().min(1).max(200).optional(),
     emergencyContactName: z.string().min(1).max(60).optional(),
     emergencyContactPhone: z.string().min(1).max(20).optional(),
-    occupations: z.array(z.number().positive()).optional(),
+      occupations: z.array(
+    z.object({
+      id: z.number().int().positive(),
+      isMain: z.boolean(), // true si es cargo principal
+    })
+  ).optional(),
     direction: z.string().min(1).max(200).optional(),
     cityId: z.number().int().positive().optional(),
 })
@@ -207,7 +218,15 @@ export const VolunteerSchema = z.object({
  *         occupations:
  *           type: array
  *           items:
- *             type: integer
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               isMain:
+ *                 type: boolean
+ *             required:
+ *               - id
+ *               - isMain
  *         direction:
  *           type: string
  *         cityId:
@@ -238,7 +257,10 @@ export const VolunteerSchema = z.object({
  *         tikTok: "mariaperez"
  *         emergencyContactName: "Juan Pérez"
  *         emergencyContactPhone: "04141231234"
- *         occupations: [1, 2]
+ *         occupations: [
+ *           { id: 1, isMain: true },
+ *           { id: 2, isMain: false }
+ *         ]
  *         direction: "Calle Falsa 123, Ciudad"
  *         cityId: 1
  */

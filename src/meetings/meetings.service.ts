@@ -21,8 +21,8 @@ export const createMeeting = async (meeting: MeetingCreate) => {
                 id: Voluntarios.id,
                 firstName: Voluntarios.nombres,
                 lastName: Voluntarios.apellidos,
-                idNumber: Voluntarios.numeroCedula,
-                idType: Voluntarios.tipoCedula,
+                idNumber: Voluntarios.numeroDocumento,
+                idType: Voluntarios.tipoDocumento,
                 status: Voluntarios.estatus,
             })
             .from(Voluntarios)
@@ -107,8 +107,8 @@ export const getMeetingById = async (id: number) => {
             id: Voluntarios.id,
             firstName: Voluntarios.nombres,
             lastName: Voluntarios.apellidos,
-            idType: Voluntarios.tipoCedula,
-            idNumber: Voluntarios.numeroCedula,
+            idType: Voluntarios.tipoDocumento,
+            idNumber: Voluntarios.numeroDocumento,
             birthDate: Voluntarios.fechaNacimiento,
             profession: Voluntarios.profesion,
             status: Voluntarios.estatus,

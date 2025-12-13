@@ -1,7 +1,7 @@
 import { pgTable, varchar, serial, pgEnum } from 'drizzle-orm/pg-core'
 import { timestamp } from 'drizzle-orm/pg-core'
 
-export const tipoCedulaEnum = pgEnum('TipoCedula', ['V', 'E'])
+export const tipoDocumentoEnum = pgEnum('tipoDocumento', ['V', 'E', 'P'])
 export const estatusEnum = pgEnum('Estatus', [
     'Activo',
     'Desvinculado',
@@ -14,8 +14,8 @@ export const Voluntarios = pgTable('Voluntarios', {
     id: serial().primaryKey(),
     nombres: varchar({ length: 100 }).notNull(),
     apellidos: varchar({ length: 100 }).notNull(),
-    tipoCedula: tipoCedulaEnum('tipoCedula').notNull(),
-    numeroCedula: varchar('numeroCedula', { length: 12 }).notNull(),
+    tipoDocumento: tipoDocumentoEnum('tipoDocumento').notNull(),
+    numeroDocumento: varchar('numeroDocumento', { length: 12 }).notNull(),
     fechaNacimiento: timestamp('fechaNacimiento').notNull(),
     profesion: varchar({ length: 60 }).notNull(),
     estatus: estatusEnum('estatus').notNull(),
