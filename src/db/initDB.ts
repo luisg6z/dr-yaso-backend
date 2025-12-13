@@ -277,7 +277,7 @@ const initDB = async () => {
             console.log('Linking volunteers with positions...')
             const volunteerPositions = [
                 {
-                    idVoluntario: 2,
+                    idVoluntario: 1,
                     idCargo: 1,
                     esCargoPrincipal: true, // "Coordinador"
                 },
