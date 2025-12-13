@@ -123,6 +123,42 @@ volunteersRouter.get(
     getAllVolunteersHandler,
 )
 
+/**
+ * @swagger
+ * /api/volunteers/{id}:
+ *   put:
+ *     summary: Actualizar un voluntario por ID
+ *     tags:
+ *       - Volunteers
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del voluntario a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VolunteerUpdate'
+ *     responses:
+ *       200:
+ *         description: Voluntario actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Volunteer'
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Voluntario no encontrado
+ */
 volunteersRouter.put(
     '/:id',
     authenticate,

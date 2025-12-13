@@ -352,85 +352,89 @@ export const updateVolunteer = async (
     if (!existingVolunteer) throw new AppError(404, 'Volunteer not found')
 
     // Actualizar la tabla Voluntarios
-    await db
-        .update(Voluntarios)
-        .set({
-            nombres: volunteer.firstName,
-            apellidos: volunteer.lastName,
-            tipoCedula: volunteer.idType,
-            numeroCedula: volunteer.idNumber,
-            fechaNacimiento: new Date(
-                volunteer.birthDate ?? existingVolunteer.birthDate,
-            ),
-            profesion: volunteer.profession,
-            estatus: volunteer.status,
-            genero: volunteer.gender,
-        })
-        .where(eq(Voluntarios.id, id))
 
-    // Actualizar la tabla DetallesVoluntarios
-    await db
-        .update(DetallesVoluntarios)
-        .set({
-            tipoSangre: volunteer.bloodType,
-            estadoCivil: volunteer.maritalStatus,
-            telefonos: volunteer.phoneNumbers,
-            nombrePayaso: volunteer.clownName,
-            tallaCamisa: volunteer.shirtSize,
-            tieneCamisaConLogo: volunteer.hasShirtWithLogo,
-            tieneBataConLogo: volunteer.hasCoatWithLogo,
-            nombreContactoEmergencia: volunteer.emergencyContactName,
-            telefonoContactoEmergencia: volunteer.emergencyContactPhone,
-            alergias: volunteer.allergies,
-            discapacidad: volunteer.disability,
-            observacion: volunteer.notes,
-            facebook: volunteer.facebook,
-            x: volunteer.x,
-            instagram: volunteer.instagram,
-            tiktok: volunteer.tikTok,
-            direccion: volunteer.direction,
-            idCiudad: volunteer.cityId,
-        })
-        .where(eq(DetallesVoluntarios.idVoluntario, id))
-
-    // Actualizar la tabla Pertenecen si franchiseId cambia
-    if (
-        volunteer.franchiseId &&
-        existingVolunteer.franchise.id &&
-        volunteer.franchiseId !== existingVolunteer.franchise.id
-    ) {
-        // Update the current franchise's exit date
-        await db
-            .update(Pertenecen)
+    await db.transaction(async (tx) => {
+        await tx
+            .update(Voluntarios)
             .set({
-                fechaHoraEgreso: new Date(),
-            })
-            .where(
-                and(
-                    eq(Pertenecen.idVoluntario, id),
-                    eq(Pertenecen.idFranquicia, existingVolunteer.franchise.id),
+                nombres: volunteer.firstName,
+                apellidos: volunteer.lastName,
+                tipoCedula: volunteer.idType,
+                numeroCedula: volunteer.idNumber,
+                fechaNacimiento: new Date(
+                    volunteer.birthDate ?? existingVolunteer.birthDate,
                 ),
-            )
-
-        // Insert a new record in Pertenecen for the new franchise
-        await db.insert(Pertenecen).values({
-            idVoluntario: id,
-            idFranquicia: volunteer.franchiseId,
-            fechaHoraIngreso: new Date(),
-        })
-    }
-
-    if (volunteer.occupations) {
-        await db.delete(Tienen).where(eq(Tienen.idVoluntario, id))
-
-        volunteer.occupations.forEach(async (ocupationId: number) => {
-            await db.insert(Tienen).values({
-                idVoluntario: id,
-                idCargo: ocupationId,
-                esCargoPrincipal: false,
+                profesion: volunteer.profession,
+                estatus: volunteer.status,
+                genero: volunteer.gender,
             })
-        })
-    }
+            .where(eq(Voluntarios.id, id))
+    
+        // Actualizar la tabla DetallesVoluntarios
+        await tx
+            .update(DetallesVoluntarios)
+            .set({
+                tipoSangre: volunteer.bloodType,
+                estadoCivil: volunteer.maritalStatus,
+                telefonos: volunteer.phoneNumbers,
+                nombrePayaso: volunteer.clownName,
+                tallaCamisa: volunteer.shirtSize,
+                tieneCamisaConLogo: volunteer.hasShirtWithLogo,
+                tieneBataConLogo: volunteer.hasCoatWithLogo,
+                nombreContactoEmergencia: volunteer.emergencyContactName,
+                telefonoContactoEmergencia: volunteer.emergencyContactPhone,
+                alergias: volunteer.allergies,
+                discapacidad: volunteer.disability,
+                observacion: volunteer.notes,
+                facebook: volunteer.facebook,
+                x: volunteer.x,
+                instagram: volunteer.instagram,
+                tiktok: volunteer.tikTok,
+                direccion: volunteer.direction,
+                idCiudad: volunteer.cityId,
+            })
+            .where(eq(DetallesVoluntarios.idVoluntario, id))
+    
+        // Actualizar la tabla Pertenecen si franchiseId cambia
+        if (
+            volunteer.franchiseId &&
+            existingVolunteer.franchise.id &&
+            volunteer.franchiseId !== existingVolunteer.franchise.id
+        ) {
+            // Update the current franchise's exit date
+            await tx
+                .update(Pertenecen)
+                .set({
+                    fechaHoraEgreso: new Date(),
+                })
+                .where(
+                    and(
+                        eq(Pertenecen.idVoluntario, id),
+                        eq(Pertenecen.idFranquicia, existingVolunteer.franchise.id),
+                    ),
+                )
+    
+            // Insert a new record in Pertenecen for the new franchise
+            await db.insert(Pertenecen).values({
+                idVoluntario: id,
+                idFranquicia: volunteer.franchiseId,
+                fechaHoraIngreso: new Date(),
+            })
+        }
+    
+        if (volunteer.occupations) {
+            await tx.delete(Tienen).where(eq(Tienen.idVoluntario, id))
+    
+            volunteer.occupations.forEach(async (ocupationId: number) => {
+                await db.insert(Tienen).values({
+                    idVoluntario: id,
+                    idCargo: ocupationId,
+                    esCargoPrincipal: false,
+                })
+            })
+        }
+        
+    })
 
     // Devolver el voluntario actualizado en el mismo formato que getVolunteerById
     return await getVolunteerById(id)

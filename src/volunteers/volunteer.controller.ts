@@ -18,19 +18,20 @@ export const createVolunteerHandler = async (req: Request, res: Response) => {
         res.status(201).json({
             data: await createVolunteer(Volunteer),
         })
+        return
     } catch (error) {
-        if (!res.headersSent) {
             if (error instanceof AppError) {
                 res.status(error.statusCode).json({
                     message: error.message,
                     details: error.details,
                 })
+                return
             }
             res.status(500).json({
                 message: 'Error creating Volunteer',
                 details: error,
             })
-        }
+            return
     }
 }
 
