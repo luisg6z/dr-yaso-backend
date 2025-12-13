@@ -43,6 +43,7 @@ export const login = async (data: LoginSchema) => {
 
     const token = jwt.sign(
         {
+            id: user[0].id,
             name: user[0].name,
             role: user[0].role,
             email: user[0].email,

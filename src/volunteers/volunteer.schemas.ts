@@ -268,7 +268,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
     id: true,
     franchiseName: true,
 })
-// ...existing code...
+
 /**
  * @swagger
  * components:

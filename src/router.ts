@@ -10,6 +10,7 @@ import meetingsRouter from './meetings/meetings.router'
 import StateRouter from './states/states.router'
 import CountryRouter from './countries/country.router'
 import CityRouter from './cities/cities.router'
+import observationsRouter from './observations/observations.router'
 
 const router = Router()
 
@@ -24,5 +25,6 @@ router.use('/meetings', meetingsRouter)
 router.use('/states', StateRouter)
 router.use('/countries', CountryRouter)
 router.use('/cities', CityRouter)
+router.use('/observations', observationsRouter)
 
 export default router
