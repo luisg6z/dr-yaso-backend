@@ -10,6 +10,7 @@ import meetingsRouter from './meetings/meetings.router'
 import StateRouter from './states/states.router'
 import CountryRouter from './countries/country.router'
 import CityRouter from './cities/cities.router'
+import observationsRouter from './observations/observations.router'
 import banksRouter from './banks/banks.router'
 import pettyCashRouter from './petty-cash/petty-cash.router'
 import bankAccountsRouter from './bank-accounts/bank-accounts.router'
@@ -29,6 +30,7 @@ router.use('/meetings', meetingsRouter)
 router.use('/states', StateRouter)
 router.use('/countries', CountryRouter)
 router.use('/cities', CityRouter)
+router.use('/observations', observationsRouter)
 router.use('/banks', banksRouter)
 router.use('/petty-cash', pettyCashRouter)
 router.use('/bank-accounts', bankAccountsRouter)

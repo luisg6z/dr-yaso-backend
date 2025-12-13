@@ -54,7 +54,6 @@ export const DetallesVoluntarios = pgTable('DetallesVoluntarios', {
     }),
     alergias: varchar({ length: 200 }),
     discapacidad: varchar({ length: 200 }),
-    observacion: varchar({ length: 200 }),
     facebook: varchar({ length: 200 }),
     x: varchar({ length: 200 }),
     instagram: varchar({ length: 200 }),

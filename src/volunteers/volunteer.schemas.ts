@@ -54,8 +54,6 @@ import { z } from 'zod'
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -117,7 +115,6 @@ export const VolunteerSchema = z.object({
     hasCoatWithLogo: z.boolean(),
     allergies: z.string().min(1).max(200).optional(),
     disability: z.string().min(1).max(200).optional(),
-    notes: z.string().min(1).max(200).optional(),
     facebook: z.string().min(1).max(200).optional(),
     x: z.string().min(1).max(200).optional(),
     instagram: z.string().min(1).max(200).optional(),
@@ -201,8 +198,6 @@ export const VolunteerSchema = z.object({
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -250,7 +245,6 @@ export const VolunteerSchema = z.object({
  *         hasCoatWithLogo: false
  *         allergies: "Ninguna"
  *         disability: "ceguera"
- *         notes: "Voluntaria desde 2022"
  *         facebook: "maria.perez"
  *         x: "mariaperez"
  *         instagram: "mariaperez"
@@ -268,6 +262,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
     id: true,
     franchiseName: true,
 })
+
 /**
  * @swagger
  * components:
@@ -282,7 +277,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *           type: string
  *         idType:
  *           type: string
- *           enum: [V, E]
+ *           enum: [V, E, P]
  *         idNumber:
  *           type: string
  *         birthDate:
@@ -320,8 +315,6 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -337,7 +330,12 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         occupations:
  *           type: array
  *           items:
- *             type: integer
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               isMain:
+ *                 type: boolean
  *         direction:
  *           type: string
  *         cityId:
@@ -361,17 +359,19 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         hasCoatWithLogo: false
  *         allergies: "Ninguna"
  *         disability: "ceguera"
- *         notes: "Voluntaria desde 2022"
  *         facebook: "maria.perez"
  *         x: "mariaperez"
  *         instagram: "mariaperez"
  *         tikTok: "mariaperez"
  *         emergencyContactName: "Juan Pérez"
  *         emergencyContactPhone: "04141231234"
- *         occupations: [1, 2]
+ *         occupations:
+ *           - { id: 1, isMain: true }
+ *           - { id: 2, isMain: false }
  *         direction: "Calle Falsa 123, Ciudad"
  *         cityId: 1
  */
+// 
 export const updateVolunteerSchema = createVolunteerSchema.partial()
 
 export type Volunteer = z.infer<typeof VolunteerSchema>
