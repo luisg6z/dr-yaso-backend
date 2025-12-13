@@ -76,10 +76,7 @@ export const createPettyCashSchema = PettyCashSchema.omit({
     balance: true,
 })
 
-export const updatePettyCashSchema = PettyCashSchema.pick({
-    name: true,
-    responsibleId: true,
-}).partial()
+export const updatePettyCashSchema = PettyCashSchema.partial()
 
 export type PettyCash = z.infer<typeof PettyCashSchema>
 export type PettyCashCreate = z.infer<typeof createPettyCashSchema>
