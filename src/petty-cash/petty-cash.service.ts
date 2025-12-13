@@ -48,7 +48,7 @@ export const createPettyCash = async (pettyCash: PettyCashCreate) => {
 
     if (!newPettyCash) throw new AppError(500, 'Error creating petty cash')
 
-    return newPettyCash
+    return getPettyCashById(newPettyCash.id)
 }
 
 export const getAllPettyCash = async (pagination: Pagination, franchiseId?: number) => {
@@ -129,7 +129,7 @@ export const updatePettyCash = async (id: number, pettyCashUpdate: PettyCashUpda
 
     if (!updatedPettyCash) throw new AppError(500, 'Error updating petty cash')
 
-    return updatedPettyCash
+    return getPettyCashById(id)
 }
 
 export const deletePettyCash = async (id: number) => {

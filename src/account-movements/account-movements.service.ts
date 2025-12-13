@@ -44,7 +44,7 @@ export const createAccountMovement = async (movement: AccountMovementCreate) => 
             .set({ saldo: newBalance.toString() })
             .where(eq(CuentasBancarias.id, movement.accountId))
 
-        return newMovement
+        return getAccountMovementById(newMovement.id)
     })
 }
 

@@ -42,7 +42,7 @@ export const createCashMovement = async (movement: CashMovementCreate) => {
             .set({ saldo: newBalance.toString() })
             .where(eq(CajasChicas.id, movement.pettyCashId))
 
-        return newMovement
+        return getCashMovementById(newMovement.id)
     })
 }
 
@@ -77,7 +77,7 @@ export const getAllCashMovements = async (pagination: Pagination, franchiseId?: 
         .innerJoin(CajasChicas, eq(CajasChicas.id, MovimientosCaja.idCaja))
 
     if (franchiseId) {
-        countQuery = countQuery.where(eq(CajasChicas.idFranquicia, franchiseId))
+        countQuery = countQuery.where(eq(CajasChicas.idFranquicia, franchiseId)) as any
     }
 
     const totalItems = (await countQuery).length // Not efficient for large datasets but works for now or use proper count approach
