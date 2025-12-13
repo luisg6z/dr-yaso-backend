@@ -118,12 +118,19 @@ export const updatePettyCash = async (id: number, pettyCashUpdate: PettyCashUpda
     const existingPettyCash = await getPettyCashById(id)
     if (!existingPettyCash) throw new AppError(404, 'Petty Cash not found')
 
+    const updateData: any = {}
+    if (pettyCashUpdate.code) updateData.codCaja = pettyCashUpdate.code
+    if (pettyCashUpdate.name) updateData.nombre = pettyCashUpdate.name
+    if (pettyCashUpdate.currency) updateData.tipoMoneda = pettyCashUpdate.currency
+    if (pettyCashUpdate.franchiseId) updateData.idFranquicia = pettyCashUpdate.franchiseId
+    if (pettyCashUpdate.responsibleId) updateData.idResponsable = pettyCashUpdate.responsibleId
+
+    // If no fields to update, return existing
+    if (Object.keys(updateData).length === 0) return existingPettyCash
+
     const [updatedPettyCash] = await db
         .update(CajasChicas)
-        .set({
-            nombre: pettyCashUpdate.name,
-            idResponsable: pettyCashUpdate.responsibleId,
-        })
+        .set(updateData)
         .where(eq(CajasChicas.id, id))
         .returning()
 
