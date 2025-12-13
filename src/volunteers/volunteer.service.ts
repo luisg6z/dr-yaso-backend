@@ -1,4 +1,4 @@
-import { eq, and, isNull } from 'drizzle-orm'
+import { eq, and, isNull, ne } from 'drizzle-orm'
 import { VolunteerCreate, VolunteerUpdate } from './volunteer.schemas'
 import { db } from '../db/db'
 import { Voluntarios } from '../db/schemas/Voluntarios'
@@ -23,6 +23,22 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
         if (franchise.length < 1) throw new AppError(400, 'Franchise not found')
     }
 
+        // Validación previa de coordinador único (fuera de la tx)
+    if (volunteer.franchiseId && volunteer.occupations?.length) {
+        const coordinatorId = await getCoordinatorCargoId()
+        const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
+        if (hasCoordinator) {
+            const exists = await existsCoordinatorInFranchise(volunteer.franchiseId, coordinatorId)
+            if (exists) {
+                throw new AppError(
+                    409,
+                    'Ya existe un coordinador activo en esta franquicia. Actualiza el cargo del voluntario y vuelve a intentarlo.',
+                )
+            }
+        }
+    }
+
+
     await db.transaction(async (tx) => {
         const [newVolunteer] = await tx
             .insert(Voluntarios)
@@ -41,6 +57,8 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
             })
 
         if (!newVolunteer) throw new AppError(500, 'Error creating volunteer')
+
+        
 
         //Insert into DetallesVoluntarios using the newVolunteer.id
         await tx.insert(DetallesVoluntarios).values({
@@ -379,6 +397,29 @@ export const updateVolunteer = async (
     const existingVolunteer = await getVolunteerById(id)
     if (!existingVolunteer) throw new AppError(404, 'Volunteer not found')
 
+        // Validación previa de coordinador único (fuera de la tx)
+    if (volunteer.occupations?.length) {
+        const coordinatorId = await getCoordinatorCargoId()
+        const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
+        if (hasCoordinator) {
+            const targetFranchiseId = volunteer.franchiseId ?? existingVolunteer.franchise.id
+
+            if (targetFranchiseId === null) {
+                throw new AppError(
+                    400,
+                    'El voluntario no tiene franquicia asignada. No se puede validar el coordinador único.'
+                )
+            }
+            const exists = await existsCoordinatorInFranchise(targetFranchiseId, coordinatorId, id)
+            if (exists) {
+                throw new AppError(
+                    409,
+                    'Ya existe un coordinador activo en esta franquicia. Actualiza el cargo del voluntario y vuelve a intentarlo.',
+                )
+            }
+        }
+    }
+
     // Actualizar la tabla Voluntarios
     await db.transaction(async (tx) => {
         await tx
@@ -503,4 +544,44 @@ export const getVolunteersByOccupation = async (occupationId: number) => {
     return {
         items: volunteers,
     }
+}
+
+// Helper: obtiene el id del cargo "Coordinador" usando db 
+const getCoordinatorCargoId = async (): Promise<number> => {
+    const [cargo] = await db
+        .select({ id: Cargos.id })
+        .from(Cargos)
+        .where(eq(Cargos.nombre, 'Coordinador'))
+    if (!cargo) throw new AppError(500, 'Coordinator cargo not found')
+    return cargo.id
+}
+
+// Helper: verifica si existe coordinador activo en la franquicia usando db 
+const existsCoordinatorInFranchise = async (
+    franchiseId: number,
+    coordinatorCargoId: number,
+    excludeVolunteerId?: number,
+): Promise<boolean> => {
+    if (!franchiseId) return false
+
+    const existing = await db
+        .select({ volunteerId: Voluntarios.id })
+        .from(Tienen)
+        .innerJoin(Voluntarios, eq(Voluntarios.id, Tienen.idVoluntario))
+        .innerJoin(
+            Pertenecen,
+            and(
+                eq(Pertenecen.idVoluntario, Voluntarios.id),
+                isNull(Pertenecen.fechaHoraEgreso),
+            ),
+        )
+        .where(
+            and(
+                eq(Pertenecen.idFranquicia, franchiseId),
+                eq(Tienen.idCargo, coordinatorCargoId),
+                excludeVolunteerId ? ne(Voluntarios.id, excludeVolunteerId) : eq(Voluntarios.id, Voluntarios.id),
+            ),
+        )
+
+    return existing.length > 0
 }

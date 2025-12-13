@@ -268,6 +268,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
     id: true,
     franchiseName: true,
 })
+// ...existing code...
 /**
  * @swagger
  * components:
@@ -282,7 +283,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *           type: string
  *         idType:
  *           type: string
- *           enum: [V, E]
+ *           enum: [V, E, P]
  *         idNumber:
  *           type: string
  *         birthDate:
@@ -337,7 +338,12 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         occupations:
  *           type: array
  *           items:
- *             type: integer
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               isMain:
+ *                 type: boolean
  *         direction:
  *           type: string
  *         cityId:
@@ -368,10 +374,13 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         tikTok: "mariaperez"
  *         emergencyContactName: "Juan Pérez"
  *         emergencyContactPhone: "04141231234"
- *         occupations: [1, 2]
+ *         occupations:
+ *           - { id: 1, isMain: true }
+ *           - { id: 2, isMain: false }
  *         direction: "Calle Falsa 123, Ciudad"
  *         cityId: 1
  */
+// 
 export const updateVolunteerSchema = createVolunteerSchema.partial()
 
 export type Volunteer = z.infer<typeof VolunteerSchema>
