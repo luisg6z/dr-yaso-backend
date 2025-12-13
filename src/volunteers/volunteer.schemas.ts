@@ -54,8 +54,6 @@ import { z } from 'zod'
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -117,7 +115,6 @@ export const VolunteerSchema = z.object({
     hasCoatWithLogo: z.boolean(),
     allergies: z.string().min(1).max(200).optional(),
     disability: z.string().min(1).max(200).optional(),
-    notes: z.string().min(1).max(200).optional(),
     facebook: z.string().min(1).max(200).optional(),
     x: z.string().min(1).max(200).optional(),
     instagram: z.string().min(1).max(200).optional(),
@@ -201,8 +198,6 @@ export const VolunteerSchema = z.object({
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -250,7 +245,6 @@ export const VolunteerSchema = z.object({
  *         hasCoatWithLogo: false
  *         allergies: "Ninguna"
  *         disability: "ceguera"
- *         notes: "Voluntaria desde 2022"
  *         facebook: "maria.perez"
  *         x: "mariaperez"
  *         instagram: "mariaperez"
@@ -321,8 +315,6 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *           type: string
  *         disability:
  *           type: string
- *         notes:
- *           type: string
  *         facebook:
  *           type: string
  *         x:
@@ -367,7 +359,6 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         hasCoatWithLogo: false
  *         allergies: "Ninguna"
  *         disability: "ceguera"
- *         notes: "Voluntaria desde 2022"
  *         facebook: "maria.perez"
  *         x: "mariaperez"
  *         instagram: "mariaperez"

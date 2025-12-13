@@ -74,7 +74,6 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
             telefonoContactoEmergencia: volunteer.emergencyContactPhone,
             alergias: volunteer.allergies,
             discapacidad: volunteer.disability,
-            observacion: volunteer.notes,
             facebook: volunteer.facebook,
             x: volunteer.x,
             instagram: volunteer.instagram,
@@ -127,7 +126,6 @@ export const getAllVolunteers = async (pagination: Pagination) => {
 
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
-            notes: DetallesVoluntarios.observacion,
             socialMedia: {
                 facebook: DetallesVoluntarios.facebook,
                 x: DetallesVoluntarios.x,
@@ -231,7 +229,6 @@ export const getAllVolunteersForFranchise = async (franchiseId: number) => {
             hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
-            notes: DetallesVoluntarios.observacion,
             socialMedia: {
                 facebook: DetallesVoluntarios.facebook,
                 x: DetallesVoluntarios.x,
@@ -325,7 +322,6 @@ export const getVolunteerById = async (id: number) => {
             hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
-            notes: DetallesVoluntarios.observacion,
             socialMedia: {
                 facebook: DetallesVoluntarios.facebook,
                 x: DetallesVoluntarios.x,
@@ -453,7 +449,6 @@ export const updateVolunteer = async (
                 telefonoContactoEmergencia: volunteer.emergencyContactPhone,
                 alergias: volunteer.allergies,
                 discapacidad: volunteer.disability,
-                observacion: volunteer.notes,
                 facebook: volunteer.facebook,
                 x: volunteer.x,
                 instagram: volunteer.instagram,
