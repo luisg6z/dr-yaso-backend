@@ -7,7 +7,7 @@ import { CashMovementCreate } from './cash-movements.schemas'
 import { Pagination } from '../types/types'
 
 export const createCashMovement = async (movement: CashMovementCreate) => {
-    return await db.transaction(async (tx) => {
+    const cashMovId = await db.transaction(async (tx) => {
         // 1. Get Petty Cash to check existence and current balance
         const pettyCash = await tx
             .select()
@@ -42,8 +42,10 @@ export const createCashMovement = async (movement: CashMovementCreate) => {
             .set({ saldo: newBalance.toString() })
             .where(eq(CajasChicas.id, movement.pettyCashId))
 
-        return getCashMovementById(newMovement.id)
+        return newMovement.id
     })
+
+    return getCashMovementById(cashMovId)
 }
 
 export const getAllCashMovements = async (pagination: Pagination, franchiseId?: number) => {
