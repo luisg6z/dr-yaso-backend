@@ -66,7 +66,15 @@ export const createBankAccount = async (data: BankAccountCreate) => {
 
         if (!newAccount) throw new AppError(500, 'Error creating bank account')
 
-        return getBankAccountById(newAccount.id)
+        return {
+            id: newAccount.id,
+            accountNumber: newAccount.codCuenta,
+            currency: newAccount.tipoMoneda,
+            balance: newAccount.saldo,
+            franchiseId: newAccount.idFranquicia,
+            bankCode: newAccount.codBanco,
+            responsibleId: newAccount.idResponsable,
+        }
     })
 }
 
