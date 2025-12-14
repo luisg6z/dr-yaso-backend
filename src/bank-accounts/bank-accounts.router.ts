@@ -15,7 +15,6 @@ import { authenticate } from '../auth/middlewares/auth.middleware'
 import { authorize } from '../auth/middlewares/authorize.middleware'
 import { tipoUsuarioEnum } from '../db/schemas/Usuarios'
 import { bankReportController } from './report.controller'
-import { bankReportFiltersSchema } from './report.schemas'
 
 const bankAccountsRouter = Router()
 
