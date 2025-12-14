@@ -2,16 +2,25 @@ import { db } from '../db/db'
 import { MovimientosInventario } from '../db/schemas/MovimientosInventario'
 import { TienenStock } from '../db/schemas/TienenStock'
 import { Usuarios } from '../db/schemas/Usuarios'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { MovementCreate } from './inventory.schemas'
 import { AppError } from '../common/errors/errors'
+import { Pagination } from '../types/types'
 
-export const createInventoryMovement = async (data: MovementCreate, idUsuario: number) => {
+export const createInventoryMovement = async (
+    data: MovementCreate,
+    idUsuario: number,
+) => {
     // Paso A: Consultar estado actual desde TienenStock
     const [current] = await db
         .select({ stockActual: TienenStock.stockActual })
         .from(TienenStock)
-        .where(and(eq(TienenStock.idProducto, data.idProducto), eq(TienenStock.idFranquicia, data.idFranquicia)))
+        .where(
+            and(
+                eq(TienenStock.idProducto, data.idProducto),
+                eq(TienenStock.idFranquicia, data.idFranquicia),
+            ),
+        )
         .limit(1)
 
     const prevSaldo = current?.stockActual ?? 0
@@ -32,17 +41,31 @@ export const createInventoryMovement = async (data: MovementCreate, idUsuario: n
         const existing = await tx
             .select()
             .from(TienenStock)
-            .where(and(eq(TienenStock.idProducto, data.idProducto), eq(TienenStock.idFranquicia, data.idFranquicia)))
+            .where(
+                and(
+                    eq(TienenStock.idProducto, data.idProducto),
+                    eq(TienenStock.idFranquicia, data.idFranquicia),
+                ),
+            )
 
         if (existing.length === 0) {
             await tx
                 .insert(TienenStock)
-                .values({ idProducto: data.idProducto, idFranquicia: data.idFranquicia, stockActual: nuevoSaldo })
+                .values({
+                    idProducto: data.idProducto,
+                    idFranquicia: data.idFranquicia,
+                    stockActual: nuevoSaldo,
+                })
         } else {
             await tx
                 .update(TienenStock)
                 .set({ stockActual: nuevoSaldo })
-                .where(and(eq(TienenStock.idProducto, data.idProducto), eq(TienenStock.idFranquicia, data.idFranquicia)))
+                .where(
+                    and(
+                        eq(TienenStock.idProducto, data.idProducto),
+                        eq(TienenStock.idFranquicia, data.idFranquicia),
+                    ),
+                )
         }
 
         const [movement] = await tx
@@ -64,7 +87,14 @@ export const createInventoryMovement = async (data: MovementCreate, idUsuario: n
     return row
 }
 
-export const getMovementsForProductFranchise = async (productId: number, franchiseId: number) => {
+export const getMovementsForProductFranchise = async (
+    productId: number,
+    franchiseId: number,
+    pagination: Pagination,
+) => {
+    const { page, limit } = pagination
+    const offset = (page - 1) * limit
+
     const rows = await db
         .select({
             id: MovimientosInventario.id,
@@ -80,8 +110,27 @@ export const getMovementsForProductFranchise = async (productId: number, franchi
         })
         .from(MovimientosInventario)
         .leftJoin(Usuarios, eq(MovimientosInventario.idUsuario, Usuarios.id))
-        .where(and(eq(MovimientosInventario.idProducto, productId), eq(MovimientosInventario.idFranquicia, franchiseId)))
+        .where(
+            and(
+                eq(MovimientosInventario.idProducto, productId),
+                eq(MovimientosInventario.idFranquicia, franchiseId),
+            ),
+        )
         .orderBy(desc(MovimientosInventario.fechaHora))
+        .limit(limit)
+        .offset(offset)
+    const result = await db.execute<{ count: number }>(
+        sql`SELECT COUNT(*)::int AS count FROM ${MovimientosInventario} WHERE ${MovimientosInventario.idProducto} = ${productId} AND ${MovimientosInventario.idFranquicia} = ${franchiseId}`,
+    )
+    const count = result.rows[0]?.count ?? 0
 
-    return { items: rows }
+    return {
+        items: rows,
+        paginate: {
+            page,
+            limit,
+            totalItems: count,
+            totalPages: Math.ceil(count / limit),
+        },
+    }
 }
