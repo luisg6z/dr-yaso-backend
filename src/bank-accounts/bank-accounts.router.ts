@@ -152,22 +152,23 @@ export default bankAccountsRouter
  *           schema:
  *             type: object
  *             properties:
- *               rangoFechas:
+ *               dateRange:
  *                 type: object
  *                 properties:
- *                   fechaInicio:
+ *                   startDate:
  *                     type: string
  *                     format: date-time
- *                   fechaFin:
+ *                   endDate:
  *                     type: string
  *                     format: date-time
- *               cuentaBancariaId:
+ *               bankAccountId:
  *                 type: integer
- *               tiposMovimiento:
+ *               movementTypes:
  *                 type: array
  *                 items:
  *                   type: string
- *               formato:
+ *                   enum: [Transferencia, Pago Móvil, Depósito, Retiro, Cheque, Tarjeta]
+ *               format:
  *                 type: string
  *                 enum: [json, excel, pdf]
  *     description: El reporte se genera por cuenta. Los montos se muestran en la moneda de la cuenta (VES/USD/EUR) y se formatea el documento acorde.
@@ -179,6 +180,6 @@ bankAccountsRouter.post(
     '/report',
     authenticate,
     authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
-    validate(bankReportFiltersSchema),
+    // validate(bankReportFiltersSchema), // Validation is done inside controller to handle safeParse
     bankReportController,
 )

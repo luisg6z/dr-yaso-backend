@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { validate } from '../middleware/validate'
-import { createPettyCashSchema, updatePettyCashSchema } from './petty-cash.schemas'
+import {
+    createPettyCashSchema,
+    updatePettyCashSchema,
+} from './petty-cash.schemas'
 import {
     createPettyCashHandler,
     getAllPettyCashHandler,
@@ -8,11 +11,75 @@ import {
     updatePettyCashHandler,
     deletePettyCashHandler,
 } from './petty-cash.controller'
+import { getReport } from './report.controller'
 import { authenticate } from '../auth/middlewares/auth.middleware'
 import { authorize } from '../auth/middlewares/authorize.middleware'
 import { tipoUsuarioEnum } from '../db/schemas/Usuarios'
 
 const pettyCashRouter = Router()
+
+/**
+ * @swagger
+ * /api/petty-cash/report:
+ *   post:
+ *     summary: Generate Petty Cash Report (JSON, Excel, PDF)
+ *     tags:
+ *       - PettyCash
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - dateRange
+ *               - pettyCashId
+ *             properties:
+ *               dateRange:
+ *                 type: object
+ *                 properties:
+ *                   startDate:
+ *                     type: string
+ *                     format: date-time
+ *                   endDate:
+ *                     type: string
+ *                     format: date-time
+ *               pettyCashId:
+ *                 type: integer
+ *               format:
+ *                 type: string
+ *                 enum: [json, excel, pdf]
+ *                 default: json
+ *             example:
+ *               dateRange:
+ *                 startDate: "2025-12-13T20:37:28.320Z"
+ *                 endDate: "2025-12-15T20:37:28.320Z"
+ *               pettyCashId: 6
+ *               format: "pdf"
+ *     responses:
+ *       200:
+ *         description: Report generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+pettyCashRouter.post(
+    '/report',
+    authenticate,
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
+    getReport,
+)
 
 /**
  * @swagger

@@ -8,14 +8,14 @@ import { eq, and, gte, lte, inArray, asc } from 'drizzle-orm'
 import { BankReportFilters } from './report.schemas'
 
 type BankReportRow = {
-    idMovimiento: number
-    fecha: string
-    referencia: string
-    tipoMovimiento: string
-    observacion: string
-    ingreso: number
-    egreso: number
-    saldo: number
+    movementId: number
+    date: string
+    reference: string
+    movementType: string
+    observation: string
+    income: number
+    expense: number
+    balance: number
 }
 
 const formatDate = (d: Date) => {
@@ -36,16 +36,20 @@ const isIngreso = (tipo: string) => {
 }
 
 export const getBankReportData = async (filters: BankReportFilters) => {
-    const { rangoFechas, cuentaBancariaId, tiposMovimiento } = filters
+    const { dateRange, bankAccountId, movementTypes } = filters
 
     const condiciones = [
-        eq(MovimientosCuentas.idCuenta, cuentaBancariaId),
-        gte(MovimientosCuentas.fecha, rangoFechas.fechaInicio),
-        lte(MovimientosCuentas.fecha, rangoFechas.fechaFin),
+        eq(MovimientosCuentas.idCuenta, bankAccountId),
+        gte(MovimientosCuentas.fecha, dateRange.startDate),
+        lte(MovimientosCuentas.fecha, dateRange.endDate),
     ]
-    if (tiposMovimiento && tiposMovimiento.length > 0) {
+    if (movementTypes && movementTypes.length > 0) {
+        // Cast movementTypes to the enum literal union so drizzle-orm's inArray overload matches
         condiciones.push(
-            inArray(MovimientosCuentas.tipoMovimiento, tiposMovimiento),
+            inArray(
+                MovimientosCuentas.tipoMovimiento,
+                movementTypes as unknown as (typeof tipoMovimientoEnum.enumValues[number])[],
+            ),
         )
     }
 
@@ -63,49 +67,49 @@ export const getBankReportData = async (filters: BankReportFilters) => {
         .where(and(...condiciones))
         .orderBy(asc(MovimientosCuentas.fecha))
 
-    // Build running saldo using ingresos/egresos per row
-    let runningSaldo = 0
+    // Build running balance using income/expense per row
+    let runningBalance = 0
     const items: BankReportRow[] = rows.map((r) => {
-        const ingresoValue = Number(r.ingresos)
-        const egresoValue = Number(r.egresos)
+        const incomeValue = Number(r.ingresos)
+        const expenseValue = Number(r.egresos)
         // If DB has a single monto field, we could derive using tipoMovimiento, but schema already has ingresos/egresos.
-        const ingreso = isIngreso(r.tipoMovimiento) ? ingresoValue : 0
-        const egreso = isIngreso(r.tipoMovimiento) ? 0 : egresoValue
-        runningSaldo = runningSaldo + ingreso - egreso
+        const income = isIngreso(r.tipoMovimiento) ? incomeValue : 0
+        const expense = isIngreso(r.tipoMovimiento) ? 0 : expenseValue
+        runningBalance = runningBalance + income - expense
         return {
-            idMovimiento: r.id,
-            fecha: formatDate(new Date(r.fecha)),
-            referencia: r.nroReferencia,
-            tipoMovimiento: r.tipoMovimiento,
-            observacion: r.observacion,
-            ingreso,
-            egreso,
-            saldo: runningSaldo,
+            movementId: r.id,
+            date: formatDate(new Date(r.fecha)),
+            reference: r.nroReferencia,
+            movementType: r.tipoMovimiento,
+            observation: r.observacion,
+            income,
+            expense,
+            balance: runningBalance,
         }
     })
 
-    const totalIngresos = items.reduce((s, it) => s + it.ingreso, 0)
-    const totalEgresos = items.reduce((s, it) => s + it.egreso, 0)
-    const saldoFinal = items.length > 0 ? items[items.length - 1].saldo : 0
+    const totalIncome = items.reduce((s, it) => s + it.income, 0)
+    const totalExpenses = items.reduce((s, it) => s + it.expense, 0)
+    const finalBalance = items.length > 0 ? items[items.length - 1].balance : 0
 
     // basic account metadata
-    const cuenta = await db
+    const account = await db
         .select({
             id: CuentasBancarias.id,
             codCuenta: CuentasBancarias.codCuenta,
             tipoMoneda: CuentasBancarias.tipoMoneda,
         })
         .from(CuentasBancarias)
-        .where(eq(CuentasBancarias.id, cuentaBancariaId))
+        .where(eq(CuentasBancarias.id, bankAccountId))
 
     return {
-        filtros: filters,
-        cuenta: cuenta[0] ?? null,
+        filters,
+        account: account[0] ?? null,
         items,
-        resumen: {
-            totalIngresos,
-            totalEgresos,
-            saldoFinal,
+        summary: {
+            totalIncome,
+            totalExpenses,
+            finalBalance,
         },
     }
 }
@@ -130,39 +134,39 @@ export const generateExcelBankReport = async (
     const wb = new ExcelJS.Workbook()
     const ws = wb.addWorksheet('Reporte Bancario')
 
-    const titulo = `Reporte de Movimientos - Cuenta ${data.cuenta?.codCuenta ?? ''} (${data.cuenta?.tipoMoneda ?? ''})`
+    const titulo = `Reporte de Movimientos - Cuenta ${data.account?.codCuenta ?? ''} (${data.account?.tipoMoneda ?? ''})`
     ws.addRow([titulo])
     ws.addRow([
-        `Rango: ${formatDate(data.filtros.rangoFechas.fechaInicio)} - ${formatDate(data.filtros.rangoFechas.fechaFin)}`,
+        `Rango: ${formatDate(data.filters.dateRange.startDate)} - ${formatDate(data.filters.dateRange.endDate)}`,
     ])
     ws.addRow([''])
 
     ws.columns = [
-        { header: 'ID', key: 'idMovimiento', width: 10 },
-        { header: 'Fecha', key: 'fecha', width: 12 },
-        { header: 'Referencia', key: 'referencia', width: 16 },
-        { header: 'Tipo', key: 'tipoMovimiento', width: 18 },
-        { header: 'Observación', key: 'observacion', width: 25 },
+        { header: 'ID', key: 'movementId', width: 10 },
+        { header: 'Fecha', key: 'date', width: 12 },
+        { header: 'Referencia', key: 'reference', width: 16 },
+        { header: 'Tipo', key: 'movementType', width: 18 },
+        { header: 'Observación', key: 'observation', width: 25 },
         {
-            header: `Ingreso (${data.cuenta?.tipoMoneda ?? ''})`,
-            key: 'ingreso',
+            header: `Ingreso (${data.account?.tipoMoneda ?? ''})`,
+            key: 'income',
             width: 14,
         },
         {
-            header: `Egreso (${data.cuenta?.tipoMoneda ?? ''})`,
-            key: 'egreso',
+            header: `Egreso (${data.account?.tipoMoneda ?? ''})`,
+            key: 'expense',
             width: 14,
         },
         {
-            header: `Saldo (${data.cuenta?.tipoMoneda ?? ''})`,
-            key: 'saldo',
+            header: `Saldo (${data.account?.tipoMoneda ?? ''})`,
+            key: 'balance',
             width: 14,
         },
     ] as any
 
     data.items.forEach((it) => {
         const row = ws.addRow(it)
-        ;['ingreso', 'egreso', 'saldo'].forEach((k) => {
+        ;['income', 'expense', 'balance'].forEach((k) => {
             const c = row.getCell(
                 ws.columns!.findIndex((col: any) => col.key === k) + 1,
             )
@@ -182,8 +186,8 @@ export const generateExcelBankReport = async (
         '',
         '',
         '',
-        `Total Ingresos (${data.cuenta?.tipoMoneda ?? ''})`,
-        data.resumen.totalIngresos,
+        `Total Ingresos (${data.account?.tipoMoneda ?? ''})`,
+        data.summary.totalIncome,
         '',
         '',
     ])
@@ -192,9 +196,9 @@ export const generateExcelBankReport = async (
         '',
         '',
         '',
-        `Total Egresos (${data.cuenta?.tipoMoneda ?? ''})`,
+        `Total Egresos (${data.account?.tipoMoneda ?? ''})`,
         '',
-        data.resumen.totalEgresos,
+        data.summary.totalExpenses,
         '',
     ])
     ws.addRow([
@@ -202,14 +206,14 @@ export const generateExcelBankReport = async (
         '',
         '',
         '',
-        `Saldo Final (${data.cuenta?.tipoMoneda ?? ''})`,
+        `Saldo Final (${data.account?.tipoMoneda ?? ''})`,
         '',
         '',
-        data.resumen.saldoFinal,
+        data.summary.finalBalance,
     ])
 
     const buf = await wb.xlsx.writeBuffer()
-    return buf as Buffer
+    return buf as unknown as Buffer
 }
 
 export const generatePdfBankReport = async (
@@ -233,11 +237,11 @@ export const generatePdfBankReport = async (
         defaultStyle: { font: 'Helvetica' },
         content: [
             {
-                text: `Reporte de Movimientos - Cuenta ${data.cuenta?.codCuenta ?? ''} (${data.cuenta?.tipoMoneda ?? ''})`,
+                text: `Reporte de Movimientos - Cuenta ${data.account?.codCuenta ?? ''} (${data.account?.tipoMoneda ?? ''})`,
                 style: 'header',
             },
             {
-                text: `Rango: ${formatDate(data.filtros.rangoFechas.fechaInicio)} - ${formatDate(data.filtros.rangoFechas.fechaFin)}`,
+                text: `Rango: ${formatDate(data.filters.dateRange.startDate)} - ${formatDate(data.filters.dateRange.endDate)}`,
                 margin: [0, 0, 0, 10],
             },
             {
@@ -260,19 +264,19 @@ export const generatePdfBankReport = async (
                             'Referencia',
                             'Tipo',
                             'Observación',
-                            `Ingreso (${data.cuenta?.tipoMoneda ?? ''})`,
-                            `Egreso (${data.cuenta?.tipoMoneda ?? ''})`,
-                            `Saldo (${data.cuenta?.tipoMoneda ?? ''})`,
+                            `Ingreso (${data.account?.tipoMoneda ?? ''})`,
+                            `Egreso (${data.account?.tipoMoneda ?? ''})`,
+                            `Saldo (${data.account?.tipoMoneda ?? ''})`,
                         ],
                         ...data.items.map((it) => [
-                            it.idMovimiento,
-                            it.fecha,
-                            it.referencia,
-                            it.tipoMovimiento,
-                            it.observacion,
-                            `${currencySymbol(data.cuenta?.tipoMoneda)} ${it.ingreso.toFixed(2)}`,
-                            `${currencySymbol(data.cuenta?.tipoMoneda)} ${it.egreso.toFixed(2)}`,
-                            `${currencySymbol(data.cuenta?.tipoMoneda)} ${it.saldo.toFixed(2)}`,
+                            it.movementId,
+                            it.date,
+                            it.reference,
+                            it.movementType,
+                            it.observation,
+                            `${currencySymbol(data.account?.tipoMoneda)} ${it.income.toFixed(2)}`,
+                            `${currencySymbol(data.account?.tipoMoneda)} ${it.expense.toFixed(2)}`,
+                            `${currencySymbol(data.account?.tipoMoneda)} ${it.balance.toFixed(2)}`,
                         ]),
                     ],
                 },
@@ -280,13 +284,13 @@ export const generatePdfBankReport = async (
             },
             { text: ' ', margin: [0, 0, 0, 6] },
             {
-                text: `Total Ingresos: ${currencySymbol(data.cuenta?.tipoMoneda)} ${data.resumen.totalIngresos.toFixed(2)}`,
+                text: `Total Ingresos: ${currencySymbol(data.account?.tipoMoneda)} ${data.summary.totalIncome.toFixed(2)}`,
             },
             {
-                text: `Total Egresos: ${currencySymbol(data.cuenta?.tipoMoneda)} ${data.resumen.totalEgresos.toFixed(2)}`,
+                text: `Total Egresos: ${currencySymbol(data.account?.tipoMoneda)} ${data.summary.totalExpenses.toFixed(2)}`,
             },
             {
-                text: `Saldo Final: ${currencySymbol(data.cuenta?.tipoMoneda)} ${data.resumen.saldoFinal.toFixed(2)}`,
+                text: `Saldo Final: ${currencySymbol(data.account?.tipoMoneda)} ${data.summary.finalBalance.toFixed(2)}`,
             },
         ],
         styles: { header: { fontSize: 14, bold: true } },

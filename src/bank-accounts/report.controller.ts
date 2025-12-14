@@ -20,15 +20,15 @@ export const bankReportController: RequestHandler = async (req, res, next) => {
         const data = await getBankReportData(filters)
 
         // Guard clauses: account must exist, and handle empty items gracefully
-        if (!data.cuenta) {
+        if (!data.account) {
             res.status(404).json({
                 message: 'Cuenta bancaria no encontrada',
-                cuentaBancariaId: filters.cuentaBancariaId,
+                bankAccountId: filters.bankAccountId,
             })
             return
         }
         if (!data.items || data.items.length === 0) {
-            if (filters.formato === 'json') {
+            if (filters.format === 'json') {
                 res.json({
                     ...data,
                     message: 'Sin movimientos en el rango seleccionado',
@@ -38,17 +38,17 @@ export const bankReportController: RequestHandler = async (req, res, next) => {
             // For excel/pdf, return a minimal document with header and no rows
         }
 
-        if (filters.formato === 'json') {
+        if (filters.format === 'json') {
             res.json(data)
             return
         }
 
-        if (filters.formato === 'excel') {
+        if (filters.format === 'excel') {
             const buf = await generateExcelBankReport(data)
-            const start = filters.rangoFechas.fechaInicio
+            const start = filters.dateRange.startDate
                 .toISOString()
                 .slice(0, 10)
-            const end = filters.rangoFechas.fechaFin.toISOString().slice(0, 10)
+            const end = filters.dateRange.endDate.toISOString().slice(0, 10)
             res.setHeader(
                 'Content-Type',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -61,12 +61,12 @@ export const bankReportController: RequestHandler = async (req, res, next) => {
             return
         }
 
-        if (filters.formato === 'pdf') {
+        if (filters.format === 'pdf') {
             const buf = await generatePdfBankReport(data)
-            const start = filters.rangoFechas.fechaInicio
+            const start = filters.dateRange.startDate
                 .toISOString()
                 .slice(0, 10)
-            const end = filters.rangoFechas.fechaFin.toISOString().slice(0, 10)
+            const end = filters.dateRange.endDate.toISOString().slice(0, 10)
             res.setHeader('Content-Type', 'application/pdf')
             res.setHeader(
                 'Content-Disposition',
