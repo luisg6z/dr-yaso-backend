@@ -23,7 +23,7 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
         if (franchise.length < 1) throw new AppError(400, 'Franchise not found')
     }
 
-        // Validación previa de coordinador único (fuera de la tx)
+    // Validación previa de coordinador único (fuera de la tx)
     if (volunteer.franchiseId && volunteer.occupations?.length) {
         const coordinatorId = await getCoordinatorCargoId()
         const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
@@ -58,7 +58,7 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
 
         if (!newVolunteer) throw new AppError(500, 'Error creating volunteer')
 
-        
+
 
         //Insert into DetallesVoluntarios using the newVolunteer.id
         await tx.insert(DetallesVoluntarios).values({
@@ -101,51 +101,80 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
     })
 }
 
+// Helper to map volunteer row + occupations to response object
+const mapVolunteer = (
+    row: {
+        Voluntarios: typeof Voluntarios.$inferSelect
+        DetallesVoluntarios: typeof DetallesVoluntarios.$inferSelect
+        Pertenecen: typeof Pertenecen.$inferSelect | null
+        Franquicias: typeof Franquicias.$inferSelect | null
+        Ciudades: typeof Ciudades.$inferSelect | null
+        Estados: typeof Estados.$inferSelect | null
+        Paises: typeof Paises.$inferSelect | null
+    },
+    occupations: any[],
+) => {
+    return {
+        id: row.Voluntarios.id,
+        firstName: row.Voluntarios.nombres,
+        lastName: row.Voluntarios.apellidos,
+        idType: row.Voluntarios.tipoDocumento,
+        idNumber: row.Voluntarios.numeroDocumento,
+        birthDate: row.Voluntarios.fechaNacimiento,
+        profession: row.Voluntarios.profesion,
+        status: row.Voluntarios.estatus,
+        gender: row.Voluntarios.genero,
+        bloodType: row.DetallesVoluntarios.tipoSangre,
+        maritalStatus: row.DetallesVoluntarios.estadoCivil,
+        phoneNumbers: row.DetallesVoluntarios.telefonos,
+        clownName: row.DetallesVoluntarios.nombrePayaso,
+        shirtSize: row.DetallesVoluntarios.tallaCamisa,
+        hasShirtWithLogo: row.DetallesVoluntarios.tieneCamisaConLogo,
+        hasCoatWithLogo: row.DetallesVoluntarios.tieneBataConLogo,
+        allergies: row.DetallesVoluntarios.alergias,
+        disability: row.DetallesVoluntarios.discapacidad,
+        socialMedia: {
+            facebook: row.DetallesVoluntarios.facebook,
+            x: row.DetallesVoluntarios.x,
+            instagram: row.DetallesVoluntarios.instagram,
+            tikTok: row.DetallesVoluntarios.tiktok,
+        },
+        direction: {
+            direction: row.DetallesVoluntarios.direccion,
+            city: row.Ciudades?.nombre,
+            state: row.Estados?.nombre,
+            country: row.Paises?.nombre,
+        },
+        emergencyContact: {
+            name: row.DetallesVoluntarios.nombreContactoEmergencia,
+            phone: row.DetallesVoluntarios.telefonoContactoEmergencia,
+        },
+        franchise: row.Franquicias
+            ? {
+                id: row.Franquicias.id,
+                name: row.Franquicias.nombre,
+            }
+            : null,
+        occupations: occupations,
+    }
+}
+
+// Queries for reusability if needed, but current usage is ad-hoc selects.
+// Let's stick to modifying the existing methods to use the mapper.
+
 export const getAllVolunteers = async (pagination: Pagination) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
-    const volunteers = await db
+    const rows = await db
         .select({
-            id: Voluntarios.id,
-            firstName: Voluntarios.nombres,
-            lastName: Voluntarios.apellidos,
-            idType: Voluntarios.tipoDocumento,
-            idNumber: Voluntarios.numeroDocumento,
-            birthDate: Voluntarios.fechaNacimiento,
-            profession: Voluntarios.profesion,
-            status: Voluntarios.estatus,
-            gender: Voluntarios.genero,
-            bloodType: DetallesVoluntarios.tipoSangre,
-            maritalStatus: DetallesVoluntarios.estadoCivil,
-            phoneNumbers: DetallesVoluntarios.telefonos,
-            clownName: DetallesVoluntarios.nombrePayaso,
-            shirtSize: DetallesVoluntarios.tallaCamisa,
-            hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
-            hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
-
-            allergies: DetallesVoluntarios.alergias,
-            disability: DetallesVoluntarios.discapacidad,
-            socialMedia: {
-                facebook: DetallesVoluntarios.facebook,
-                x: DetallesVoluntarios.x,
-                instagram: DetallesVoluntarios.instagram,
-                tikTok: DetallesVoluntarios.tiktok,
-            },
-            direction: {
-                direction: DetallesVoluntarios.direccion,
-                city: Ciudades.nombre,
-                state: Estados.nombre,
-                country: Paises.nombre,
-            },
-            emergencyContact: {
-                name: DetallesVoluntarios.nombreContactoEmergencia,
-                phone: DetallesVoluntarios.telefonoContactoEmergencia,
-            },
-            franchise: {
-                id: Pertenecen.idFranquicia,
-                name: Franquicias.nombre, // Join with Franquicias to get the name
-            },
+            Voluntarios: Voluntarios,
+            DetallesVoluntarios: DetallesVoluntarios,
+            Pertenecen: Pertenecen,
+            Franquicias: Franquicias,
+            Ciudades: Ciudades,
+            Estados: Estados,
+            Paises: Paises,
         })
         .from(Voluntarios)
         .innerJoin(
@@ -156,41 +185,36 @@ export const getAllVolunteers = async (pagination: Pagination) => {
             Pertenecen,
             and(
                 eq(Pertenecen.idVoluntario, Voluntarios.id),
-                isNull(Pertenecen.fechaHoraEgreso), // Filter where fechaHoraEgreso is NULL
+                isNull(Pertenecen.fechaHoraEgreso),
             ),
         )
-        .leftJoin(
-            Franquicias,
-            eq(Franquicias.id, Pertenecen.idFranquicia), // Join with Franquicias to get franchise details
-        )
+        .leftJoin(Franquicias, eq(Franquicias.id, Pertenecen.idFranquicia))
         .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
         .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
         .leftJoin(Paises, eq(Paises.id, Estados.idPais))
         .limit(limit)
         .offset(offset)
 
-    const volunteersWithOccupation = await Promise.all(
-        volunteers.map(async (volunteer: any) => {
+    const volunteers = await Promise.all(
+        rows.map(async (row) => {
             const vcharges = await db
                 .select({
+                    occupationId: Cargos.id,
                     volunteerId: Tienen.idVoluntario,
-                    occupations: {
-                        occupationId: Cargos.id,
-                        volunteerId: Tienen.idVoluntario,
-                        name: Cargos.descripcion,
-                        isMain: Tienen.esCargoPrincipal,
-                    },
+                    name: Cargos.descripcion,
+                    isMain: Tienen.esCargoPrincipal,
                 })
                 .from(Tienen)
                 .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
-                .where(eq(Tienen.idVoluntario, volunteer.id))
+                .where(eq(Tienen.idVoluntario, row.Voluntarios.id))
 
-            const chargesIds = vcharges.map((e) => e.occupations)
+            const occupations = vcharges.map((e) => ({
+                id: e.occupationId,
+                name: e.name,
+                isMain: e.isMain,
+            }))
 
-            return {
-                ...volunteer,
-                occupations: chargesIds,
-            }
+            return mapVolunteer(row, occupations)
         }),
     )
 
@@ -198,7 +222,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
-        items: volunteersWithOccupation,
+        items: volunteers,
         paginate: {
             page,
             limit,
@@ -209,142 +233,17 @@ export const getAllVolunteers = async (pagination: Pagination) => {
 }
 
 export const getAllVolunteersForFranchise = async (franchiseId: number) => {
-    const volunteers = await db
+    const rows = await db
         .select({
-            id: Voluntarios.id,
-            firstName: Voluntarios.nombres,
-            lastName: Voluntarios.apellidos,
-            idType: Voluntarios.tipoDocumento,
-            idNumber: Voluntarios.numeroDocumento,
-            birthDate: Voluntarios.fechaNacimiento,
-            profession: Voluntarios.profesion,
-            status: Voluntarios.estatus,
-            gender: Voluntarios.genero,
-            bloodType: DetallesVoluntarios.tipoSangre,
-            maritalStatus: DetallesVoluntarios.estadoCivil,
-            phoneNumbers: DetallesVoluntarios.telefonos,
-            clownName: DetallesVoluntarios.nombrePayaso,
-            shirtSize: DetallesVoluntarios.tallaCamisa,
-            hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
-            hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
-            allergies: DetallesVoluntarios.alergias,
-            disability: DetallesVoluntarios.discapacidad,
-            socialMedia: {
-                facebook: DetallesVoluntarios.facebook,
-                x: DetallesVoluntarios.x,
-                instagram: DetallesVoluntarios.instagram,
-                tikTok: DetallesVoluntarios.tiktok,
-            },
-            direction: {
-                direction: DetallesVoluntarios.direccion,
-                city: Ciudades.nombre,
-                state: Estados.nombre,
-                country: Paises.nombre,
-            },
-            emergencyContact: {
-                name: DetallesVoluntarios.nombreContactoEmergencia,
-                phone: DetallesVoluntarios.telefonoContactoEmergencia,
-            },
-            franchise: {
-                id: Pertenecen.idFranquicia,
-                name: Franquicias.nombre, // Join with Franquicias to get the name
-            },
+            Voluntarios: Voluntarios,
+            DetallesVoluntarios: DetallesVoluntarios,
+            Pertenecen: Pertenecen,
+            Franquicias: Franquicias,
+            Ciudades: Ciudades,
+            Estados: Estados,
+            Paises: Paises,
         })
         .from(Voluntarios)
-        .innerJoin(
-            DetallesVoluntarios,
-            eq(DetallesVoluntarios.idVoluntario, Voluntarios.id),
-        )
-        .innerJoin(
-            Pertenecen,
-            and(
-                eq(Pertenecen.idVoluntario, Voluntarios.id),
-                isNull(Pertenecen.fechaHoraEgreso), // Filter where fechaHoraEgreso is NULL
-            ),
-        )
-        .innerJoin(
-            Franquicias,
-            eq(Franquicias.id, Pertenecen.idFranquicia), // Join with Franquicias to get franchise details
-        )
-        .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
-        .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
-        .leftJoin(Paises, eq(Paises.id, Estados.idPais))
-        .where(eq(Franquicias.id, franchiseId))
-
-    volunteers.forEach(async (volunteer: any) => {
-        const vcharges = await db
-            .select({
-                volunteerId: Tienen.idVoluntario,
-                occupations: {
-                    occupationId: Cargos.id,
-                    volunteerId: Tienen.idVoluntario,
-                    name: Cargos.descripcion,
-                    isMain: Tienen.esCargoPrincipal,
-                },
-            })
-            .from(Tienen)
-            .leftJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
-            .where(eq(Tienen.idVoluntario, volunteer.id))
-
-        const chargesIds = vcharges.map((e) => e.occupations)
-
-        console.log(chargesIds)
-
-        volunteer.occupations = chargesIds || []
-
-        console.log('Volunteers retrieved:', volunteers.length);
-    })
-
-    return {
-        items: volunteers,
-    }
-}
-
-export const getVolunteerById = async (id: number) => {
-    // Primero obtenemos la información base del voluntario
-    const volunteer = await db
-        .select({
-            id: Voluntarios.id,
-            firstName: Voluntarios.nombres,
-            lastName: Voluntarios.apellidos,
-            idType: Voluntarios.tipoDocumento,
-            idNumber: Voluntarios.numeroDocumento,
-            birthDate: Voluntarios.fechaNacimiento,
-            profession: Voluntarios.profesion,
-            status: Voluntarios.estatus,
-            gender: Voluntarios.genero,
-            bloodType: DetallesVoluntarios.tipoSangre,
-            maritalStatus: DetallesVoluntarios.estadoCivil,
-            phoneNumbers: DetallesVoluntarios.telefonos,
-            clownName: DetallesVoluntarios.nombrePayaso,
-            shirtSize: DetallesVoluntarios.tallaCamisa,
-            hasShirtWithLogo: DetallesVoluntarios.tieneCamisaConLogo,
-            hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
-            allergies: DetallesVoluntarios.alergias,
-            disability: DetallesVoluntarios.discapacidad,
-            socialMedia: {
-                facebook: DetallesVoluntarios.facebook,
-                x: DetallesVoluntarios.x,
-                instagram: DetallesVoluntarios.instagram,
-                tikTok: DetallesVoluntarios.tiktok,
-            },
-            direction: {
-                direction: DetallesVoluntarios.direccion,
-                city: Ciudades.nombre,
-                state: Estados.nombre,
-                country: Paises.nombre,
-            },
-            emergencyContact: {
-                name: DetallesVoluntarios.nombreContactoEmergencia,
-                phone: DetallesVoluntarios.telefonoContactoEmergencia,
-            },
-            franchise: {
-                id: Pertenecen.idFranquicia,
-                name: Franquicias.nombre,
-            },
-        })
-        .from(Voluntarios)
-        .where(eq(Voluntarios.id, id))
         .innerJoin(
             DetallesVoluntarios,
             eq(DetallesVoluntarios.idVoluntario, Voluntarios.id),
@@ -356,18 +255,71 @@ export const getVolunteerById = async (id: number) => {
                 isNull(Pertenecen.fechaHoraEgreso),
             ),
         )
-        .innerJoin(
-            Franquicias,
-            eq(Franquicias.id, Pertenecen.idFranquicia),
-        )
+        .innerJoin(Franquicias, eq(Franquicias.id, Pertenecen.idFranquicia))
         .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
         .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
         .leftJoin(Paises, eq(Paises.id, Estados.idPais))
-        .then(rows => rows[0]) // Obtenemos solo un voluntario
+        .where(eq(Franquicias.id, franchiseId))
 
-    if (!volunteer) return null
+    const volunteers = await Promise.all(
+        rows.map(async (row) => {
+            const vcharges = await db
+                .select({
+                    occupationId: Cargos.id,
+                    volunteerId: Tienen.idVoluntario,
+                    name: Cargos.descripcion,
+                    isMain: Tienen.esCargoPrincipal,
+                })
+                .from(Tienen)
+                .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
+                .where(eq(Tienen.idVoluntario, row.Voluntarios.id))
 
-    // Ahora obtenemos las ocupaciones del voluntario
+            const occupations = vcharges.map((e) => ({
+                id: e.occupationId,
+                name: e.name,
+                isMain: e.isMain,
+            }))
+            return mapVolunteer(row, occupations)
+        }),
+    )
+
+    return {
+        items: volunteers,
+    }
+}
+
+export const getVolunteerById = async (id: number) => {
+    const row = await db
+        .select({
+            Voluntarios: Voluntarios,
+            DetallesVoluntarios: DetallesVoluntarios,
+            Pertenecen: Pertenecen,
+            Franquicias: Franquicias,
+            Ciudades: Ciudades,
+            Estados: Estados,
+            Paises: Paises,
+        })
+        .from(Voluntarios)
+        .where(eq(Voluntarios.id, id))
+        .innerJoin(
+            DetallesVoluntarios,
+            eq(DetallesVoluntarios.idVoluntario, Voluntarios.id),
+        )
+        .leftJoin(
+            Pertenecen,
+            and(
+                eq(Pertenecen.idVoluntario, Voluntarios.id),
+                isNull(Pertenecen.fechaHoraEgreso),
+            ),
+        )
+        .leftJoin(Franquicias, eq(Franquicias.id, Pertenecen.idFranquicia))
+        .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
+        .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
+        .leftJoin(Paises, eq(Paises.id, Estados.idPais))
+        .then((rows) => rows[0])
+
+    if (!row) return null
+
     const vcharges = await db
         .select({
             occupationId: Cargos.id,
@@ -378,10 +330,13 @@ export const getVolunteerById = async (id: number) => {
         .innerJoin(Cargos, eq(Cargos.id, Tienen.idCargo))
         .where(eq(Tienen.idVoluntario, id))
 
-    return {
-        ...volunteer,
-        occupations: vcharges,
-    }
+    const occupations = vcharges.map((e) => ({
+        id: e.occupationId,
+        name: e.name,
+        isMain: e.isMain,
+    }))
+
+    return mapVolunteer(row, occupations)
 }
 
 
@@ -393,14 +348,16 @@ export const updateVolunteer = async (
     const existingVolunteer = await getVolunteerById(id)
     if (!existingVolunteer) throw new AppError(404, 'Volunteer not found')
 
-        // Validación previa de coordinador único (fuera de la tx)
+    // Validación previa de coordinador único (fuera de la tx)
     if (volunteer.occupations?.length) {
         const coordinatorId = await getCoordinatorCargoId()
         const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
         if (hasCoordinator) {
-            const targetFranchiseId = volunteer.franchiseId ?? existingVolunteer.franchise.id
+            const targetFranchiseId = volunteer.franchiseId ?? existingVolunteer.franchise?.id
 
-            if (targetFranchiseId === null) {
+            if (!targetFranchiseId) {
+                // If it's still null, validation fails or we skip? 
+                // "El voluntario no tiene franquicia asignada" logic is here.
                 throw new AppError(
                     400,
                     'El voluntario no tiene franquicia asignada. No se puede validar el coordinador único.'
@@ -408,6 +365,7 @@ export const updateVolunteer = async (
             }
             const exists = await existsCoordinatorInFranchise(targetFranchiseId, coordinatorId, id)
             if (exists) {
+                // ...
                 throw new AppError(
                     409,
                     'Ya existe un coordinador activo en esta franquicia. Actualiza el cargo del voluntario y vuelve a intentarlo.',
@@ -461,7 +419,7 @@ export const updateVolunteer = async (
         // Actualizar la tabla Pertenecen si franchiseId cambia
         if (
             volunteer.franchiseId &&
-            existingVolunteer.franchise.id &&
+            existingVolunteer.franchise?.id &&
             volunteer.franchiseId !== existingVolunteer.franchise.id
         ) {
             // Update the current franchise's exit date

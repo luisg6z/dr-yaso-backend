@@ -1,4 +1,4 @@
-import { Request, Response, RequestHandler } from 'express'
+import { RequestHandler } from 'express'
 import { db } from '../db/db'
 import { Usuarios } from '../db/schemas/Usuarios'
 import { eq } from 'drizzle-orm'

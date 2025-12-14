@@ -8,7 +8,6 @@ import {
 } from './petty-cash.service'
 import { AppError } from '../common/errors/errors'
 import { Pagination } from '../types/types'
-import { tipoUsuarioEnum } from '../db/schemas/Usuarios'
 
 export const createPettyCashHandler = async (req: Request, res: Response) => {
     try {

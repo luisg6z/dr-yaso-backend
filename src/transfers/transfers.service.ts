@@ -58,24 +58,50 @@ export const createTransfer = async (
     }
 }
 
+const mapTransfer = (row: {
+    Traspasos: typeof Traspasos.$inferSelect
+    Voluntarios: typeof Voluntarios.$inferSelect | null
+    origen: { id: number; nombre: string } | null
+    destino: { id: number; nombre: string } | null
+}) => {
+    return {
+        id: row.Traspasos.id,
+        date: row.Traspasos.fecha,
+        status: row.Traspasos.estado,
+        reason: row.Traspasos.motivo,
+        observation: row.Traspasos.observacion,
+        volunteer: row.Voluntarios
+            ? {
+                id: row.Voluntarios.id,
+                nombres: row.Voluntarios.nombres,
+                apellidos: row.Voluntarios.apellidos,
+            }
+            : null,
+        origin: row.origen
+            ? {
+                id: row.origen.id,
+                nombre: row.origen.nombre,
+            }
+            : null,
+        destination: row.destino
+            ? {
+                id: row.destino.id,
+                nombre: row.destino.nombre,
+            }
+            : null,
+    }
+}
+
 const getTransfersQuery = () => {
     return db
         .select({
-            id: Traspasos.id,
-            date: Traspasos.fecha,
-            status: Traspasos.estado, // Directly use the DB value
-            reason: Traspasos.motivo,
-            observation: Traspasos.observacion,
-            volunteer: {
-                id: Voluntarios.id,
-                nombres: Voluntarios.nombres,
-                apellidos: Voluntarios.apellidos,
-            },
-            origin: {
+            Traspasos: Traspasos,
+            Voluntarios: Voluntarios,
+            origen: {
                 id: Origen.id,
                 nombre: Origen.nombre,
             },
-            destination: {
+            destino: {
                 id: Destino.id,
                 nombre: Destino.nombre,
             },
@@ -90,14 +116,14 @@ export const getAllTransfers = async (pagination: Pagination) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
-    const transfers = await getTransfersQuery().limit(limit).offset(offset)
+    const rows = await getTransfersQuery().limit(limit).offset(offset)
+    const transfers = rows.map(mapTransfer)
 
     const totalItems = await db.$count(Traspasos)
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
-        items: transfers, // Already mapped by query structure, no need for extra map if keys are correct.
-        // Wait, query returns English keys "date", "status", "reason", etc.
+        items: transfers,
         paginate: {
             page,
             limit,
@@ -107,40 +133,26 @@ export const getAllTransfers = async (pagination: Pagination) => {
     }
 }
 
-export const getTransfersByFranchise = async (franchiseId: number, pagination: Pagination) => {
+export const getTransfersByFranchise = async (
+    franchiseId: number,
+    pagination: Pagination,
+) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
-    const query = getTransfersQuery().where(
-        or(
-            eq(Traspasos.idFranquiciaOrigen, franchiseId),
-            eq(Traspasos.idFranquiciaDestino, franchiseId),
-        ),
+    const whereCondition = or(
+        eq(Traspasos.idFranquiciaOrigen, franchiseId),
+        eq(Traspasos.idFranquiciaDestino, franchiseId),
     )
 
-    const transfers = await query.limit(limit).offset(offset)
+    const rows = await getTransfersQuery()
+        .where(whereCondition)
+        .limit(limit)
+        .offset(offset)
 
-    // We need total count for this specific filter
-    const totalItemsQuery = await db
-        .select({ count: Traspasos.id })
-        .from(Traspasos)
-        .where(
-            or(
-                eq(Traspasos.idFranquiciaOrigen, franchiseId),
-                eq(Traspasos.idFranquiciaDestino, franchiseId),
-            ),
-        )
+    const transfers = rows.map(mapTransfer)
 
-    const totalItems = totalItemsQuery.length; // Count hack for simple where. 
-    // Or better iterate if large? db.$count with where is better if supported.
-    // Drizzle's $count might not support complex where clauses easily depending on version.
-    // Let's use array length of full query or a separate count query. 
-    // For pagination accuracy, a separate count query is best.
-
-    // Actually, let's just use the length of the filtered query WITHOUT limit/offset for total count.
-
-    // Re-instantiating query for count (Drizzle objects are mutable builder pattern? No, usually immutable or copied?)
-    // To be safe, re-build count query.
+    const totalItems = await db.$count(Traspasos, whereCondition);
 
     const totalPages = Math.ceil(totalItems / limit)
 
@@ -197,32 +209,56 @@ export const updateTransferStatus = async (
             })
         }
 
-        const [updated] = await tx
+        await tx
             .update(Traspasos)
             .set({
                 estado: dbStatus,
-                observacion: data.observation
+                observacion: data.observation,
             })
             .where(eq(Traspasos.id, id))
-            .returning()
 
-        return {
-            id: updated.id,
-            volunteerId: updated.idVoluntario,
-            originFranchiseId: updated.idFranquiciaOrigen,
-            destinationFranchiseId: updated.idFranquiciaDestino,
-            date: updated.fecha,
-            status: updated.estado, // Keep Spanish
-            reason: updated.motivo,
-            observation: updated.observacion,
-        }
+        // Return mapped object
+        // We need to fetch it again to get joined fields.
+        // Can't call getTransferById inside transaction easily if it uses global db.
+        // But getTransferById filters by ID, so it's fine to call it after commit?
+        // No, we are inside transaction callback.
+        // We can replicate the query logic with 'tx' or just return the ID and fetch after?
+        // The service function returns the result of transaction.
+        // Let's just return the id from transaction and fetch outside?
+        // Or better, let's just make getTransferById accept an optional db instance?
+        // For now, let's just return the raw updated fields + manually constructed object to avoid complex refactor of getTransfersQuery.
+        // OR, just use the helper mapTransfer if we fetch the necessary joined data inside TX.
+        // Simplest: Return the result of getTransferById(id) *after* the update.
+        // But `db` inside `getTransferById` is the global pool, which might not see uncommitted changes if isolation level is high?
+        // Postgres read committed usually sees own changes? No, other connections don't see it.
+        // If `db` is global pool, it's a different connection than `tx`.
+        // So `getTransferById` will fail to see the update if called inside.
+        // Solution: We must pass `tx` to `getTransferById` or replicate logic.
+        // Since `getTransfersQuery` uses `db`, we'd need to parameterize it.
+        // Let's stick to returning a simplified object or duplicate query with `tx`.
+
+        // Actually, we can just return the updated ID and fetch it AFTER the transaction.
+        return id
     })
+        .then(id => getTransferById(id)) // Fetch full object after commit
 }
 
 export const getTransferById = async (id: number) => {
-    const [transfer] = await db
-        .select()
-        .from(Traspasos)
+    const row = await getTransfersQuery()
         .where(eq(Traspasos.id, id))
-    return transfer
+        .then((rows) => rows[0])
+
+    // Check if row exists, though getTransfersQuery returns array, so row might be undefined
+    if (!row) {
+        // Handle "not found" or return null depending on contract. 
+        // Usually throwing is better for getById.
+        // But getById logic in this file (previous version) was returning "transfer".
+        // Let's assume it should exist or return undefined, or throw.
+        // Original code: await db... where(id).then(rows => rows[0]). return transfer; (implicitly can be undefined)
+        // Let's stick to returning mapped or undefined if original did that.
+        // Actually, let's keep it safe. If not found, returning undefined is fine if type allows.
+        return undefined
+    }
+
+    return mapTransfer(row)
 }

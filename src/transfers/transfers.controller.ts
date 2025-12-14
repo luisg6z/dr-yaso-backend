@@ -70,7 +70,8 @@ export const respondToTransferHandler = async (
         if (!transfer) throw new AppError(404, 'Transfer not found')
 
         if (user.role === 'Coordinador') {
-            if (transfer.idFranquiciaDestino !== user.franchiseId) {
+            const destinationId = transfer.destination?.id
+            if (destinationId !== user.franchiseId) {
                 throw new AppError(
                     403,
                     'You can only respond to incoming transfers to your franchise',

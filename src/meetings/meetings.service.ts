@@ -122,7 +122,6 @@ export const getMeetingById = async (id: number) => {
             hasCoatWithLogo: DetallesVoluntarios.tieneBataConLogo,
             allergies: DetallesVoluntarios.alergias,
             disability: DetallesVoluntarios.discapacidad,
-            notes: DetallesVoluntarios.observacion,
             socialMedia: {
                 facebook: DetallesVoluntarios.facebook,
                 x: DetallesVoluntarios.x,

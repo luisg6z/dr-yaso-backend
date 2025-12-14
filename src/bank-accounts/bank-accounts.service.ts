@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '../db/db'
 import { CuentasBancarias } from '../db/schemas/CuentasBancarias'
 import { ResponsablesCuentas } from '../db/schemas/ResponsablesCuentas'
@@ -70,31 +70,40 @@ export const createBankAccount = async (data: BankAccountCreate) => {
     })
 }
 
+const mapBankAccount = (row: {
+    CuentasBancarias: typeof CuentasBancarias.$inferSelect
+    Bancos: typeof Bancos.$inferSelect
+    Franquicias: typeof Franquicias.$inferSelect
+    ResponsablesCuentas: typeof ResponsablesCuentas.$inferSelect
+}) => {
+    return {
+        id: row.CuentasBancarias.id,
+        accountNumber: row.CuentasBancarias.codCuenta,
+        currency: row.CuentasBancarias.tipoMoneda,
+        balance: row.CuentasBancarias.saldo,
+        franchiseId: row.CuentasBancarias.idFranquicia,
+        bankCode: row.CuentasBancarias.codBanco,
+        responsibleId: row.CuentasBancarias.idResponsable,
+        bankName: row.Bancos.nombre,
+        franchiseName: row.Franquicias.nombre,
+        responsible: {
+            id: row.ResponsablesCuentas.id,
+            documentType: row.ResponsablesCuentas.tipoDocumento,
+            documentNumber: row.ResponsablesCuentas.numeroDocumento,
+            firstName: row.ResponsablesCuentas.nombres,
+            lastName: row.ResponsablesCuentas.apellidos,
+        },
+    }
+}
+
 export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: number) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
     const whereCondition = franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined
 
-    const accounts = await db
-        .select({
-            id: CuentasBancarias.id,
-            accountNumber: CuentasBancarias.codCuenta,
-            currency: CuentasBancarias.tipoMoneda,
-            balance: CuentasBancarias.saldo,
-            franchiseId: CuentasBancarias.idFranquicia,
-            bankCode: CuentasBancarias.codBanco,
-            responsibleId: CuentasBancarias.idResponsable,
-            bankName: Bancos.nombre,
-            franchiseName: Franquicias.nombre,
-            responsible: {
-                id: ResponsablesCuentas.id,
-                documentType: ResponsablesCuentas.tipoDocumento,
-                documentNumber: ResponsablesCuentas.numeroDocumento,
-                firstName: ResponsablesCuentas.nombres,
-                lastName: ResponsablesCuentas.apellidos,
-            }
-        })
+    const rows = await db
+        .select()
         .from(CuentasBancarias)
         .innerJoin(Bancos, eq(Bancos.cod, CuentasBancarias.codBanco))
         .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
@@ -102,6 +111,8 @@ export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: n
         .where(whereCondition)
         .limit(limit)
         .offset(offset)
+
+    const accounts = rows.map(mapBankAccount)
 
     const totalItems = await db.$count(CuentasBancarias, whereCondition)
     const totalPages = Math.ceil(totalItems / limit)
@@ -118,25 +129,8 @@ export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: n
 }
 
 export const getBankAccountById = async (id: number) => {
-    const account = await db
-        .select({
-            id: CuentasBancarias.id,
-            accountNumber: CuentasBancarias.codCuenta,
-            currency: CuentasBancarias.tipoMoneda,
-            balance: CuentasBancarias.saldo,
-            franchiseId: CuentasBancarias.idFranquicia,
-            bankCode: CuentasBancarias.codBanco,
-            responsibleId: CuentasBancarias.idResponsable,
-            bankName: Bancos.nombre,
-            franchiseName: Franquicias.nombre,
-            responsible: {
-                id: ResponsablesCuentas.id,
-                documentType: ResponsablesCuentas.tipoDocumento,
-                documentNumber: ResponsablesCuentas.numeroDocumento,
-                firstName: ResponsablesCuentas.nombres,
-                lastName: ResponsablesCuentas.apellidos,
-            }
-        })
+    const row = await db
+        .select()
         .from(CuentasBancarias)
         .innerJoin(Bancos, eq(Bancos.cod, CuentasBancarias.codBanco))
         .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
@@ -144,9 +138,9 @@ export const getBankAccountById = async (id: number) => {
         .where(eq(CuentasBancarias.id, id))
         .then(rows => rows[0])
 
-    if (!account) throw new AppError(404, 'Bank Account not found')
+    if (!row) throw new AppError(404, 'Bank Account not found')
 
-    return account
+    return mapBankAccount(row)
 }
 
 export const updateBankAccount = async (id: number, data: BankAccountUpdate) => {

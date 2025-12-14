@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '../db/db'
 import { CajasChicas } from '../db/schemas/CajasChicas'
 import { Voluntarios } from '../db/schemas/Voluntarios'
@@ -8,12 +8,7 @@ import { PettyCashCreate, PettyCashUpdate } from './petty-cash.schemas'
 import { Pagination } from '../types/types'
 
 // TODO: Implement franchise verification
-const verifyFranchiseAccess = (userFranchiseId: number | undefined, targetFranchiseId: number, userRole: string) => {
-    if (userRole === 'Superusuario') return
-    if (userFranchiseId !== targetFranchiseId) {
-        throw new AppError(403, 'Unauthorized access to this franchise data')
-    }
-}
+// TODO: Implement franchise verification
 
 export const createPettyCash = async (pettyCash: PettyCashCreate) => {
     const existingPettyCash = await db
@@ -51,30 +46,41 @@ export const createPettyCash = async (pettyCash: PettyCashCreate) => {
     return getPettyCashById(newPettyCash.id)
 }
 
+// Helper to map petty cash row
+const mapPettyCash = (row: {
+    CajasChicas: typeof CajasChicas.$inferSelect
+    Voluntarios: typeof Voluntarios.$inferSelect
+    Franquicias: typeof Franquicias.$inferSelect
+}) => {
+    return {
+        id: row.CajasChicas.id,
+        code: row.CajasChicas.codCaja,
+        name: row.CajasChicas.nombre,
+        balance: row.CajasChicas.saldo,
+        currency: row.CajasChicas.tipoMoneda,
+        franchiseId: row.CajasChicas.idFranquicia,
+        responsibleId: row.CajasChicas.idResponsable,
+        responsibleName: `${row.Voluntarios.nombres} ${row.Voluntarios.apellidos}`,
+        franchiseName: row.Franquicias.nombre,
+    }
+}
+
 export const getAllPettyCash = async (pagination: Pagination, franchiseId?: number) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
     const whereCondition = franchiseId ? eq(CajasChicas.idFranquicia, franchiseId) : undefined
 
-    const pettyCashList = await db
-        .select({
-            id: CajasChicas.id,
-            code: CajasChicas.codCaja,
-            name: CajasChicas.nombre,
-            balance: CajasChicas.saldo,
-            currency: CajasChicas.tipoMoneda,
-            franchiseId: CajasChicas.idFranquicia,
-            responsibleId: CajasChicas.idResponsable,
-            responsibleName: Voluntarios.nombres, // Simplified, maybe concat names
-            franchiseName: Franquicias.nombre,
-        })
+    const rows = await db
+        .select()
         .from(CajasChicas)
         .innerJoin(Voluntarios, eq(Voluntarios.id, CajasChicas.idResponsable))
         .innerJoin(Franquicias, eq(Franquicias.id, CajasChicas.idFranquicia))
         .where(whereCondition)
         .limit(limit)
         .offset(offset)
+
+    const pettyCashList = rows.map(mapPettyCash)
 
     const totalItems = await db.$count(CajasChicas, whereCondition)
     const totalPages = Math.ceil(totalItems / limit)
@@ -91,27 +97,17 @@ export const getAllPettyCash = async (pagination: Pagination, franchiseId?: numb
 }
 
 export const getPettyCashById = async (id: number) => {
-    const pettyCash = await db
-        .select({
-            id: CajasChicas.id,
-            code: CajasChicas.codCaja,
-            name: CajasChicas.nombre,
-            balance: CajasChicas.saldo,
-            currency: CajasChicas.tipoMoneda,
-            franchiseId: CajasChicas.idFranquicia,
-            responsibleId: CajasChicas.idResponsable,
-            responsibleName: Voluntarios.nombres,
-            franchiseName: Franquicias.nombre,
-        })
+    const row = await db
+        .select()
         .from(CajasChicas)
         .innerJoin(Voluntarios, eq(Voluntarios.id, CajasChicas.idResponsable))
         .innerJoin(Franquicias, eq(Franquicias.id, CajasChicas.idFranquicia))
         .where(eq(CajasChicas.id, id))
         .then((rows) => rows[0])
 
-    if (!pettyCash) throw new AppError(404, 'Petty Cash not found')
+    if (!row) throw new AppError(404, 'Petty Cash not found')
 
-    return pettyCash
+    return mapPettyCash(row)
 }
 
 export const updatePettyCash = async (id: number, pettyCashUpdate: PettyCashUpdate) => {

@@ -26,7 +26,7 @@ export const createVisit = async (visit: VisitCreate) => {
 
     const date = new Date(visit.date)
 
-    const data = await db.transaction(async (tx) => {
+    const id = await db.transaction(async (tx) => {
         const createdVisit = await tx
             .insert(Visitas)
             .values({
@@ -67,9 +67,11 @@ export const createVisit = async (visit: VisitCreate) => {
                 })
             })
         }
+
+        return createdVisit[0].id
     })
 
-    return data
+    return await getVisitById(id)
 }
 
 export const getVisitById = async (id: number) => {
@@ -150,24 +152,39 @@ export const getVisitById = async (id: number) => {
     }
 }
 
+// Helper to map visit row
+const mapVisit = (row: {
+    Visitas: typeof Visitas.$inferSelect
+    Locaciones: typeof Locaciones.$inferSelect | null
+}) => {
+    return {
+        id: row.Visitas.id,
+        type: row.Visitas.tipo,
+        observations: row.Visitas.observacion,
+        date: row.Visitas.fechaHora,
+        directBeneficiaries: row.Visitas.beneficiariosDirectos,
+        indirectBeneficiaries: row.Visitas.beneficiariosIndirectos,
+        healthPersonnelCount: row.Visitas.cantPersonalDeSalud,
+        location: row.Locaciones
+            ? {
+                id: row.Locaciones.id,
+                name: row.Locaciones.descripcion,
+            }
+            : null,
+    }
+}
+
 export const getAllVisitsForFranchise = async (franchiseId: number) => {
-    const visits = await db
+    const rows = await db
         .select({
-            id: Visitas.id,
-            type: Visitas.tipo,
-            observations: Visitas.observacion,
-            date: Visitas.fechaHora,
-            directBeneficiaries: Visitas.beneficiariosDirectos,
-            indirectBeneficiaries: Visitas.beneficiariosIndirectos,
-            healthPersonnelCount: Visitas.cantPersonalDeSalud,
-            location: {
-                id: Locaciones.id,
-                name: Locaciones.descripcion,
-            },
+            Visitas: Visitas,
+            Locaciones: Locaciones,
         })
         .from(Visitas)
         .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
         .where(eq(Locaciones.idFranquicia, franchiseId))
+
+    const visits = rows.map(mapVisit)
 
     return {
         items: visits,
@@ -178,24 +195,17 @@ export const getAllVisits = async (pagination: Pagination) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
-    const visits = await db
+    const rows = await db
         .select({
-            id: Visitas.id,
-            type: Visitas.tipo,
-            observations: Visitas.observacion,
-            date: Visitas.fechaHora,
-            directBeneficiaries: Visitas.beneficiariosDirectos,
-            indirectBeneficiaries: Visitas.beneficiariosIndirectos,
-            healthPersonnelCount: Visitas.cantPersonalDeSalud,
-            location: {
-                id: Locaciones.id,
-                name: Locaciones.descripcion,
-            },
+            Visitas: Visitas,
+            Locaciones: Locaciones,
         })
         .from(Visitas)
         .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
         .limit(limit)
         .offset(offset)
+
+    const visits = rows.map(mapVisit)
 
     const totalItems = await db.$count(Visitas)
 
