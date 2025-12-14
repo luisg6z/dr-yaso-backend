@@ -18,6 +18,7 @@ import cashMovementsRouter from './cash-movements/cash-movements.router'
 import accountMovementsRouter from './account-movements/account-movements.router'
 import productsRouter from './products/products.router'
 import inventoryRouter from './inventory/inventory.router'
+import transfersRouter from './transfers/transfers.router'
 
 const router = Router()
 
@@ -40,5 +41,6 @@ router.use('/cash-movements', cashMovementsRouter)
 router.use('/account-movements', accountMovementsRouter)
 router.use('/products', productsRouter)
 router.use('/inventory', inventoryRouter)
+router.use('/transfers', transfersRouter)
 
 export default router
