@@ -63,5 +63,5 @@ export const createTransferSchema = z.object({
 
 export const updateTransferStatusSchema = z.object({
     status: z.enum(['approved', 'rejected']),
-    observation: z.string().optional(),
+    observation: z.string(),
 })
