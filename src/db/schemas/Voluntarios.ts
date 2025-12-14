@@ -1,4 +1,4 @@
-import { pgTable, varchar, serial, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, varchar, serial, pgEnum, uniqueIndex } from 'drizzle-orm/pg-core'
 import { timestamp } from 'drizzle-orm/pg-core'
 
 export const tipoDocumentoEnum = pgEnum('tipoDocumento', ['V', 'E', 'P'])
@@ -20,4 +20,7 @@ export const Voluntarios = pgTable('Voluntarios', {
     profesion: varchar({ length: 60 }).notNull(),
     estatus: estatusEnum('estatus').notNull(),
     genero: generoEnum('generos').notNull(),
-})
+},
+    (table) => ({
+        idx_voluntarios_numeroDocumento: uniqueIndex('idx_voluntarios_numeroDocumento').on(table.numeroDocumento, table.tipoDocumento),
+    }))

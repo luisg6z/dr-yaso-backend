@@ -48,31 +48,40 @@ export const createAccountMovement = async (movement: AccountMovementCreate) => 
     })
 }
 
+const mapAccountMovement = (row: {
+    MovimientosCuentas: typeof MovimientosCuentas.$inferSelect
+    CuentasBancarias: typeof CuentasBancarias.$inferSelect
+}) => {
+    return {
+        id: row.MovimientosCuentas.id,
+        date: row.MovimientosCuentas.fecha,
+        referenceNumber: row.MovimientosCuentas.nroReferencia,
+        movementType: row.MovimientosCuentas.tipoMovimiento,
+        observation: row.MovimientosCuentas.observacion,
+        income: Number(row.MovimientosCuentas.ingresos), // Drizzle returns numeric/decimal as string
+        expense: Number(row.MovimientosCuentas.egresos),
+        balanceAfter: Number(row.MovimientosCuentas.saldoPosterior),
+        accountId: row.MovimientosCuentas.idCuenta,
+        accountNumber: row.CuentasBancarias.codCuenta,
+        franchiseId: row.CuentasBancarias.idFranquicia,
+    }
+}
+
 export const getAllAccountMovements = async (pagination: Pagination, franchiseId?: number) => {
     const { page, limit } = pagination
     const offset = (page - 1) * limit
 
     let query = db
-        .select({
-            id: MovimientosCuentas.id,
-            date: MovimientosCuentas.fecha,
-            referenceNumber: MovimientosCuentas.nroReferencia,
-            movementType: MovimientosCuentas.tipoMovimiento,
-            observation: MovimientosCuentas.observacion,
-            income: MovimientosCuentas.ingresos,
-            expense: MovimientosCuentas.egresos,
-            balanceAfter: MovimientosCuentas.saldoPosterior,
-            accountId: MovimientosCuentas.idCuenta,
-            accountNumber: CuentasBancarias.codCuenta,
-        })
+        .select()
         .from(MovimientosCuentas)
-        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
+        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta)) as any
 
     if (franchiseId) {
-        query = query.where(eq(CuentasBancarias.idFranquicia, franchiseId)) as any
+        query = query.where(eq(CuentasBancarias.idFranquicia, franchiseId))
     }
 
     const movements = await query.limit(limit).offset(offset)
+    const formattedMovements = movements.map(mapAccountMovement)
 
     // Count query
     const countQueryBase = db
@@ -88,7 +97,7 @@ export const getAllAccountMovements = async (pagination: Pagination, franchiseId
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
-        items: movements,
+        items: formattedMovements,
         paginate: {
             page,
             limit,
@@ -99,26 +108,14 @@ export const getAllAccountMovements = async (pagination: Pagination, franchiseId
 }
 
 export const getAccountMovementById = async (id: number) => {
-    const movement = await db
-        .select({
-            id: MovimientosCuentas.id,
-            date: MovimientosCuentas.fecha,
-            referenceNumber: MovimientosCuentas.nroReferencia,
-            movementType: MovimientosCuentas.tipoMovimiento,
-            observation: MovimientosCuentas.observacion,
-            income: MovimientosCuentas.ingresos,
-            expense: MovimientosCuentas.egresos,
-            balanceAfter: MovimientosCuentas.saldoPosterior,
-            accountId: MovimientosCuentas.idCuenta,
-            accountNumber: CuentasBancarias.codCuenta,
-            franchiseId: CuentasBancarias.idFranquicia, // for permission check
-        })
+    const result = await db
+        .select()
         .from(MovimientosCuentas)
         .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
         .where(eq(MovimientosCuentas.id, id))
         .then(rows => rows[0])
 
-    if (!movement) throw new AppError(404, 'Movement not found')
+    if (!result) throw new AppError(404, 'Movement not found')
 
-    return movement
+    return mapAccountMovement(result)
 }
