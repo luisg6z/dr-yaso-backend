@@ -51,13 +51,11 @@ export const createInventoryMovement = async (
             )
 
         if (existing.length === 0) {
-            await tx
-                .insert(TienenStock)
-                .values({
-                    idProducto: data.idProducto,
-                    idFranquicia: data.idFranquicia,
-                    stockActual: nuevoSaldo,
-                })
+            await tx.insert(TienenStock).values({
+                idProducto: data.idProducto,
+                idFranquicia: data.idFranquicia,
+                stockActual: nuevoSaldo,
+            })
         } else {
             await tx
                 .update(TienenStock)
@@ -192,4 +190,3 @@ export const getInventoryMovements = async (
         },
     }
 }
-
