@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { validate } from '../middleware/validate'
-import { createBankAccountSchema, updateBankAccountSchema } from './bank-accounts.schemas'
+import {
+    createBankAccountSchema,
+    updateBankAccountSchema,
+} from './bank-accounts.schemas'
 import {
     createBankAccountHandler,
     getAllBankAccountsHandler,
