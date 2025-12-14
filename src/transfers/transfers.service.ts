@@ -9,6 +9,7 @@ import { AppError } from '../common/errors/errors'
 import { z } from 'zod'
 import {
     createTransferSchema,
+    updateTransferStatusSchema,
 } from './transfers.schemas'
 import { Pagination } from '../types/types'
 
@@ -24,7 +25,7 @@ const statusToDb = {
 
 // Removed statusFromDb as we want to keep Spanish values in response
 
-type StatusInput = 'approved' | 'rejected';
+// StatusInput type removed as it is replaced by Zod schema inference or not used directly
 
 export const createTransfer = async (
     data: z.infer<typeof createTransferSchema>,
@@ -37,7 +38,6 @@ export const createTransfer = async (
         fecha: data.date,
         estado: 'pendiente' as const,
         motivo: data.reason,
-        observacion: data.observation,
     }
 
     const [transfer] = await db
@@ -157,7 +157,7 @@ export const getTransfersByFranchise = async (franchiseId: number, pagination: P
 
 export const updateTransferStatus = async (
     id: number,
-    status: StatusInput,
+    data: z.infer<typeof updateTransferStatusSchema>,
 ) => {
     return await db.transaction(async (tx) => {
         const [transfer] = await tx
@@ -171,7 +171,7 @@ export const updateTransferStatus = async (
             throw new AppError(400, 'Transfer is not pending')
         }
 
-        const dbStatus = statusToDb[status];
+        const dbStatus = statusToDb[data.status];
 
         if (dbStatus === 'aprobado') {
             // Close current active association
@@ -199,7 +199,10 @@ export const updateTransferStatus = async (
 
         const [updated] = await tx
             .update(Traspasos)
-            .set({ estado: dbStatus })
+            .set({
+                estado: dbStatus,
+                observacion: data.observation
+            })
             .where(eq(Traspasos.id, id))
             .returning()
 

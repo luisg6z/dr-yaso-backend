@@ -21,6 +21,6 @@ export const Traspasos = pgTable('Traspasos', {
         .notNull(),
     fecha: date('fecha').notNull(),
     estado: estadoTraspasoEnum('estado').notNull().default('pendiente'),
-    motivo: varchar('motivo').notNull(),
-    observacion: varchar('observacion'),
+    motivo: varchar('motivo', { length: 255 }).notNull(),
+    observacion: varchar('observacion', { length: 255 }),
 })

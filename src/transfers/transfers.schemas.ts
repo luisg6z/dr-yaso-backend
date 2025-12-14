@@ -59,9 +59,9 @@ export const createTransferSchema = z.object({
         message: 'Invalid date format',
     }),
     reason: z.string().min(1),
-    observation: z.string().optional(),
 })
 
 export const updateTransferStatusSchema = z.object({
     status: z.enum(['approved', 'rejected']),
+    observation: z.string().optional(),
 })

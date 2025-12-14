@@ -64,7 +64,6 @@ export const respondToTransferHandler = async (
 ) => {
     try {
         const { id } = req.params
-        const { estado } = req.body
         const user = res.locals.user
 
         const transfer = await transferService.getTransferById(Number(id))
@@ -81,7 +80,7 @@ export const respondToTransferHandler = async (
 
         const updated = await transferService.updateTransferStatus(
             Number(id),
-            estado,
+            req.body,
         )
         res.json(updated)
     } catch (error) {
