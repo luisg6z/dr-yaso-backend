@@ -88,3 +88,36 @@ export const respondToTransferHandler = async (
         next(error)
     }
 }
+
+export const getTransfersByFranchiseIdHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { id } = req.params
+        const user = res.locals.user
+        const pagination: Pagination = {
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+        }
+
+        const franchiseId = Number(id)
+
+        // Authorization check
+        if (user.role === 'Coordinador' && user.franchiseId !== franchiseId) {
+            throw new AppError(
+                403,
+                'You can only view transfers for your own franchise',
+            )
+        }
+
+        const transfers = await transferService.getTransfersByFranchise(
+            franchiseId,
+            pagination,
+        )
+        res.json(transfers)
+    } catch (error) {
+        next(error)
+    }
+}

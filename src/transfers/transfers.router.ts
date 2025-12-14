@@ -3,6 +3,7 @@ import {
     createTransferHandler,
     getTransfersHandler,
     respondToTransferHandler,
+    getTransfersByFranchiseIdHandler,
 } from './transfers.controller'
 import { authenticate } from '../auth/middlewares/auth.middleware'
 import { authorize } from '../auth/middlewares/authorize.middleware'
@@ -65,6 +66,31 @@ transfersRouter.get(
     authenticate,
     authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
     getTransfersHandler,
+)
+
+/**
+ * @swagger
+ * /api/transfers/franchise/{id}:
+ *   get:
+ *     summary: Get transfers by franchise ID
+ *     tags: [Transfers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of transfers for the specific franchise
+ */
+transfersRouter.get(
+    '/franchise/:id',
+    authenticate,
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
+    getTransfersByFranchiseIdHandler,
 )
 
 /**
