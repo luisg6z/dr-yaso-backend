@@ -36,16 +36,33 @@ export const getStockReportData = async (filters: StockReportFilters) => {
     const conditions: any[] = []
 
     if (filters.rangoFechas?.fechaInicio) {
-        conditions.push(gte(MovimientosInventario.fechaHora, new Date(filters.rangoFechas.fechaInicio)))
+        conditions.push(
+            gte(
+                MovimientosInventario.fechaHora,
+                new Date(filters.rangoFechas.fechaInicio),
+            ),
+        )
     }
     if (filters.rangoFechas?.fechaFin) {
-        conditions.push(lte(MovimientosInventario.fechaHora, new Date(filters.rangoFechas.fechaFin)))
+        conditions.push(
+            lte(
+                MovimientosInventario.fechaHora,
+                new Date(filters.rangoFechas.fechaFin),
+            ),
+        )
     }
     if (filters.sedesIds && filters.sedesIds.length > 0) {
-        conditions.push(inArray(MovimientosInventario.idFranquicia, filters.sedesIds))
+        conditions.push(
+            inArray(MovimientosInventario.idFranquicia, filters.sedesIds),
+        )
     }
     if (filters.tiposMovimiento && filters.tiposMovimiento.length > 0) {
-        conditions.push(inArray(MovimientosInventario.tipoMovimiento, filters.tiposMovimiento))
+        conditions.push(
+            inArray(
+                MovimientosInventario.tipoMovimiento,
+                filters.tiposMovimiento,
+            ),
+        )
     }
 
     const rows = await db
@@ -62,7 +79,10 @@ export const getStockReportData = async (filters: StockReportFilters) => {
         })
         .from(MovimientosInventario)
         .leftJoin(Productos, eq(MovimientosInventario.idProducto, Productos.id))
-        .leftJoin(Franquicias, eq(MovimientosInventario.idFranquicia, Franquicias.id))
+        .leftJoin(
+            Franquicias,
+            eq(MovimientosInventario.idFranquicia, Franquicias.id),
+        )
         .leftJoin(Usuarios, eq(MovimientosInventario.idUsuario, Usuarios.id))
         .where(conditions.length > 0 ? and(...conditions) : undefined)
 
@@ -84,7 +104,10 @@ export const getStockReportData = async (filters: StockReportFilters) => {
     }
 }
 
-export const generateExcelReport = async (data: { items: StockReportRow[]; resumen: any }, filters?: StockReportFilters) => {
+export const generateExcelReport = async (
+    data: { items: StockReportRow[]; resumen: any },
+    filters?: StockReportFilters,
+) => {
     if (!ExcelJS) {
         ExcelJS = (await import('exceljs')).default || (await import('exceljs'))
     }
@@ -93,11 +116,16 @@ export const generateExcelReport = async (data: { items: StockReportRow[]; resum
 
     // Title and filter summary
     const title = 'Reporte de Movimientos de Inventario'
-    const rangeText = filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
-        ? `Rango: ${filters?.rangoFechas?.fechaInicio ? new Date(filters.rangoFechas.fechaInicio).toLocaleDateString() : '—'} - ${filters?.rangoFechas?.fechaFin ? new Date(filters.rangoFechas.fechaFin).toLocaleDateString() : '—'}`
-        : 'Rango: Todos'
-    const sedesText = filters?.sedesIds?.length ? `Sedes: ${filters.sedesIds.join(', ')}` : 'Sedes: Todas'
-    const tiposText = filters?.tiposMovimiento?.length ? `Tipos: ${filters.tiposMovimiento.join(', ')}` : 'Tipos: Entrada/Salida'
+    const rangeText =
+        filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
+            ? `Rango: ${filters?.rangoFechas?.fechaInicio ? new Date(filters.rangoFechas.fechaInicio).toLocaleDateString() : '—'} - ${filters?.rangoFechas?.fechaFin ? new Date(filters.rangoFechas.fechaFin).toLocaleDateString() : '—'}`
+            : 'Rango: Todos'
+    const sedesText = filters?.sedesIds?.length
+        ? `Sedes: ${filters.sedesIds.join(', ')}`
+        : 'Sedes: Todas'
+    const tiposText = filters?.tiposMovimiento?.length
+        ? `Tipos: ${filters.tiposMovimiento.join(', ')}`
+        : 'Tipos: Entrada/Salida'
 
     sheet.addRow([title])
     sheet.getRow(1).font = { bold: true, size: 16 }
@@ -142,10 +170,14 @@ export const generateExcelReport = async (data: { items: StockReportRow[]; resum
     return buffer
 }
 
-export const generatePdfReport = async (data: { items: StockReportRow[]; resumen: any }, filters?: StockReportFilters) => {
+export const generatePdfReport = async (
+    data: { items: StockReportRow[]; resumen: any },
+    filters?: StockReportFilters,
+) => {
     // pdfmake (server-side) requires font files. Update font paths to available .ttf files on your system.
     if (!PdfPrinter) {
-        PdfPrinter = (await import('pdfmake')).default || (await import('pdfmake'))
+        PdfPrinter =
+            (await import('pdfmake')).default || (await import('pdfmake'))
     }
     // Use built-in PDF fonts via pdfkit (no file paths required)
     const fonts = {
@@ -184,11 +216,16 @@ export const generatePdfReport = async (data: { items: StockReportRow[]; resumen
     ]
 
     const title = 'Reporte de Movimientos de Inventario'
-    const rangeText = filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
-        ? `Rango: ${filters?.rangoFechas?.fechaInicio ? formatDate(new Date(filters.rangoFechas.fechaInicio)).split(' ')[0] : '—'} - ${filters?.rangoFechas?.fechaFin ? formatDate(new Date(filters.rangoFechas.fechaFin)).split(' ')[0] : '—'}`
-        : 'Rango: Todos'
-    const sedesText = filters?.sedesIds?.length ? `Sedes: ${filters.sedesIds.join(', ')}` : 'Sedes: Todas'
-    const tiposText = filters?.tiposMovimiento?.length ? `Tipos: ${filters.tiposMovimiento.join(', ')}` : 'Tipos: Entrada/Salida'
+    const rangeText =
+        filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
+            ? `Rango: ${filters?.rangoFechas?.fechaInicio ? formatDate(new Date(filters.rangoFechas.fechaInicio)).split(' ')[0] : '—'} - ${filters?.rangoFechas?.fechaFin ? formatDate(new Date(filters.rangoFechas.fechaFin)).split(' ')[0] : '—'}`
+            : 'Rango: Todos'
+    const sedesText = filters?.sedesIds?.length
+        ? `Sedes: ${filters.sedesIds.join(', ')}`
+        : 'Sedes: Todas'
+    const tiposText = filters?.tiposMovimiento?.length
+        ? `Tipos: ${filters.tiposMovimiento.join(', ')}`
+        : 'Tipos: Entrada/Salida'
 
     const docDefinition = {
         content: [
@@ -197,7 +234,23 @@ export const generatePdfReport = async (data: { items: StockReportRow[]; resumen
             { text: sedesText, style: 'sub' },
             { text: tiposText, style: 'sub' },
             { text: '\n' },
-            { table: { headerRows: 1, widths: ['auto', '*', '*', 'auto', 'auto', 'auto', 'auto', '*', '*'], body } },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: [
+                        'auto',
+                        '*',
+                        '*',
+                        'auto',
+                        'auto',
+                        'auto',
+                        'auto',
+                        '*',
+                        '*',
+                    ],
+                    body,
+                },
+            },
             { text: '\n' },
             {
                 table: {

@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { authenticate } from '../auth/middlewares/auth.middleware'
-import { createInventoryMovementController, getMovementsForProductFranchiseController } from './inventory.controller'
+import {
+    createInventoryMovementController,
+    getMovementsForProductFranchiseController,
+} from './inventory.controller'
 import { generateStockReportController } from './report.controller'
 
 const router = Router()
@@ -155,6 +158,10 @@ router.post('/', authenticate, createInventoryMovementController)
  *               format: binary
  */
 router.post('/report', authenticate, generateStockReportController)
-router.get('/product/:productId', authenticate, getMovementsForProductFranchiseController)
+router.get(
+    '/product/:productId',
+    authenticate,
+    getMovementsForProductFranchiseController,
+)
 
 export default router
