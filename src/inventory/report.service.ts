@@ -35,32 +35,32 @@ export type StockReportRow = {
 export const getStockReportData = async (filters: StockReportFilters) => {
     const conditions: any[] = []
 
-    if (filters.rangoFechas?.fechaInicio) {
+    if (filters.datesRange?.startDate) {
         conditions.push(
             gte(
                 MovimientosInventario.fechaHora,
-                new Date(filters.rangoFechas.fechaInicio),
+                new Date(filters.datesRange.startDate),
             ),
         )
     }
-    if (filters.rangoFechas?.fechaFin) {
+    if (filters.datesRange?.finishDate) {
         conditions.push(
             lte(
                 MovimientosInventario.fechaHora,
-                new Date(filters.rangoFechas.fechaFin),
+                new Date(filters.datesRange.finishDate),
             ),
         )
     }
-    if (filters.sedesIds && filters.sedesIds.length > 0) {
+    if (filters.franchisesIds && filters.franchisesIds.length > 0) {
         conditions.push(
-            inArray(MovimientosInventario.idFranquicia, filters.sedesIds),
+            inArray(MovimientosInventario.idFranquicia, filters.franchisesIds),
         )
     }
-    if (filters.tiposMovimiento && filters.tiposMovimiento.length > 0) {
+    if (filters.movementTypes && filters.movementTypes.length > 0) {
         conditions.push(
             inArray(
                 MovimientosInventario.tipoMovimiento,
-                filters.tiposMovimiento,
+                filters.movementTypes,
             ),
         )
     }
@@ -117,14 +117,14 @@ export const generateExcelReport = async (
     // Title and filter summary
     const title = 'Reporte de Movimientos de Inventario'
     const rangeText =
-        filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
-            ? `Rango: ${filters?.rangoFechas?.fechaInicio ? new Date(filters.rangoFechas.fechaInicio).toLocaleDateString() : '—'} - ${filters?.rangoFechas?.fechaFin ? new Date(filters.rangoFechas.fechaFin).toLocaleDateString() : '—'}`
+        filters?.datesRange?.startDate || filters?.datesRange?.finishDate
+            ? `Rango: ${filters?.datesRange?.startDate ? new Date(filters.datesRange.startDate).toLocaleDateString() : '—'} - ${filters?.datesRange?.finishDate ? new Date(filters.datesRange.finishDate).toLocaleDateString() : '—'}`
             : 'Rango: Todos'
-    const sedesText = filters?.sedesIds?.length
-        ? `Sedes: ${filters.sedesIds.join(', ')}`
+    const sedesText = filters?.franchisesIds?.length
+        ? `Sedes: ${filters.franchisesIds.join(', ')}`
         : 'Sedes: Todas'
-    const tiposText = filters?.tiposMovimiento?.length
-        ? `Tipos: ${filters.tiposMovimiento.join(', ')}`
+    const tiposText = filters?.movementTypes?.length
+        ? `Tipos: ${filters.movementTypes.join(', ')}`
         : 'Tipos: Entrada/Salida'
 
     sheet.addRow([title])
@@ -217,14 +217,14 @@ export const generatePdfReport = async (
 
     const title = 'Reporte de Movimientos de Inventario'
     const rangeText =
-        filters?.rangoFechas?.fechaInicio || filters?.rangoFechas?.fechaFin
-            ? `Rango: ${filters?.rangoFechas?.fechaInicio ? formatDate(new Date(filters.rangoFechas.fechaInicio)).split(' ')[0] : '—'} - ${filters?.rangoFechas?.fechaFin ? formatDate(new Date(filters.rangoFechas.fechaFin)).split(' ')[0] : '—'}`
+        filters?.datesRange?.startDate || filters?.datesRange?.finishDate
+            ? `Rango: ${filters?.datesRange?.startDate ? formatDate(new Date(filters.datesRange.startDate)).split(' ')[0] : '—'} - ${filters?.datesRange?.finishDate ? formatDate(new Date(filters.datesRange.finishDate)).split(' ')[0] : '—'}`
             : 'Rango: Todos'
-    const sedesText = filters?.sedesIds?.length
-        ? `Sedes: ${filters.sedesIds.join(', ')}`
+    const sedesText = filters?.franchisesIds?.length
+        ? `Sedes: ${filters.franchisesIds.join(', ')}`
         : 'Sedes: Todas'
-    const tiposText = filters?.tiposMovimiento?.length
-        ? `Tipos: ${filters.tiposMovimiento.join(', ')}`
+    const tiposText = filters?.movementTypes?.length
+        ? `Tipos: ${filters.movementTypes.join(', ')}`
         : 'Tipos: Entrada/Salida'
 
     const docDefinition = {

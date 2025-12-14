@@ -21,11 +21,11 @@ export const generateStockReportController: RequestHandler = async (
             return
         }
         const data = await getStockReportData(parsed.data)
-        if (parsed.data.formato === 'json') {
+        if (parsed.data.format === 'json') {
             res.json(data)
             return
         }
-        if (parsed.data.formato === 'excel') {
+        if (parsed.data.format === 'excel') {
             // normalize nullable string fields to empty string so they match expected StockReportRow shape
             const normalized = {
                 ...data,
@@ -38,11 +38,11 @@ export const generateStockReportController: RequestHandler = async (
             }
             const buffer = await generateExcelReport(normalized, parsed.data)
             // Build filename with date range
-            const inicio = parsed.data.rangoFechas?.fechaInicio
-                ? new Date(parsed.data.rangoFechas.fechaInicio)
+            const inicio = parsed.data.datesRange?.startDate
+                ? new Date(parsed.data.datesRange.startDate)
                 : null
-            const fin = parsed.data.rangoFechas?.fechaFin
-                ? new Date(parsed.data.rangoFechas.fechaFin)
+            const fin = parsed.data.datesRange?.finishDate
+                ? new Date(parsed.data.datesRange.finishDate)
                 : null
             const fmt = (d: Date) =>
                 `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -58,7 +58,7 @@ export const generateStockReportController: RequestHandler = async (
             res.send(buffer)
             return
         }
-        if (parsed.data.formato === 'pdf') {
+        if (parsed.data.format === 'pdf') {
             // normalize nullable string fields to empty string so they match expected StockReportRow shape
             const normalized = {
                 ...data,
@@ -70,11 +70,11 @@ export const generateStockReportController: RequestHandler = async (
                 })),
             }
             const buffer = await generatePdfReport(normalized, parsed.data)
-            const inicio = parsed.data.rangoFechas?.fechaInicio
-                ? new Date(parsed.data.rangoFechas.fechaInicio)
+            const inicio = parsed.data.datesRange?.startDate
+                ? new Date(parsed.data.datesRange.startDate)
                 : null
-            const fin = parsed.data.rangoFechas?.fechaFin
-                ? new Date(parsed.data.rangoFechas.fechaFin)
+            const fin = parsed.data.datesRange?.finishDate
+                ? new Date(parsed.data.datesRange.finishDate)
                 : null
             const fmt = (d: Date) =>
                 `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`

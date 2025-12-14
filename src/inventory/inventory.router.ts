@@ -76,35 +76,35 @@ router.post('/', authenticate, createInventoryMovementController)
  *           schema:
  *             type: object
  *             properties:
- *               rangoFechas:
+ *               datesRange:
  *                 type: object
  *                 properties:
- *                   fechaInicio:
+ *                   startDate:
  *                     type: string
  *                     format: date-time
- *                   fechaFin:
+ *                   finishDate:
  *                     type: string
  *                     format: date-time
- *               sedesIds:
+ *               franchisesIds:
  *                 type: array
  *                 items:
  *                   type: integer
- *               tiposMovimiento:
+ *               movementTypes:
  *                 type: array
  *                 items:
  *                   type: string
  *                   enum: [Entrada, Salida]
- *               formato:
+ *               format:
  *                 type: string
  *                 enum: [excel, pdf, json]
  *                 default: json
  *           example:
- *             rangoFechas:
- *               fechaInicio: "2025-12-01T00:00:00Z"
- *               fechaFin: "2025-12-14T23:59:59Z"
- *             sedesIds: [1, 2]
- *             tiposMovimiento: ["Entrada", "Salida"]
- *             formato: "json"
+ *             datesRange:
+ *               startDate: "2025-12-01T00:00:00Z"
+ *               finishDate: "2025-12-14T23:59:59Z"
+ *             franchisesIds: [1, 2]
+ *             movementTypes: ["Entrada", "Salida"]
+ *             format: "json"
  *     responses:
  *       200:
  *         description: Archivo o JSON del reporte
