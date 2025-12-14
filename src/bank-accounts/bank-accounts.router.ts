@@ -11,6 +11,8 @@ import {
 import { authenticate } from '../auth/middlewares/auth.middleware'
 import { authorize } from '../auth/middlewares/authorize.middleware'
 import { tipoUsuarioEnum } from '../db/schemas/Usuarios'
+import { bankReportController } from './report.controller'
+import { bankReportFiltersSchema } from './report.schemas'
 
 const bankAccountsRouter = Router()
 
@@ -130,3 +132,50 @@ bankAccountsRouter.delete(
 )
 
 export default bankAccountsRouter
+
+/**
+ * @swagger
+ * /api/bank-accounts/report:
+ *   post:
+ *     summary: Genera reporte de movimientos bancarios
+ *     tags:
+ *       - BankAccounts
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rangoFechas:
+ *                 type: object
+ *                 properties:
+ *                   fechaInicio:
+ *                     type: string
+ *                     format: date-time
+ *                   fechaFin:
+ *                     type: string
+ *                     format: date-time
+ *               cuentaBancariaId:
+ *                 type: integer
+ *               tiposMovimiento:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               formato:
+ *                 type: string
+ *                 enum: [json, excel, pdf]
+ *     description: El reporte se genera por cuenta. Los montos se muestran en la moneda de la cuenta (VES/USD/EUR) y se formatea el documento acorde.
+ *     responses:
+ *       200:
+ *         description: Recurso retornado o archivo descargado
+ */
+bankAccountsRouter.post(
+    '/report',
+    authenticate,
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
+    validate(bankReportFiltersSchema),
+    bankReportController,
+)
