@@ -2,6 +2,8 @@ import { db } from '../db/db'
 import { MovimientosInventario } from '../db/schemas/MovimientosInventario'
 import { TienenStock } from '../db/schemas/TienenStock'
 import { Usuarios } from '../db/schemas/Usuarios'
+import { Productos } from '../db/schemas/Productos'
+import { Franquicias } from '../db/schemas/Franquicias'
 import { eq, and, desc, sql } from 'drizzle-orm'
 import { MovementCreate } from './inventory.schemas'
 import { AppError } from '../common/errors/errors'
@@ -134,3 +136,60 @@ export const getMovementsForProductFranchise = async (
         },
     }
 }
+
+export const getInventoryMovements = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
+    const { page, limit } = pagination
+    const offset = (page - 1) * limit
+
+    const whereClause = franchiseId
+        ? eq(MovimientosInventario.idFranquicia, franchiseId)
+        : undefined
+
+    const rows = await db
+        .select({
+            id: MovimientosInventario.id,
+            tipoMovimiento: MovimientosInventario.tipoMovimiento,
+            cantidad: MovimientosInventario.cantidad,
+            saldoFinal: MovimientosInventario.saldoFinal,
+            fechaHora: MovimientosInventario.fechaHora,
+            observacion: MovimientosInventario.observacion,
+            idProducto: MovimientosInventario.idProducto,
+            productoNombre: Productos.nombre,
+            idFranquicia: MovimientosInventario.idFranquicia,
+            franquiciaNombre: Franquicias.nombre,
+            idUsuario: MovimientosInventario.idUsuario,
+            usuarioNombre: Usuarios.nombre,
+        })
+        .from(MovimientosInventario)
+        .leftJoin(Usuarios, eq(MovimientosInventario.idUsuario, Usuarios.id))
+        .leftJoin(Productos, eq(MovimientosInventario.idProducto, Productos.id))
+        .leftJoin(
+            Franquicias,
+            eq(MovimientosInventario.idFranquicia, Franquicias.id),
+        )
+        .where(whereClause)
+        .orderBy(desc(MovimientosInventario.fechaHora))
+        .limit(limit)
+        .offset(offset)
+
+    const countResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(MovimientosInventario)
+        .where(whereClause)
+
+    const count = Number(countResult[0]?.count ?? 0)
+
+    return {
+        items: rows,
+        paginate: {
+            page,
+            limit,
+            totalItems: count,
+            totalPages: Math.ceil(count / limit),
+        },
+    }
+}
+

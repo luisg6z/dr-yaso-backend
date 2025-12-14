@@ -1,8 +1,11 @@
 import { Router } from 'express'
 import { authenticate } from '../auth/middlewares/auth.middleware'
+import { authorize } from '../auth/middlewares/authorize.middleware'
+import { tipoUsuarioEnum } from '../db/schemas/Usuarios'
 import {
     createInventoryMovementController,
     getMovementsForProductFranchiseController,
+    getInventoryMovementsController,
 } from './inventory.controller'
 import { generateStockReportController } from './report.controller'
 
@@ -162,6 +165,62 @@ router.get(
     '/product/:productId',
     authenticate,
     getMovementsForProductFranchiseController,
+)
+
+/**
+ * @swagger
+ * /api/inventory/movements:
+ *   get:
+ *     summary: Get paginated inventory movements
+ *     description: Retrieve a list of inventory movements, optionally filtered by franchise.
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: franchiseId
+ *         schema:
+ *           type: integer
+ *         description: Filter by franchise ID
+ *     responses:
+ *       200:
+ *         description: List of movements
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 paginate:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ */
+router.get(
+    '/movements',
+    authenticate,
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[3]]),
+    getInventoryMovementsController,
 )
 
 export default router

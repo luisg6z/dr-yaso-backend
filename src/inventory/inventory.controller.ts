@@ -3,6 +3,7 @@ import { movementCreateSchema } from './inventory.schemas'
 import {
     createInventoryMovement,
     getMovementsForProductFranchise,
+    getInventoryMovements,
 } from './inventory.service'
 
 export const createInventoryMovementController: RequestHandler = async (
@@ -56,6 +57,27 @@ export const getMovementsForProductFranchiseController: RequestHandler = async (
             { page, limit },
         )
         res.json(result)
+        return
+    } catch (err) {
+        next(err)
+        return
+    }
+}
+
+export const getInventoryMovementsController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
+    try {
+        const page = Number(req.query.page ?? 1)
+        const limit = Number(req.query.limit ?? 10)
+        const franchiseId = req.query.franchiseId
+            ? Number(req.query.franchiseId)
+            : undefined
+
+        const result = await getInventoryMovements({ page, limit }, franchiseId)
+        res.status(200).json(result)
         return
     } catch (err) {
         next(err)
