@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import * as transferService from './transfers.service'
 import { AppError } from '../common/errors/errors'
+import { Pagination } from '../types/types'
 
 export const createTransferHandler = async (
     req: Request,
@@ -30,19 +31,24 @@ export const createTransferHandler = async (
 }
 
 export const getTransfersHandler = async (
-    _req: Request,
+    req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
         const user = res.locals.user
+        const pagination: Pagination = {
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+        }
 
         if (user.role === 'Superusuario') {
-            const transfers = await transferService.getAllTransfers()
+            const transfers = await transferService.getAllTransfers(pagination)
             res.json(transfers)
         } else {
             const transfers = await transferService.getTransfersByFranchise(
                 user.franchiseId,
+                pagination,
             )
             res.json(transfers)
         }
