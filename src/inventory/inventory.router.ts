@@ -1,6 +1,10 @@
 import { Router } from 'express'
 import { authenticate } from '../auth/middlewares/auth.middleware'
-import { createInventoryMovementController, getMovementsForProductFranchiseController } from './inventory.controller'
+import {
+    createInventoryMovementController,
+    getMovementsForProductFranchiseController,
+} from './inventory.controller'
+import { generateStockReportController } from './report.controller'
 
 const router = Router()
 
@@ -56,6 +60,108 @@ const router = Router()
  *         description: No autorizado
  */
 router.post('/', authenticate, createInventoryMovementController)
-router.get('/product/:productId', authenticate, getMovementsForProductFranchiseController)
+/**
+ * @swagger
+ * /api/inventory/report:
+ *   post:
+ *     summary: Genera un reporte de movimientos de stock
+ *     description: Devuelve los movimientos filtrados y un resumen de totales. Puede responder en JSON, Excel (xlsx) o PDF.
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               datesRange:
+ *                 type: object
+ *                 properties:
+ *                   startDate:
+ *                     type: string
+ *                     format: date-time
+ *                   finishDate:
+ *                     type: string
+ *                     format: date-time
+ *               franchisesIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               movementTypes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [Entrada, Salida]
+ *               format:
+ *                 type: string
+ *                 enum: [excel, pdf, json]
+ *                 default: json
+ *           example:
+ *             datesRange:
+ *               startDate: "2025-12-01T00:00:00Z"
+ *               finishDate: "2025-12-14T23:59:59Z"
+ *             franchisesIds: [1, 2]
+ *             movementTypes: ["Entrada", "Salida"]
+ *             format: "json"
+ *     responses:
+ *       200:
+ *         description: Archivo o JSON del reporte
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       idMovimiento:
+ *                         type: integer
+ *                       nombreArticulo:
+ *                         type: string
+ *                       nombreSede:
+ *                         type: string
+ *                       tipoMovimiento:
+ *                         type: string
+ *                         enum: [Entrada, Salida]
+ *                       cantidad:
+ *                         type: integer
+ *                       saldoFinal:
+ *                         type: integer
+ *                       fechaHora:
+ *                         type: string
+ *                         format: date-time
+ *                       observacion:
+ *                         type: string
+ *                       usuarioNombre:
+ *                         type: string
+ *                         nullable: true
+ *                 resumen:
+ *                   type: object
+ *                   properties:
+ *                     totalEntradas:
+ *                       type: integer
+ *                     totalSalidas:
+ *                       type: integer
+ *                     saldoNeto:
+ *                       type: integer
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+router.post('/report', authenticate, generateStockReportController)
+router.get(
+    '/product/:productId',
+    authenticate,
+    getMovementsForProductFranchiseController,
+)
 
 export default router
