@@ -43,7 +43,15 @@ export const createPettyCash = async (pettyCash: PettyCashCreate) => {
 
     if (!newPettyCash) throw new AppError(500, 'Error creating petty cash')
 
-    return getPettyCashById(newPettyCash.id)
+    return {
+        id: newPettyCash.id,
+        code: newPettyCash.codCaja,
+        name: newPettyCash.nombre,
+        balance: newPettyCash.saldo,
+        currency: newPettyCash.tipoMoneda,
+        franchiseId: newPettyCash.idFranquicia,
+        responsibleId: newPettyCash.idResponsable,
+    }
 }
 
 // Helper to map petty cash row
