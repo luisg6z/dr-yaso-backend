@@ -45,9 +45,7 @@ export const bankReportController: RequestHandler = async (req, res, next) => {
 
         if (filters.format === 'excel') {
             const buf = await generateExcelBankReport(data)
-            const start = filters.dateRange.startDate
-                .toISOString()
-                .slice(0, 10)
+            const start = filters.dateRange.startDate.toISOString().slice(0, 10)
             const end = filters.dateRange.endDate.toISOString().slice(0, 10)
             res.setHeader(
                 'Content-Type',
@@ -63,9 +61,7 @@ export const bankReportController: RequestHandler = async (req, res, next) => {
 
         if (filters.format === 'pdf') {
             const buf = await generatePdfBankReport(data)
-            const start = filters.dateRange.startDate
-                .toISOString()
-                .slice(0, 10)
+            const start = filters.dateRange.startDate.toISOString().slice(0, 10)
             const end = filters.dateRange.endDate.toISOString().slice(0, 10)
             res.setHeader('Content-Type', 'application/pdf')
             res.setHeader(

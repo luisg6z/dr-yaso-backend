@@ -48,7 +48,7 @@ export const getBankReportData = async (filters: BankReportFilters) => {
         condiciones.push(
             inArray(
                 MovimientosCuentas.tipoMovimiento,
-                movementTypes as unknown as (typeof tipoMovimientoEnum.enumValues[number])[],
+                movementTypes as unknown as (typeof tipoMovimientoEnum.enumValues)[number][],
             ),
         )
     }
