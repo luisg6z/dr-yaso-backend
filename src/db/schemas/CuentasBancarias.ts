@@ -3,7 +3,7 @@ import { Bancos } from "./Bancos";
 import { ResponsablesCuentas } from "./ResponsablesCuentas";
 import { Franquicias } from "./Franquicias";
 
-export const tipoMonedaEnum = pgEnum('tipoMoneda', ['VES', 'USD', 'EUR'])
+export const tipoMonedaEnum = pgEnum('tipoMoneda', ['VES', 'USD', 'EUR', 'DOP'])
 
 export const CuentasBancarias = pgTable('CuentasBancarias', {
     id: serial().primaryKey(),

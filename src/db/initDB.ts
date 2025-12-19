@@ -20,6 +20,10 @@ import { Franquicias } from './schemas/Franquicias'
 import { Usuarios, tipoUsuarioEnum } from './schemas/Usuarios'
 import { hash } from 'bcrypt'
 import { Pertenecen } from './schemas/Pertenecen'
+import { Bancos } from './schemas/Bancos'
+import { CuentasBancarias } from './schemas/CuentasBancarias'
+import { MovimientosCuentas } from './schemas/MovimientosCuentas'
+import { ResponsablesCuentas } from './schemas/ResponsablesCuentas'
 
 const initDB = async () => {
     console.log('Starting database initialization...')
@@ -27,6 +31,10 @@ const initDB = async () => {
     await db.transaction(async (tx) => {
         try {
             // Clear databases
+            await tx.delete(MovimientosCuentas)
+            await tx.delete(CuentasBancarias)
+            await tx.delete(Bancos)
+            await tx.delete(ResponsablesCuentas)
             await tx.delete(Tienen)
             await tx.delete(Usuarios)
             await tx.delete(Pertenecen)
@@ -50,6 +58,9 @@ const initDB = async () => {
                 'ALTER SEQUENCE "Franquicias_id_seq" RESTART WITH 1',
             )
             await tx.execute('ALTER SEQUENCE "Usuarios_id_seq" RESTART WITH 1')
+            await tx.execute('ALTER SEQUENCE "CuentasBancarias_id_seq" RESTART WITH 1')
+            await tx.execute('ALTER SEQUENCE "MovimientosCuentas_id_seq" RESTART WITH 1')
+            await tx.execute('ALTER SEQUENCE "ResponsablesCuentas_id_seq" RESTART WITH 1')
 
             //#region Paises
             console.log('Inserting predefined countries...')
@@ -366,6 +377,30 @@ const initDB = async () => {
 
             await tx.insert(Ciudades).values(cities).returning()
             console.log('Cities inserted successfully.')
+            //#end region
+
+            //#region Bancos
+            console.log('Inserting predefined banks...')
+            const banks = [
+                // Venezuela
+                { cod: '0102', nombre: 'Banco de Venezuela' },
+                { cod: '0105', nombre: 'Mercantil' },
+                { cod: '0108', nombre: 'Provincial' },
+                { cod: '0134', nombre: 'Banesco' },
+                // USA
+                { cod: 'JPMC', nombre: 'JPMorgan Chase' },
+                { cod: 'BOFA', nombre: 'Bank of America' },
+                { cod: 'WFC', nombre: 'Wells Fargo' },
+                { cod: 'CITI', nombre: 'Citibank' },
+                // República Dominicana
+                { cod: '0001', nombre: 'Banco de Reservas' },
+                { cod: '0002', nombre: 'Banco Popular' },
+                { cod: '0003', nombre: 'Banco BHD' },
+                { cod: '0004', nombre: 'Scotiabank' },
+            ]
+
+            await tx.insert(Bancos).values(banks).returning()
+            console.log('Banks inserted successfully.')
             //#end region
 
             //#region Voluntarios
