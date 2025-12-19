@@ -18,4 +18,4 @@ export const idParam = z.object({
 })
 
 export type IdParam = z.infer<typeof idParam>
-export type Pagination = z.infer<typeof paginationSchema> & QueryFilters
+export type Pagination = z.infer<typeof paginationSchema> & Partial<QueryFilters>

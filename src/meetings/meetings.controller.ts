@@ -39,17 +39,18 @@ export const getAllMeetingsHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+            status: (req.query.status as any) || 'active',
         }
 
         const meetings =
             res.locals.user.role === tipoUsuarioEnum.enumValues[1]
                 ? await getDisciplineMeetings(
-                      pagination,
-                      res.locals.user.franchiseId,
-                  )
+                    pagination,
+                    res.locals.user.franchiseId,
+                )
                 : res.locals.user.role === tipoUsuarioEnum.enumValues[0]
-                  ? await getAllMeetings(pagination)
-                  : await getMeetingsForAFranchise(
+                    ? await getAllMeetings(pagination)
+                    : await getMeetingsForAFranchise(
                         pagination,
                         res.locals.user.franchiseId,
                     )
