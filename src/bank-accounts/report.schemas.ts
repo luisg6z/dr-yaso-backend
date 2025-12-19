@@ -5,7 +5,8 @@ export const bankReportFiltersSchema = z.object({
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
     }),
-    bankAccountId: z.coerce.number().int().positive(),
+    bankAccountId: z.coerce.number().int().positive().optional(),
+    franchiseId: z.coerce.number().int().positive().optional(),
     movementTypes: z
         .array(
             z.enum([

@@ -1,6 +1,7 @@
 import { db } from '../db/db'
 import { Visitas, tiposVisitasEnum } from '../db/schemas/Visitas'
-import { and, gte, lte, inArray, asc } from 'drizzle-orm'
+import { Locaciones } from '../db/schemas/Locaciones'
+import { and, gte, lte, inArray, asc, eq } from 'drizzle-orm'
 import { VisitsReportFilters } from './report.schemas'
 
 const formatDate = (d: Date) => {
@@ -31,9 +32,22 @@ export const getVisitsReportData = async (filters: VisitsReportFilters) => {
         )
     }
 
+    if (filters.franchiseId) {
+        condiciones.push(eq(Locaciones.idFranquicia, filters.franchiseId))
+    }
+
     const rows = await db
-        .select()
+        .select({
+            id: Visitas.id,
+            fechaHora: Visitas.fechaHora,
+            observacion: Visitas.observacion,
+            beneficiariosDirectos: Visitas.beneficiariosDirectos,
+            beneficiariosIndirectos: Visitas.beneficiariosIndirectos,
+            cantPersonalDeSalud: Visitas.cantPersonalDeSalud,
+            tipo: Visitas.tipo,
+        })
         .from(Visitas)
+        .leftJoin(Locaciones, eq(Visitas.idLocacion, Locaciones.id))
         .where(and(...condiciones))
         .orderBy(asc(Visitas.fechaHora))
 

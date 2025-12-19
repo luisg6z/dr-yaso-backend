@@ -7,6 +7,7 @@ export const visitsReportFiltersSchema = z.object({
         endDate: z.coerce.date(),
     }),
     visitTypes: z.array(z.enum(tiposVisitasEnum.enumValues)).optional(),
+    franchiseId: z.number().int().positive().optional(),
     format: z.enum(['json', 'pdf', 'excel']).default('json'),
 })
 

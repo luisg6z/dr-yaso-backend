@@ -6,7 +6,7 @@ export const volunteerAttendanceReportFiltersSchema = z.object({
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
     }),
-    franchiseId: z.number().int().positive(),
+    franchiseId: z.number().int().positive().optional(),
     visitTypes: z.array(z.enum(tiposVisitasEnum.enumValues)).optional(),
     format: z.enum(['json', 'pdf', 'excel']).default('json'),
 })

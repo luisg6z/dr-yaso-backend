@@ -56,6 +56,11 @@ export const getStockReportData = async (filters: StockReportFilters) => {
             inArray(MovimientosInventario.idFranquicia, filters.franchisesIds),
         )
     }
+    if (filters.franchiseId) {
+        conditions.push(
+            eq(MovimientosInventario.idFranquicia, filters.franchiseId),
+        )
+    }
     if (filters.movementTypes && filters.movementTypes.length > 0) {
         conditions.push(
             inArray(

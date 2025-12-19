@@ -36,15 +36,22 @@ const isIngreso = (tipo: string) => {
 }
 
 export const getBankReportData = async (filters: BankReportFilters) => {
-    const { dateRange, bankAccountId, movementTypes } = filters
+    const { dateRange, bankAccountId, franchiseId, movementTypes } = filters
 
     const condiciones = [
-        eq(MovimientosCuentas.idCuenta, bankAccountId),
         gte(MovimientosCuentas.fecha, dateRange.startDate),
         lte(MovimientosCuentas.fecha, dateRange.endDate),
     ]
+
+    if (bankAccountId) {
+        condiciones.push(eq(MovimientosCuentas.idCuenta, bankAccountId))
+    }
+
+    if (franchiseId) {
+        condiciones.push(eq(CuentasBancarias.idFranquicia, franchiseId))
+    }
+
     if (movementTypes && movementTypes.length > 0) {
-        // Cast movementTypes to the enum literal union so drizzle-orm's inArray overload matches
         condiciones.push(
             inArray(
                 MovimientosCuentas.tipoMovimiento,
@@ -64,6 +71,10 @@ export const getBankReportData = async (filters: BankReportFilters) => {
             egresos: MovimientosCuentas.egresos,
         })
         .from(MovimientosCuentas)
+        .leftJoin(
+            CuentasBancarias,
+            eq(MovimientosCuentas.idCuenta, CuentasBancarias.id),
+        )
         .where(and(...condiciones))
         .orderBy(asc(MovimientosCuentas.fecha))
 
@@ -93,14 +104,23 @@ export const getBankReportData = async (filters: BankReportFilters) => {
     const finalBalance = items.length > 0 ? items[items.length - 1].balance : 0
 
     // basic account metadata
-    const account = await db
+    const accountQuery = db
         .select({
             id: CuentasBancarias.id,
             codCuenta: CuentasBancarias.codCuenta,
             tipoMoneda: CuentasBancarias.tipoMoneda,
         })
         .from(CuentasBancarias)
-        .where(eq(CuentasBancarias.id, bankAccountId))
+
+    if (bankAccountId) {
+        accountQuery.where(eq(CuentasBancarias.id, bankAccountId as number))
+    } else if (franchiseId) {
+        accountQuery.where(eq(CuentasBancarias.idFranquicia, franchiseId as number))
+    } else {
+        // If neither is provided, don't show account-specific header info
+    }
+
+    const account = await accountQuery
 
     return {
         filters,
@@ -166,18 +186,18 @@ export const generateExcelBankReport = async (
 
     data.items.forEach((it) => {
         const row = ws.addRow(it)
-        ;['income', 'expense', 'balance'].forEach((k) => {
-            const c = row.getCell(
-                ws.columns!.findIndex((col: any) => col.key === k) + 1,
-            )
-            c.numFmt = '#,##0.00'
-            c.border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
-            }
-        })
+            ;['income', 'expense', 'balance'].forEach((k) => {
+                const c = row.getCell(
+                    ws.columns!.findIndex((col: any) => col.key === k) + 1,
+                )
+                c.numFmt = '#,##0.00'
+                c.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                }
+            })
     })
 
     ws.addRow([''])

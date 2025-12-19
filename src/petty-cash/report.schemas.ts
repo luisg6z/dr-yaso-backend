@@ -5,7 +5,8 @@ export const pettyCashReportSchema = z.object({
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
     }),
-    pettyCashId: z.number().int().positive(),
+    pettyCashId: z.number().int().positive().optional(),
+    franchiseId: z.number().int().positive().optional(),
     format: z.enum(['json', 'excel', 'pdf']).optional().default('json'),
 })
 

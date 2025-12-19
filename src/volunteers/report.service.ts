@@ -13,20 +13,26 @@ export const getVolunteerAttendanceReportData = async (
 ) => {
     const { dateRange, franchiseId, visitTypes } = filters
 
-    // 1. Get Franchise Name
-    const franchiseNameResult = await db
-        .select({ name: Franquicias.nombre })
-        .from(Franquicias)
-        .where(eq(Franquicias.id, franchiseId))
+    let franchiseName = 'Todas las sedes'
+    if (franchiseId) {
+        // 1. Get Franchise Name
+        const franchiseNameResult = await db
+            .select({ name: Franquicias.nombre })
+            .from(Franquicias)
+            .where(eq(Franquicias.id, franchiseId))
 
-    const franchiseName = franchiseNameResult[0]?.name || 'Desconocida'
+        franchiseName = franchiseNameResult[0]?.name || 'Desconocida'
+    }
 
     // 2. Get Visits for Franchise in Range
     const visitsConditions = [
-        eq(Locaciones.idFranquicia, franchiseId),
         gte(Visitas.fechaHora, dateRange.startDate),
         lte(Visitas.fechaHora, dateRange.endDate),
     ]
+
+    if (franchiseId) {
+        visitsConditions.push(eq(Locaciones.idFranquicia, franchiseId as number))
+    }
 
     if (visitTypes && visitTypes.length > 0) {
         visitsConditions.push(
@@ -46,11 +52,12 @@ export const getVolunteerAttendanceReportData = async (
     const totalFranchiseVisits = franchiseVisits.length
     const franchiseVisitIds = franchiseVisits.map((v) => v.id)
 
-    // 3. Get Volunteers belonging to Franchise
-    // We get volunteers who "belong" currently. 
-    // Or should we get volunteers who have attended at least one visit?
-    // Requirement implies list of volunteers with % compliance. 
-    // Usually means all active volunteers.
+    const volunteerConditions = [isNull(Pertenecen.fechaHoraEgreso)]
+
+    if (franchiseId) {
+        volunteerConditions.push(eq(Pertenecen.idFranquicia, franchiseId as number))
+    }
+
     const franchiseVolunteers = await db
         .select({
             id: Voluntarios.id,
@@ -60,12 +67,7 @@ export const getVolunteerAttendanceReportData = async (
         })
         .from(Voluntarios)
         .innerJoin(Pertenecen, eq(Pertenecen.idVoluntario, Voluntarios.id))
-        .where(
-            and(
-                eq(Pertenecen.idFranquicia, franchiseId),
-                isNull(Pertenecen.fechaHoraEgreso) // Assuming active volunteers
-            )
-        )
+        .where(and(...volunteerConditions))
 
     // 4. Calculate Attendance per Volunteer
     // Can do this in loop or aggregation query. Loop is fine for <1000 volunteers generally.

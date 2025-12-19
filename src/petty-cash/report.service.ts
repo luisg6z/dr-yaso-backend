@@ -23,13 +23,20 @@ const formatDate = (d: Date) => {
 export const getPettyCashReportData = async (
     filters: PettyCashReportFilters,
 ) => {
-    const { dateRange, pettyCashId } = filters
+    const { dateRange, pettyCashId, franchiseId } = filters
 
     const condiciones = [
-        eq(MovimientosCaja.idCaja, pettyCashId),
         gte(MovimientosCaja.fecha, dateRange.startDate),
         lte(MovimientosCaja.fecha, dateRange.endDate),
     ]
+
+    if (pettyCashId) {
+        condiciones.push(eq(MovimientosCaja.idCaja, pettyCashId))
+    }
+
+    if (franchiseId) {
+        condiciones.push(eq(CajasChicas.idFranquicia, franchiseId))
+    }
 
     const rows = await db
         .select({
@@ -40,6 +47,7 @@ export const getPettyCashReportData = async (
             egresos: MovimientosCaja.egresos,
         })
         .from(MovimientosCaja)
+        .leftJoin(CajasChicas, eq(MovimientosCaja.idCaja, CajasChicas.id))
         .where(and(...condiciones))
         .orderBy(asc(MovimientosCaja.fecha))
 
@@ -64,7 +72,7 @@ export const getPettyCashReportData = async (
     const finalBalance = items.length > 0 ? items[items.length - 1].balance : 0
 
     // basic account metadata
-    const pettyCash = await db
+    const pettyCashQuery = db
         .select({
             id: CajasChicas.id,
             codCaja: CajasChicas.codCaja,
@@ -72,11 +80,18 @@ export const getPettyCashReportData = async (
             tipoMoneda: CajasChicas.tipoMoneda,
         })
         .from(CajasChicas)
-        .where(eq(CajasChicas.id, pettyCashId))
+
+    if (pettyCashId) {
+        pettyCashQuery.where(eq(CajasChicas.id, pettyCashId as number))
+    } else if (franchiseId) {
+        pettyCashQuery.where(eq(CajasChicas.idFranquicia, franchiseId as number))
+    }
+
+    const pettyCashResult = await pettyCashQuery
 
     return {
         filters,
-        pettyCash: pettyCash[0] ?? null,
+        pettyCash: pettyCashResult[0] ?? null,
         items,
         summary: {
             totalIncome,
@@ -136,18 +151,18 @@ export const generateExcelPettyCashReport = async (
 
     data.items.forEach((it) => {
         const row = ws.addRow(it)
-        ;['income', 'expense', 'balance'].forEach((k) => {
-            const c = row.getCell(
-                ws.columns!.findIndex((col: any) => col.key === k) + 1,
-            )
-            c.numFmt = '#,##0.00'
-            c.border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
-            }
-        })
+            ;['income', 'expense', 'balance'].forEach((k) => {
+                const c = row.getCell(
+                    ws.columns!.findIndex((col: any) => col.key === k) + 1,
+                )
+                c.numFmt = '#,##0.00'
+                c.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                }
+            })
     })
 
     ws.addRow([''])

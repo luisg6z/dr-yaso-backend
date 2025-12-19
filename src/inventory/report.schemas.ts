@@ -8,6 +8,7 @@ export const stockReportSchema = z.object({
         })
         .optional(),
     franchisesIds: z.array(z.number().int().positive()).optional(),
+    franchiseId: z.number().int().positive().optional(),
     movementTypes: z.array(z.enum(['Entrada', 'Salida'])).optional(),
     format: z.enum(['excel', 'pdf', 'json']).default('json'),
 })
