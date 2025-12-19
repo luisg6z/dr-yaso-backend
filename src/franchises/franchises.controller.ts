@@ -2,7 +2,6 @@ import { Request, Response } from 'express'
 import {
     createFranchise,
     deleteFranchise,
-    getActiveFranchises,
     getFranchiseById,
     updateFranchise,
     getAllFranchises,
@@ -39,6 +38,7 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+            status: (req.query.status as any) || 'active',
         }
         if (res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
             const franchise = await getUserFranchise(
@@ -48,32 +48,6 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
         }
         const franchises = await getAllFranchises(pagination)
         res.status(200).json(franchises)
-    } catch (error) {
-        if (!res.headersSent) {
-            if (error instanceof AppError) {
-                res.status(error.statusCode).json({
-                    message: error.message,
-                    details: error.details,
-                })
-            }
-            res.status(500).json({
-                message: 'Error retreaving franchises',
-                details: error,
-            })
-        }
-    }
-}
-
-export const getActivesFranchisesHandler = async (
-    req: Request,
-    res: Response,
-) => {
-    try {
-        const pagination: Pagination = {
-            page: +(req.query.page || 1),
-            limit: +(req.query.limit || 10),
-        }
-        res.status(200).json(await getActiveFranchises(pagination))
     } catch (error) {
         if (!res.headersSent) {
             if (error instanceof AppError) {

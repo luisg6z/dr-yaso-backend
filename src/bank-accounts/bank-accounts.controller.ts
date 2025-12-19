@@ -41,6 +41,7 @@ export const getAllBankAccountsHandler = async (req: Request, res: Response) => 
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+            status: (req.query.status as any) || 'active',
         }
 
         const user = res.locals.user

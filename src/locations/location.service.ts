@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { LocationCreate, LocationUpdate } from './locations.schemas'
 import { db } from '../db/db'
 import { Locaciones } from '../db/schemas/Locaciones'
@@ -29,8 +29,17 @@ export const getAllLocationsForFranchise = async (
     pagination: Pagination,
     franchiseId: number,
 ) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
+
+    const whereCondition = and(
+        eq(Locaciones.idFranquicia, franchiseId),
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined,
+    )
 
     const locations = await db
         .select({
@@ -39,18 +48,22 @@ export const getAllLocationsForFranchise = async (
             franchise: {
                 id: Franquicias.id,
                 name: Franquicias.nombre,
+                isActive: Franquicias.estaActivo,
             },
         })
         .from(Locaciones)
         .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
-        .where(eq(Locaciones.idFranquicia, franchiseId))
+        .where(whereCondition)
         .limit(limit)
         .offset(offset)
 
-    const totalItems = await db.$count(
-        Locaciones,
-        eq(Locaciones.idFranquicia, franchiseId),
-    )
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(Locaciones)
+        .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
+
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
@@ -65,8 +78,15 @@ export const getAllLocationsForFranchise = async (
 }
 
 export const getAllLocations = async (pagination: Pagination) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
+
+    const whereCondition =
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined
 
     const locations = await db
         .select({
@@ -75,14 +95,22 @@ export const getAllLocations = async (pagination: Pagination) => {
             franchise: {
                 id: Franquicias.id,
                 name: Franquicias.nombre,
+                isActive: Franquicias.estaActivo,
             },
         })
         .from(Locaciones)
         .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
+        .where(whereCondition)
         .limit(limit)
         .offset(offset)
 
-    const totalItems = await db.$count(Locaciones)
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(Locaciones)
+        .leftJoin(Franquicias, eq(Locaciones.idFranquicia, Franquicias.id))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
+
     const totalPages = Math.ceil(totalItems / limit)
 
     return {

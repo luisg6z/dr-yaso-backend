@@ -2,7 +2,6 @@ import { Router } from 'express'
 import {
     createFranchiseHandler,
     deleteFranchiseHandler,
-    getActivesFranchisesHandler,
     getAllFranchisesHandler,
     getFranchiseByIdHandler,
     updateFranchiseHandler,
@@ -35,12 +34,6 @@ franchiseRouter.get(
         tipoUsuarioEnum.enumValues[3],
     ]),
     getAllFranchisesHandler,
-)
-franchiseRouter.get(
-    '/actives',
-    authenticate,
-    authorize([tipoUsuarioEnum.enumValues[0]]),
-    getActivesFranchisesHandler,
 )
 franchiseRouter.get(
     '/:id',

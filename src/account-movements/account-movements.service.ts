@@ -1,7 +1,8 @@
-import { eq } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../db/db'
 import { MovimientosCuentas } from '../db/schemas/MovimientosCuentas'
 import { CuentasBancarias } from '../db/schemas/CuentasBancarias'
+import { Franquicias } from '../db/schemas/Franquicias'
 import { AppError } from '../common/errors/errors'
 import { AccountMovementCreate } from './account-movements.schemas'
 import { Pagination } from '../types/types'
@@ -78,32 +79,37 @@ const mapAccountMovement = (row: {
 }
 
 export const getAllAccountMovements = async (pagination: Pagination, franchiseId?: number) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
-    let query = db
+    const whereCondition = and(
+        franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined,
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined,
+    )
+
+    const rows = await db
         .select()
         .from(MovimientosCuentas)
-        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta)) as any
+        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
+        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .where(whereCondition)
+        .limit(limit)
+        .offset(offset)
 
-    if (franchiseId) {
-        query = query.where(eq(CuentasBancarias.idFranquicia, franchiseId))
-    }
+    const formattedMovements = rows.map(mapAccountMovement)
 
-    const movements = await query.limit(limit).offset(offset)
-    const formattedMovements = movements.map(mapAccountMovement)
-
-    // Count query
-    const countQueryBase = db
-        .select({ count: MovimientosCuentas.id })
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
         .from(MovimientosCuentas)
         .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
+        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
 
-    const countQuery = franchiseId
-        ? countQueryBase.where(eq(CuentasBancarias.idFranquicia, franchiseId))
-        : countQueryBase
-
-    const totalItems = (await countQuery).length
     const totalPages = Math.ceil(totalItems / limit)
 
     return {

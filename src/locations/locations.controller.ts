@@ -39,6 +39,7 @@ export const getAllLocationsHandler = async (_req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(_req.query.page || 1),
             limit: +(_req.query.limit || 10),
+            status: (_req.query.status as any) || 'active',
         }
 
         if (!(res.locals.user.role === tipoUsuarioEnum.enumValues[0])) {
@@ -48,9 +49,9 @@ export const getAllLocationsHandler = async (_req: Request, res: Response) => {
                     res.locals.user.franchiseId,
                 ),
             )
+        } else {
+            res.status(200).json(await getAllLocations(pagination))
         }
-
-        res.status(200).json(await getAllLocations(pagination))
     } catch (error) {
         if (!res.headersSent) {
             if (error instanceof AppError) {

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../db/db'
 import { CuentasBancarias } from '../db/schemas/CuentasBancarias'
 import { ResponsablesCuentas } from '../db/schemas/ResponsablesCuentas'
@@ -105,10 +105,17 @@ const mapBankAccount = (row: {
 }
 
 export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: number) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
-    const whereCondition = franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined
+    const whereCondition = and(
+        franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined,
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined,
+    )
 
     const rows = await db
         .select()
@@ -122,7 +129,13 @@ export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: n
 
     const accounts = rows.map(mapBankAccount)
 
-    const totalItems = await db.$count(CuentasBancarias, whereCondition)
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(CuentasBancarias)
+        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
+
     const totalPages = Math.ceil(totalItems / limit)
 
     return {

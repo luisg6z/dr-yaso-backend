@@ -1,7 +1,8 @@
-import { eq } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../db/db'
 import { MovimientosCaja } from '../db/schemas/MovimientosCaja'
 import { CajasChicas } from '../db/schemas/CajasChicas'
+import { Franquicias } from '../db/schemas/Franquicias'
 import { AppError } from '../common/errors/errors'
 import { CashMovementCreate } from './cash-movements.schemas'
 import { Pagination } from '../types/types'
@@ -56,10 +57,19 @@ export const createCashMovement = async (movement: CashMovementCreate) => {
 }
 
 export const getAllCashMovements = async (pagination: Pagination, franchiseId?: number) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
-    let query = db
+    const whereCondition = and(
+        franchiseId ? eq(CajasChicas.idFranquicia, franchiseId) : undefined,
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined,
+    )
+
+    const movements = await db
         .select({
             id: MovimientosCaja.id,
             date: MovimientosCaja.fecha,
@@ -72,24 +82,19 @@ export const getAllCashMovements = async (pagination: Pagination, franchiseId?: 
         })
         .from(MovimientosCaja)
         .innerJoin(CajasChicas, eq(CajasChicas.id, MovimientosCaja.idCaja))
+        .innerJoin(Franquicias, eq(Franquicias.id, CajasChicas.idFranquicia))
+        .where(whereCondition)
+        .limit(limit)
+        .offset(offset)
 
-    if (franchiseId) {
-        query = query.where(eq(CajasChicas.idFranquicia, franchiseId)) as any
-    }
-
-    const movements = await query.limit(limit).offset(offset)
-
-    // Count query needs similar filtering
-    let countQuery = db
-        .select({ count: MovimientosCaja.id })
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
         .from(MovimientosCaja)
         .innerJoin(CajasChicas, eq(CajasChicas.id, MovimientosCaja.idCaja))
+        .innerJoin(Franquicias, eq(Franquicias.id, CajasChicas.idFranquicia))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
 
-    if (franchiseId) {
-        countQuery = countQuery.where(eq(CajasChicas.idFranquicia, franchiseId)) as any
-    }
-
-    const totalItems = (await countQuery).length // Not efficient for large datasets but works for now or use proper count approach
     const totalPages = Math.ceil(totalItems / limit)
 
     return {

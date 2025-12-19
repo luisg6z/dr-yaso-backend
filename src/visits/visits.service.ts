@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { db } from '../db/db'
 import { Visitas } from '../db/schemas/Visitas'
 import { Pagination } from '../types/types'
@@ -8,6 +8,7 @@ import { Locaciones } from '../db/schemas/Locaciones'
 import { Voluntarios } from '../db/schemas/Voluntarios'
 import { AppError } from '../common/errors/errors'
 import { DetallesVoluntarios } from '../db/schemas/DetallesVoluntarios'
+import { Franquicias } from '../db/schemas/Franquicias'
 
 export const createVisit = async (visit: VisitCreate) => {
     if (visit.locationId) {
@@ -192,22 +193,38 @@ export const getAllVisitsForFranchise = async (franchiseId: number) => {
 }
 
 export const getAllVisits = async (pagination: Pagination) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
+
+    const whereCondition =
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined
 
     const rows = await db
         .select({
             Visitas: Visitas,
             Locaciones: Locaciones,
+            Franquicias: Franquicias,
         })
         .from(Visitas)
         .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+        .leftJoin(Franquicias, eq(Franquicias.id, Locaciones.idFranquicia))
+        .where(whereCondition)
         .limit(limit)
         .offset(offset)
 
     const visits = rows.map(mapVisit)
 
-    const totalItems = await db.$count(Visitas)
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(Visitas)
+        .leftJoin(Locaciones, eq(Locaciones.id, Visitas.idLocacion))
+        .leftJoin(Franquicias, eq(Franquicias.id, Locaciones.idFranquicia))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
 
     return {
         items: visits,

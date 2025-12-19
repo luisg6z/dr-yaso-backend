@@ -37,6 +37,7 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
             limit: +(req.query.limit || 10),
+            status: (req.query.status as any) || 'active',
         }
         if (res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
             res.status(200).json(

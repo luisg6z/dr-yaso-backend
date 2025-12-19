@@ -7,9 +7,15 @@ export const paginationSchema = z.object({
     limit: z.coerce.number().int().positive().default(10),
 })
 
+export const queryFiltersSchema = z.object({
+    status: z.enum(['active', 'inactive', 'all']).default('active'),
+})
+
+export type QueryFilters = z.infer<typeof queryFiltersSchema>
+
 export const idParam = z.object({
     id: idParamSchema,
 })
 
 export type IdParam = z.infer<typeof idParam>
-export type Pagination = z.infer<typeof paginationSchema>
+export type Pagination = z.infer<typeof paginationSchema> & QueryFilters

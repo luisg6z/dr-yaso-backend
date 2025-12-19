@@ -1,4 +1,4 @@
-import { eq, and, isNull, ne } from 'drizzle-orm'
+import { eq, and, isNull, ne, sql } from 'drizzle-orm'
 import { VolunteerCreate, VolunteerUpdate } from './volunteer.schemas'
 import { db } from '../db/db'
 import { Voluntarios } from '../db/schemas/Voluntarios'
@@ -163,8 +163,15 @@ const mapVolunteer = (
 // Let's stick to modifying the existing methods to use the mapper.
 
 export const getAllVolunteers = async (pagination: Pagination) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
+
+    const whereCondition =
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined
 
     const rows = await db
         .select({
@@ -192,6 +199,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
         .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
         .leftJoin(Paises, eq(Paises.id, Estados.idPais))
+        .where(whereCondition)
         .limit(limit)
         .offset(offset)
 
@@ -218,7 +226,20 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         }),
     )
 
-    const totalItems = await db.$count(Voluntarios)
+    const totalItems = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(Voluntarios)
+        .leftJoin(
+            Pertenecen,
+            and(
+                eq(Pertenecen.idVoluntario, Voluntarios.id),
+                isNull(Pertenecen.fechaHoraEgreso),
+            ),
+        )
+        .leftJoin(Franquicias, eq(Franquicias.id, Pertenecen.idFranquicia))
+        .where(whereCondition)
+        .then((rows) => Number(rows[0].count))
+
     const totalPages = Math.ceil(totalItems / limit)
 
     return {

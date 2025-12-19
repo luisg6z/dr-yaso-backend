@@ -48,66 +48,16 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
         .returning()
 }
 
-export const getActiveFranchises = async (pagination: Pagination) => {
-    const { page, limit } = pagination
-    const offset = (page - 1) * limit
-
-    const franchises = await db
-        .select({
-            id: Franquicias.id,
-            rif: Franquicias.rif,
-            name: Franquicias.nombre,
-            address: Franquicias.direccion,
-            phone: Franquicias.telefono,
-            email: Franquicias.correo,
-            isActive: Franquicias.estaActivo,
-            city: {
-                id: Franquicias.idCiudad,
-                name: Ciudades.nombre,
-            },
-            state: {
-                id: Estados.id,
-                name: Estados.nombre,
-            },
-            country: {
-                id: Paises.id,
-                name: Paises.nombre,
-            },
-            coordinator: {
-                id: Franquicias.idCoordinador,
-                firstName: Voluntarios.nombres,
-                lastName: Voluntarios.apellidos,
-            },
-        })
-        .from(Franquicias)
-        .leftJoin(Voluntarios, eq(Franquicias.idCoordinador, Voluntarios.id))
-        .leftJoin(Ciudades, eq(Franquicias.idCiudad, Ciudades.id))
-        .leftJoin(Estados, eq(Ciudades.idEstado, Estados.id))
-        .leftJoin(Paises, eq(Estados.idPais, Paises.id))
-        .where(eq(Franquicias.estaActivo, true))
-        .limit(limit)
-        .offset(offset)
-
-    const totalItems = await db.$count(
-        Franquicias,
-        eq(Franquicias.estaActivo, true),
-    )
-    const totalPages = Math.ceil(totalItems / limit)
-
-    return {
-        items: franchises,
-        paginate: {
-            page,
-            limit,
-            totalItems,
-            totalPages,
-        },
-    }
-}
-
 export const getAllFranchises = async (pagination: Pagination) => {
-    const { page, limit } = pagination
+    const { page, limit, status } = pagination
     const offset = (page - 1) * limit
+
+    const whereCondition =
+        status === 'active'
+            ? eq(Franquicias.estaActivo, true)
+            : status === 'inactive'
+                ? eq(Franquicias.estaActivo, false)
+                : undefined
 
     const franchises = await db
         .select({
@@ -141,10 +91,11 @@ export const getAllFranchises = async (pagination: Pagination) => {
         .leftJoin(Ciudades, eq(Franquicias.idCiudad, Ciudades.id))
         .leftJoin(Estados, eq(Ciudades.idEstado, Estados.id))
         .leftJoin(Paises, eq(Estados.idPais, Paises.id))
+        .where(whereCondition)
         .limit(limit)
         .offset(offset)
 
-    const totalItems = await db.$count(Franquicias)
+    const totalItems = await db.$count(Franquicias, whereCondition)
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
