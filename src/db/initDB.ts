@@ -24,27 +24,49 @@ import { Bancos } from './schemas/Bancos'
 import { CuentasBancarias } from './schemas/CuentasBancarias'
 import { MovimientosCuentas } from './schemas/MovimientosCuentas'
 import { ResponsablesCuentas } from './schemas/ResponsablesCuentas'
+import { MovimientosInventario } from './schemas/MovimientosInventario'
+import { RegistranObservaciones } from './schemas/RegistranObservaciones'
 
 const initDB = async () => {
     console.log('Starting database initialization...')
 
     await db.transaction(async (tx) => {
         try {
-            // Clear databases
-            await tx.delete(MovimientosCuentas)
-            await tx.delete(CuentasBancarias)
-            await tx.delete(Bancos)
-            await tx.delete(ResponsablesCuentas)
-            await tx.delete(Tienen)
-            await tx.delete(Usuarios)
-            await tx.delete(Pertenecen)
-            await tx.delete(Franquicias)
-            await tx.delete(DetallesVoluntarios)
-            await tx.delete(Voluntarios)
-            await tx.delete(Cargos)
-            await tx.delete(Ciudades)
-            await tx.delete(Estados)
-            await tx.delete(Paises)
+            // Clear all tables (truncate if they exist) to respect FK constraints
+            const tablesToTruncate = [
+                'MovimientosCuentas',
+                'CuentasBancarias',
+                'Bancos',
+                'ResponsablesCuentas',
+                'Tienen',
+                'MovimientosInventario',
+                'RegistranObservaciones',
+                'Usuarios',
+                'Pertenecen',
+                'Franquicias',
+                'DetallesVoluntarios',
+                'Voluntarios',
+                'Cargos',
+                'Ciudades',
+                'Estados',
+                'Paises',
+                'Productos',
+                'TienenStock',
+                'Locaciones',
+                'ReunionesDeComite',
+                'CajasChicas',
+                'MovimientosCaja',
+                'Traspasos',
+                'Visitas',
+                'Asisten',
+                'Realizan',
+            ]
+
+            for (const table of tablesToTruncate) {
+                await tx.execute(
+                    `DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_class WHERE relname = '${table}') THEN EXECUTE 'TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE'; END IF; END $$;`,
+                )
+            }
 
             //Restart sequences
             await tx.execute('ALTER SEQUENCE "Paises_id_seq" RESTART WITH 1')
@@ -58,9 +80,18 @@ const initDB = async () => {
                 'ALTER SEQUENCE "Franquicias_id_seq" RESTART WITH 1',
             )
             await tx.execute('ALTER SEQUENCE "Usuarios_id_seq" RESTART WITH 1')
-            await tx.execute('ALTER SEQUENCE "CuentasBancarias_id_seq" RESTART WITH 1')
-            await tx.execute('ALTER SEQUENCE "MovimientosCuentas_id_seq" RESTART WITH 1')
-            await tx.execute('ALTER SEQUENCE "ResponsablesCuentas_id_seq" RESTART WITH 1')
+            await tx.execute(
+                'ALTER SEQUENCE "CuentasBancarias_id_seq" RESTART WITH 1',
+            )
+            await tx.execute(
+                'ALTER SEQUENCE "MovimientosCuentas_id_seq" RESTART WITH 1',
+            )
+            await tx.execute(
+                'ALTER SEQUENCE "MovimientosInventario_id_seq" RESTART WITH 1',
+            )
+            await tx.execute(
+                'ALTER SEQUENCE "ResponsablesCuentas_id_seq" RESTART WITH 1',
+            )
 
             //#region Paises
             console.log('Inserting predefined countries...')
@@ -525,16 +556,19 @@ const initDB = async () => {
                 {
                     idVoluntario: 1,
                     idFranquicia: 1,
-                    fechaHoraIngreso: new Date()
+                    fechaHoraIngreso: new Date(),
                 },
                 {
                     idVoluntario: 2,
                     idFranquicia: 1,
-                    fechaHoraIngreso: new Date()
-                }
+                    fechaHoraIngreso: new Date(),
+                },
             ]
 
-            await tx.insert(Pertenecen).values(VolunteerBelongsToFranchise).returning()
+            await tx
+                .insert(Pertenecen)
+                .values(VolunteerBelongsToFranchise)
+                .returning()
             console.log('Volunteers linked to franchises successfully.')
 
             //#endregion
@@ -571,6 +605,6 @@ const initDB = async () => {
     })
 }
 
-    ; (async () => {
-        await initDB()
-    })()
+;(async () => {
+    await initDB()
+})()
