@@ -21,11 +21,6 @@ import { Usuarios, tipoUsuarioEnum } from './schemas/Usuarios'
 import { hash } from 'bcrypt'
 import { Pertenecen } from './schemas/Pertenecen'
 import { Bancos } from './schemas/Bancos'
-import { CuentasBancarias } from './schemas/CuentasBancarias'
-import { MovimientosCuentas } from './schemas/MovimientosCuentas'
-import { ResponsablesCuentas } from './schemas/ResponsablesCuentas'
-import { MovimientosInventario } from './schemas/MovimientosInventario'
-import { RegistranObservaciones } from './schemas/RegistranObservaciones'
 
 const initDB = async () => {
     console.log('Starting database initialization...')
