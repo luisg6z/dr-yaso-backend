@@ -5,6 +5,7 @@ import {
     getMovementsForProductFranchise,
     getInventoryMovements,
 } from './inventory.service'
+import { AppError } from '../common/errors/errors'
 
 export const createInventoryMovementController: RequestHandler = async (
     req,
@@ -30,6 +31,13 @@ export const createInventoryMovementController: RequestHandler = async (
         res.status(201).json(row)
         return
     } catch (err) {
+        if (err instanceof AppError) {
+            res.status(err.statusCode).json({
+                message: err.message,
+                details: err.details,
+            })
+            return
+        }
         next(err)
         return
     }
