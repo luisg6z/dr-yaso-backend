@@ -26,9 +26,14 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
     // Validación previa de coordinador único (fuera de la tx)
     if (volunteer.franchiseId && volunteer.occupations?.length) {
         const coordinatorId = await getCoordinatorCargoId()
-        const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
+        const hasCoordinator = volunteer.occupations.some(
+            (o) => o.id === coordinatorId,
+        )
         if (hasCoordinator) {
-            const exists = await existsCoordinatorInFranchise(volunteer.franchiseId, coordinatorId)
+            const exists = await existsCoordinatorInFranchise(
+                volunteer.franchiseId,
+                coordinatorId,
+            )
             if (exists) {
                 throw new AppError(
                     409,
@@ -37,7 +42,6 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
             }
         }
     }
-
 
     await db.transaction(async (tx) => {
         const [newVolunteer] = await tx
@@ -57,8 +61,6 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
             })
 
         if (!newVolunteer) throw new AppError(500, 'Error creating volunteer')
-
-
 
         //Insert into DetallesVoluntarios using the newVolunteer.id
         await tx.insert(DetallesVoluntarios).values({
@@ -90,13 +92,15 @@ export const createVolunteer = async (volunteer: VolunteerCreate) => {
         })
 
         if (volunteer.occupations) {
-            volunteer.occupations.forEach(async (occupation: { id: number; isMain: boolean }) => {
-                await tx.insert(Tienen).values({
-                    idVoluntario: newVolunteer.id,
-                    idCargo: occupation.id,
-                    esCargoPrincipal: occupation.isMain,
-                })
-            })
+            volunteer.occupations.forEach(
+                async (occupation: { id: number; isMain: boolean }) => {
+                    await tx.insert(Tienen).values({
+                        idVoluntario: newVolunteer.id,
+                        idCargo: occupation.id,
+                        esCargoPrincipal: occupation.isMain,
+                    })
+                },
+            )
         }
     })
 }
@@ -151,9 +155,9 @@ const mapVolunteer = (
         },
         franchise: row.Franquicias
             ? {
-                id: row.Franquicias.id,
-                name: row.Franquicias.nombre,
-            }
+                  id: row.Franquicias.id,
+                  name: row.Franquicias.nombre,
+              }
             : null,
         occupations: occupations,
     }
@@ -162,7 +166,10 @@ const mapVolunteer = (
 // Queries for reusability if needed, but current usage is ad-hoc selects.
 // Let's stick to modifying the existing methods to use the mapper.
 
-export const getAllVolunteers = async (pagination: Pagination) => {
+export const getAllVolunteers = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
     const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
@@ -170,8 +177,22 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined
+              ? eq(Franquicias.estaActivo, false)
+              : undefined
+
+    const whereConditions = [
+        whereCondition,
+        franchiseId === undefined
+            ? undefined
+            : eq(Pertenecen.idFranquicia, franchiseId),
+    ].filter(Boolean) as any[]
+
+    const finalWhere =
+        whereConditions.length === 0
+            ? undefined
+            : whereConditions.length === 1
+              ? whereConditions[0]
+              : and(...whereConditions)
 
     const rows = await db
         .select({
@@ -199,7 +220,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
         .leftJoin(Ciudades, eq(Ciudades.id, DetallesVoluntarios.idCiudad))
         .leftJoin(Estados, eq(Estados.id, Ciudades.idEstado))
         .leftJoin(Paises, eq(Paises.id, Estados.idPais))
-        .where(whereCondition)
+        .where(finalWhere)
         .limit(limit)
         .offset(offset)
 
@@ -237,7 +258,7 @@ export const getAllVolunteers = async (pagination: Pagination) => {
             ),
         )
         .leftJoin(Franquicias, eq(Franquicias.id, Pertenecen.idFranquicia))
-        .where(whereCondition)
+        .where(finalWhere)
         .then((rows) => Number(rows[0].count))
 
     const totalPages = Math.ceil(totalItems / limit)
@@ -360,7 +381,6 @@ export const getVolunteerById = async (id: number) => {
     return mapVolunteer(row, occupations)
 }
 
-
 export const updateVolunteer = async (
     id: number,
     volunteer: VolunteerUpdate,
@@ -372,19 +392,26 @@ export const updateVolunteer = async (
     // Validación previa de coordinador único (fuera de la tx)
     if (volunteer.occupations?.length) {
         const coordinatorId = await getCoordinatorCargoId()
-        const hasCoordinator = volunteer.occupations.some(o => o.id === coordinatorId)
+        const hasCoordinator = volunteer.occupations.some(
+            (o) => o.id === coordinatorId,
+        )
         if (hasCoordinator) {
-            const targetFranchiseId = volunteer.franchiseId ?? existingVolunteer.franchise?.id
+            const targetFranchiseId =
+                volunteer.franchiseId ?? existingVolunteer.franchise?.id
 
             if (!targetFranchiseId) {
-                // If it's still null, validation fails or we skip? 
+                // If it's still null, validation fails or we skip?
                 // "El voluntario no tiene franquicia asignada" logic is here.
                 throw new AppError(
                     400,
-                    'El voluntario no tiene franquicia asignada. No se puede validar el coordinador único.'
+                    'El voluntario no tiene franquicia asignada. No se puede validar el coordinador único.',
                 )
             }
-            const exists = await existsCoordinatorInFranchise(targetFranchiseId, coordinatorId, id)
+            const exists = await existsCoordinatorInFranchise(
+                targetFranchiseId,
+                coordinatorId,
+                id,
+            )
             if (exists) {
                 // ...
                 throw new AppError(
@@ -452,7 +479,10 @@ export const updateVolunteer = async (
                 .where(
                     and(
                         eq(Pertenecen.idVoluntario, id),
-                        eq(Pertenecen.idFranquicia, existingVolunteer.franchise.id),
+                        eq(
+                            Pertenecen.idFranquicia,
+                            existingVolunteer.franchise.id,
+                        ),
                     ),
                 )
 
@@ -467,15 +497,16 @@ export const updateVolunteer = async (
         if (volunteer.occupations) {
             await tx.delete(Tienen).where(eq(Tienen.idVoluntario, id))
 
-            volunteer.occupations.forEach(async (occupation: { id: number; isMain: boolean }) => {
-                await db.insert(Tienen).values({
-                    idVoluntario: id,
-                    idCargo: occupation.id,
-                    esCargoPrincipal: occupation.isMain,
-                })
-            })
+            volunteer.occupations.forEach(
+                async (occupation: { id: number; isMain: boolean }) => {
+                    await db.insert(Tienen).values({
+                        idVoluntario: id,
+                        idCargo: occupation.id,
+                        esCargoPrincipal: occupation.isMain,
+                    })
+                },
+            )
         }
-
     })
 
     // Devolver el voluntario actualizado en el mismo formato que getVolunteerById
@@ -520,7 +551,7 @@ export const getVolunteersByOccupation = async (occupationId: number) => {
     }
 }
 
-// Helper: obtiene el id del cargo "Coordinador" usando db 
+// Helper: obtiene el id del cargo "Coordinador" usando db
 const getCoordinatorCargoId = async (): Promise<number> => {
     const [cargo] = await db
         .select({ id: Cargos.id })
@@ -530,7 +561,7 @@ const getCoordinatorCargoId = async (): Promise<number> => {
     return cargo.id
 }
 
-// Helper: verifica si existe coordinador activo en la franquicia usando db 
+// Helper: verifica si existe coordinador activo en la franquicia usando db
 const existsCoordinatorInFranchise = async (
     franchiseId: number,
     coordinatorCargoId: number,
@@ -553,7 +584,9 @@ const existsCoordinatorInFranchise = async (
             and(
                 eq(Pertenecen.idFranquicia, franchiseId),
                 eq(Tienen.idCargo, coordinatorCargoId),
-                excludeVolunteerId ? ne(Voluntarios.id, excludeVolunteerId) : eq(Voluntarios.id, Voluntarios.id),
+                excludeVolunteerId
+                    ? ne(Voluntarios.id, excludeVolunteerId)
+                    : eq(Voluntarios.id, Voluntarios.id),
             ),
         )
 

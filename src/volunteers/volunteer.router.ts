@@ -154,15 +154,58 @@ volunteersRouter.get(
  *       - Volunteers
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Página (paginación)
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Elementos por página (paginación)
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, all]
+ *           default: active
+ *         description: Filtra por estatus de franquicia (activa/inactiva/todas)
+ *       - in: query
+ *         name: idFranquicia
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: Filtra por franquicia (solo aplica para Superusuario; para otros roles se fuerza su franquicia)
  *     responses:
  *       200:
- *         description: Lista de voluntarios
+ *         description: Lista paginada de voluntarios
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Volunteer'
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Volunteer'
+ *                 paginate:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
  *       401:
  *         description: No autorizado
  *       404:

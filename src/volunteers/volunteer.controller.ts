@@ -6,7 +6,6 @@ import {
     deleteVolunteer,
     updateVolunteer,
     getVolunteersByOccupation,
-    getAllVolunteersForFranchise,
 } from './volunteer.service'
 import { idParamSchema, Pagination } from '../types/types'
 import { AppError } from '../common/errors/errors'
@@ -18,13 +17,14 @@ export const createVolunteerHandler = async (req: Request, res: Response) => {
         const volunteerData = req.body
 
         // If user is Coordinator, force franchiseId to be their own
-        if (user.role === tipoUsuarioEnum.enumValues[3]) { // Coordinador
+        if (user.role === tipoUsuarioEnum.enumValues[3]) {
+            // Coordinador
             volunteerData.franchiseId = user.franchiseId
         }
 
         // If user is Superuser, franchiseId is optional in schema but required for logic
         // If not provided by Superuser, it might remain undefined, which service might not handle well for Pertenecen
-        // But since requirements say "Superuser may pass", we can assume they should if they want to assign. 
+        // But since requirements say "Superuser may pass", we can assume they should if they want to assign.
         // If they don't, and service fails, that's "expected" or service handles it.
         // Let's assume for now we just inject for Coordinator.
 
@@ -56,13 +56,27 @@ export const getAllVolunteersHandler = async (_req: Request, res: Response) => {
             status: (_req.query.status as any) || 'active',
         }
 
-        if (res.locals.user.role !== tipoUsuarioEnum.enumValues[0]) {
-            res.status(200).json(
-                await getAllVolunteersForFranchise(res.locals.user.franchiseId),
-            )
+        const rawFranchiseId = _req.query.idFranquicia
+        const requestedFranchiseId =
+            rawFranchiseId === undefined ? undefined : Number(rawFranchiseId)
+
+        if (
+            requestedFranchiseId !== undefined &&
+            (!Number.isInteger(requestedFranchiseId) ||
+                requestedFranchiseId <= 0)
+        ) {
+            throw new AppError(400, 'idFranquicia inválido')
         }
 
-        res.status(200).json(await getAllVolunteers(pagination))
+        // Seguridad: si no es superusuario, siempre se fuerza a la franquicia del usuario.
+        const effectiveFranchiseId =
+            res.locals.user.role === tipoUsuarioEnum.enumValues[0]
+                ? requestedFranchiseId
+                : res.locals.user.franchiseId
+
+        res.status(200).json(
+            await getAllVolunteers(pagination, effectiveFranchiseId),
+        )
     } catch (error) {
         if (!res.headersSent) {
             if (error instanceof AppError) {
