@@ -230,7 +230,7 @@ export const getAllVolunteers = async (
                 .select({
                     occupationId: Cargos.id,
                     volunteerId: Tienen.idVoluntario,
-                    name: Cargos.descripcion,
+                    name: Cargos.nombre,
                     isMain: Tienen.esCargoPrincipal,
                 })
                 .from(Tienen)
