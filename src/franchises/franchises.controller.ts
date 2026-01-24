@@ -45,6 +45,7 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
                 res.locals.user.franchiseId,
             )
             res.status(200).json(franchise)
+            return
         }
         const franchises = await getAllFranchises(pagination)
         res.status(200).json(franchises)

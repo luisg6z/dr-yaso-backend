@@ -19,7 +19,8 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
             .from(Voluntarios)
             .where(eq(Voluntarios.id, franchise.coordinatorId))
 
-        if (!coordinator) throw new AppError(400, 'Coordinator not found')
+        if (coordinator.length < 1)
+            throw new AppError(400, 'Coordinator not found')
     }
 
     if (franchise.cityId) {
@@ -31,10 +32,10 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
             .from(Ciudades)
             .where(eq(Ciudades.id, franchise.cityId))
 
-        if (!city) throw new AppError(400, 'City not found')
+        if (city.length < 1) throw new AppError(400, 'City not found')
     }
 
-    return await db
+    const [created] = await db
         .insert(Franquicias)
         .values({
             nombre: franchise.name,
@@ -42,10 +43,15 @@ export const createFranchise = async (franchise: FranchiseCreate) => {
             direccion: franchise.address,
             telefono: franchise.phone,
             correo: franchise.email,
+            estaActivo: franchise.isActive ?? true,
             idCiudad: franchise.cityId,
             idCoordinador: franchise.coordinatorId,
         })
-        .returning()
+        .returning({ id: Franquicias.id })
+
+    if (!created) throw new AppError(500, 'Error creating franchise')
+
+    return await getFranchiseById(created.id)
 }
 
 export const getAllFranchises = async (pagination: Pagination) => {
@@ -56,8 +62,8 @@ export const getAllFranchises = async (pagination: Pagination) => {
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined
+              ? eq(Franquicias.estaActivo, false)
+              : undefined
 
     const franchises = await db
         .select({
@@ -200,7 +206,8 @@ export const updateFranchise = async (
             .from(Voluntarios)
             .where(eq(Voluntarios.id, franchise.coordinatorId))
 
-        if (!coordinator) throw new AppError(400, 'Coordinator not found')
+        if (coordinator.length < 1)
+            throw new AppError(400, 'Coordinator not found')
     }
 
     if (franchise.cityId) {
@@ -212,10 +219,10 @@ export const updateFranchise = async (
             .from(Ciudades)
             .where(eq(Ciudades.id, franchise.cityId))
 
-        if (!city) throw new AppError(400, 'City not found')
+        if (city.length < 1) throw new AppError(400, 'City not found')
     }
 
-    return await db
+    await db
         .update(Franquicias)
         .set({
             nombre: franchise.name,
@@ -223,11 +230,13 @@ export const updateFranchise = async (
             direccion: franchise.address,
             telefono: franchise.phone,
             correo: franchise.email,
+            estaActivo: franchise.isActive,
             idCiudad: franchise.cityId,
             idCoordinador: franchise.coordinatorId,
         })
         .where(eq(Franquicias.id, id))
-        .returning()
+
+    return await getFranchiseById(id)
 }
 
 export const deleteFranchise = async (id: number) => {
@@ -235,11 +244,12 @@ export const deleteFranchise = async (id: number) => {
     if (existingFranchise.length === 0) {
         throw new AppError(404, 'Franchise not found')
     }
-    return await db
+    await db
         .update(Franquicias)
         .set({
             estaActivo: false,
         })
         .where(eq(Franquicias.id, id))
-        .returning()
+
+    return await getFranchiseById(id)
 }
