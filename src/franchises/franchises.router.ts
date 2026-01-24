@@ -63,7 +63,7 @@ franchiseRouter.post(
  * @swagger
  * /api/franchises:
  *   get:
- *     summary: Listar franquicias (paginado para Superusuario)
+ *     summary: Listar franquicias
  *     tags:
  *       - Franchises
  *     security:
@@ -94,28 +94,23 @@ franchiseRouter.post(
  *         content:
  *           application/json:
  *             schema:
- *               oneOf:
- *                 - type: object
- *                   properties:
- *                     items:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Franchise'
- *                     paginate:
- *                       type: object
- *                       properties:
- *                         page:
- *                           type: integer
- *                         limit:
- *                           type: integer
- *                         totalItems:
- *                           type: integer
- *                         totalPages:
- *                           type: integer
- *                 - type: array
- *                   description: Para roles no Superusuario, retorna la franquicia del usuario
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Franchise'
+ *                 paginate:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
  *       401:
  *         description: No autorizado
  *       403:

@@ -44,7 +44,22 @@ export const getAllFranchisesHandler = async (req: Request, res: Response) => {
             const franchise = await getUserFranchise(
                 res.locals.user.franchiseId,
             )
-            res.status(200).json(franchise)
+            const filteredItems =
+                pagination.status === 'active'
+                    ? franchise.filter((f: any) => f.isActive === true)
+                    : pagination.status === 'inactive'
+                      ? franchise.filter((f: any) => f.isActive === false)
+                      : franchise
+
+            res.status(200).json({
+                items: filteredItems,
+                paginate: {
+                    page: pagination.page,
+                    limit: pagination.limit,
+                    totalItems: filteredItems.length,
+                    totalPages: 1,
+                },
+            })
             return
         }
         const franchises = await getAllFranchises(pagination)
