@@ -43,6 +43,7 @@ export const getAllVisitsHandler = async (req: Request, res: Response) => {
             res.status(200).json(
                 await getAllVisitsForFranchise(res.locals.user.franchiseId),
             )
+            return
         }
         res.status(200).json(await getAllVisits(pagination))
     } catch (error) {
