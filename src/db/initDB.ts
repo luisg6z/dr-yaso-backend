@@ -21,6 +21,18 @@ import { Usuarios, tipoUsuarioEnum } from './schemas/Usuarios'
 import { hash } from 'bcrypt'
 import { Pertenecen } from './schemas/Pertenecen'
 import { Bancos } from './schemas/Bancos'
+import { Locaciones } from './schemas/Locaciones'
+import { Productos } from './schemas/Productos'
+import { TienenStock } from './schemas/TienenStock'
+import { CajasChicas } from './schemas/CajasChicas'
+import { MovimientosCaja } from './schemas/MovimientosCaja'
+import { ResponsablesCuentas } from './schemas/ResponsablesCuentas'
+import { CuentasBancarias, tipoMonedaEnum } from './schemas/CuentasBancarias'
+import { MovimientosCuentas, tipoMovimientoEnum } from './schemas/MovimientosCuentas'
+import { Visitas, tiposVisitasEnum } from './schemas/Visitas'
+import { ReunionesDeComite, tipoReunionComiteEnum } from './schemas/ReunionesDeComite'
+import { Realizan, responsabilitiesEnum } from './schemas/Realizan'
+import { Asisten } from './schemas/Asisten'
 
 const initDB = async () => {
     console.log('Starting database initialization...')
@@ -432,6 +444,7 @@ const initDB = async () => {
             //#region Voluntarios
             console.log('Inserting predefined volunteers...')
             const volunteers = [
+                // Franquicia 1 - Coordinador y 5 voluntarios
                 {
                     nombres: 'Juan',
                     apellidos: 'Pérez',
@@ -449,8 +462,231 @@ const initDB = async () => {
                     numeroDocumento: '87654321',
                     fechaNacimiento: new Date('1985-05-15'),
                     profesion: 'Médico',
-                    estatus: estatusEnum.enumValues[1], // "Desvinculado"
+                    estatus: estatusEnum.enumValues[0], // "Activo"
                     genero: generoEnum.enumValues[1], // "Femenino"
+                },
+                {
+                    nombres: 'Carlos',
+                    apellidos: 'Rodríguez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '11223344',
+                    fechaNacimiento: new Date('1992-03-20'),
+                    profesion: 'Enfermero',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Ana',
+                    apellidos: 'Martínez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '22334455',
+                    fechaNacimiento: new Date('1988-07-10'),
+                    profesion: 'Psicóloga',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Luis',
+                    apellidos: 'Hernández',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '33445566',
+                    fechaNacimiento: new Date('1995-11-25'),
+                    profesion: 'Estudiante',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Carmen',
+                    apellidos: 'López',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '44556677',
+                    fechaNacimiento: new Date('1991-09-05'),
+                    profesion: 'Contadora',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                // Franquicia 2 - Coordinador y 5 voluntarios
+                {
+                    nombres: 'Roberto',
+                    apellidos: 'Sánchez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '55667788',
+                    fechaNacimiento: new Date('1987-04-12'),
+                    profesion: 'Administrador',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Patricia',
+                    apellidos: 'Fernández',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '66778899',
+                    fechaNacimiento: new Date('1993-06-18'),
+                    profesion: 'Educadora',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Miguel',
+                    apellidos: 'García',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '77889900',
+                    fechaNacimiento: new Date('1989-02-28'),
+                    profesion: 'Abogado',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Laura',
+                    apellidos: 'Torres',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '88990011',
+                    fechaNacimiento: new Date('1994-08-15'),
+                    profesion: 'Comunicadora',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Diego',
+                    apellidos: 'Ramírez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '99001122',
+                    fechaNacimiento: new Date('1996-12-03'),
+                    profesion: 'Estudiante',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Sofía',
+                    apellidos: 'Morales',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '10111213',
+                    fechaNacimiento: new Date('1990-10-20'),
+                    profesion: 'Diseñadora',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                // Franquicia 3 - Coordinador y 5 voluntarios
+                {
+                    nombres: 'Andrés',
+                    apellidos: 'Jiménez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '14151617',
+                    fechaNacimiento: new Date('1986-01-14'),
+                    profesion: 'Ingeniero',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Valentina',
+                    apellidos: 'Castro',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '18192021',
+                    fechaNacimiento: new Date('1992-05-22'),
+                    profesion: 'Médico',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Fernando',
+                    apellidos: 'Ortega',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '22232425',
+                    fechaNacimiento: new Date('1988-09-08'),
+                    profesion: 'Profesor',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Isabella',
+                    apellidos: 'Vargas',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '26272829',
+                    fechaNacimiento: new Date('1993-03-16'),
+                    profesion: 'Nutricionista',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Ricardo',
+                    apellidos: 'Mendoza',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '30313233',
+                    fechaNacimiento: new Date('1995-07-30'),
+                    profesion: 'Estudiante',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Daniela',
+                    apellidos: 'Rojas',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '34353637',
+                    fechaNacimiento: new Date('1991-11-12'),
+                    profesion: 'Terapeuta',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                // Franquicia 4 - Coordinador y 5 voluntarios
+                {
+                    nombres: 'Javier',
+                    apellidos: 'Silva',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '38394041',
+                    fechaNacimiento: new Date('1987-06-07'),
+                    profesion: 'Arquitecto',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Gabriela',
+                    apellidos: 'Méndez',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '42434445',
+                    fechaNacimiento: new Date('1994-02-19'),
+                    profesion: 'Médico',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Alejandro',
+                    apellidos: 'Cruz',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '46474849',
+                    fechaNacimiento: new Date('1989-08-24'),
+                    profesion: 'Ingeniero',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Natalia',
+                    apellidos: 'Rivera',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '50515253',
+                    fechaNacimiento: new Date('1992-12-11'),
+                    profesion: 'Enfermera',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
+                },
+                {
+                    nombres: 'Sebastián',
+                    apellidos: 'Ochoa',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '54555657',
+                    fechaNacimiento: new Date('1996-04-26'),
+                    profesion: 'Estudiante',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[0],
+                },
+                {
+                    nombres: 'Camila',
+                    apellidos: 'Vega',
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: '58596061',
+                    fechaNacimiento: new Date('1990-10-09'),
+                    profesion: 'Psicóloga',
+                    estatus: estatusEnum.enumValues[0],
+                    genero: generoEnum.enumValues[1],
                 },
             ]
 
@@ -482,27 +718,36 @@ const initDB = async () => {
 
             //#region DetallesVoluntarios
             console.log('Inserting volunteer details...')
-            const volunteerDetails = [
-                {
-                    idVoluntario: 1,
-                    tipoSangre: tipoSangreEnum.enumValues[0], // "A+"
-                    estadoCivil: estadoCivilEnum.enumValues[0], // "Soltero/a"
-                    telefonos: ['+584141234567'],
-                    nombrePayaso: 'Payaso Feliz',
-                    tallaCamisa: tallaCamisaEnum.enumValues[2], // "M"
-                    tieneCamisaConLogo: true,
-                    tieneBataConLogo: true,
-                    nombreContactoEmergencia: 'Ana Pérez',
-                    telefonoContactoEmergencia: '+584141234568',
-                    alergias: 'Ninguna',
-                    discapacidad: 'Ninguna',
-                    observacion: 'Experiencia en eventos infantiles',
-                    facebook: 'payasofeliz',
-                    x: 'payasofeliz',
-                    instagram: 'payasofeliz',
-                    tiktok: 'payasofeliz',
-                },
+            const nombresPayasos = [
+                'Payaso Feliz', 'Payaso Sonrisa', 'Payaso Alegría', 'Payaso Risitas',
+                'Payaso Chispa', 'Payaso Burbuja', 'Payaso Estrella', 'Payaso Arcoíris',
+                'Payaso Sol', 'Payaso Luna', 'Payaso Estrella', 'Payaso Magia',
+                'Payaso Corazón', 'Payaso Rayo', 'Payaso Nube', 'Payaso Flor',
+                'Payaso Mariposa', 'Payaso Delfín', 'Payaso Tigre', 'Payaso León',
+                'Payaso Elefante', 'Payaso Mono', 'Payaso Oso', 'Payaso Panda'
             ]
+            const tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+            const tiposSangre = tipoSangreEnum.enumValues
+            const estadosCiviles = estadoCivilEnum.enumValues
+
+            const volunteerDetails = Array.from({ length: 24 }, (_, i) => ({
+                idVoluntario: i + 1,
+                tipoSangre: tiposSangre[i % tiposSangre.length] as any,
+                estadoCivil: estadosCiviles[i % estadosCiviles.length],
+                telefonos: [`+58414${String(123456 + i).padStart(6, '0')}`],
+                nombrePayaso: nombresPayasos[i],
+                tallaCamisa: tallaCamisaEnum.enumValues[i % tallas.length],
+                tieneCamisaConLogo: i % 3 !== 0,
+                tieneBataConLogo: i % 2 === 0,
+                nombreContactoEmergencia: `Contacto ${i + 1}`,
+                telefonoContactoEmergencia: `+58414${String(123456 + i + 100).padStart(6, '0')}`,
+                alergias: i % 4 === 0 ? 'Polen' : 'Ninguna',
+                discapacidad: 'Ninguna',
+                facebook: `payaso${i + 1}`,
+                x: `payaso${i + 1}`,
+                instagram: `payaso${i + 1}`,
+                tiktok: `payaso${i + 1}`,
+            }))
 
             await tx
                 .insert(DetallesVoluntarios)
@@ -513,13 +758,25 @@ const initDB = async () => {
 
             //#region Tienen
             console.log('Linking volunteers with positions...')
-            const volunteerPositions = [
-                {
-                    idVoluntario: 1,
-                    idCargo: 1,
-                    esCargoPrincipal: true, // "Coordinador"
-                },
-            ]
+            // Coordinadores (1, 7, 13, 19) tienen cargo 1, otros tienen cargo 2
+            const volunteerPositions = []
+            for (let i = 1; i <= 24; i++) {
+                if (i === 1 || i === 7 || i === 13 || i === 19) {
+                    // Coordinadores
+                    volunteerPositions.push({
+                        idVoluntario: i,
+                        idCargo: 1, // Coordinador
+                        esCargoPrincipal: true,
+                    })
+                } else {
+                    // Voluntarios regulares
+                    volunteerPositions.push({
+                        idVoluntario: i,
+                        idCargo: 2, // Voluntario
+                        esCargoPrincipal: true,
+                    })
+                }
+            }
 
             await tx.insert(Tienen).values(volunteerPositions).returning()
             console.log('Volunteer positions linked successfully.')
@@ -538,6 +795,36 @@ const initDB = async () => {
                     idCiudad: 1,
                     idCoordinador: 1,
                 },
+                {
+                    rif: 'J-234567890',
+                    nombre: 'Dr. Yaso Caracas',
+                    direccion: 'Av. Libertador #456',
+                    telefono: '04121234567',
+                    correo: 'caracas@dryaso.com',
+                    estaActivo: true,
+                    idCiudad: 5,
+                    idCoordinador: 7,
+                },
+                {
+                    rif: 'J-345678901',
+                    nombre: 'Dr. Yaso Valencia',
+                    direccion: 'Av. Bolívar #789',
+                    telefono: '04141234568',
+                    correo: 'valencia@dryaso.com',
+                    estaActivo: true,
+                    idCiudad: 6,
+                    idCoordinador: 13,
+                },
+                {
+                    rif: 'J-456789012',
+                    nombre: 'Dr. Yaso Barquisimeto',
+                    direccion: 'Av. Lara #321',
+                    telefono: '04121234568',
+                    correo: 'barquisimeto@dryaso.com',
+                    estaActivo: true,
+                    idCiudad: 7,
+                    idCoordinador: 19,
+                },
             ]
 
             await tx.insert(Franquicias).values(franchises).returning()
@@ -547,18 +834,18 @@ const initDB = async () => {
             //#region Pertenecen
             console.log('Linking volunteers to franchises...')
 
-            const VolunteerBelongsToFranchise = [
-                {
-                    idVoluntario: 1,
-                    idFranquicia: 1,
-                    fechaHoraIngreso: new Date(),
-                },
-                {
-                    idVoluntario: 2,
-                    idFranquicia: 1,
-                    fechaHoraIngreso: new Date(),
-                },
-            ]
+            const VolunteerBelongsToFranchise = []
+            // 6 voluntarios por franquicia
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 6; j++) {
+                    const volunteerId = i * 6 + j + 1
+                    VolunteerBelongsToFranchise.push({
+                        idVoluntario: volunteerId,
+                        idFranquicia: i + 1,
+                        fechaHoraIngreso: new Date(2023, 0, 1 + j * 10),
+                    })
+                }
+            }
 
             await tx
                 .insert(Pertenecen)
@@ -592,6 +879,263 @@ const initDB = async () => {
 
             await tx.insert(Usuarios).values(users).returning()
             console.log('Users inserted successfully.')
+            //#end region
+
+            //#region Locaciones
+            console.log('Inserting locations...')
+            const locations = []
+            const descripcionesLocaciones = [
+                ['Hospital Central', 'Clínica San José', 'Centro de Salud Norte'],
+                ['Hospital Universitario', 'Clínica Los Rosales', 'Centro Médico Este'],
+                ['Hospital del Sur', 'Clínica La Victoria', 'Centro de Salud Oeste'],
+                ['Hospital Regional', 'Clínica El Paraíso', 'Centro Médico Central'],
+            ]
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 3; j++) {
+                    locations.push({
+                        descripcion: descripcionesLocaciones[i][j],
+                        idFranquicia: i + 1,
+                    })
+                }
+            }
+            await tx.insert(Locaciones).values(locations).returning()
+            console.log('Locations inserted successfully.')
+            //#end region
+
+            //#region Visitas
+            console.log('Inserting visits...')
+            const visits = []
+            const tiposVisita = tiposVisitasEnum.enumValues
+            for (let i = 0; i < 4; i++) {
+                const baseLocationId = i * 3 + 1
+                for (let j = 0; j < 5; j++) {
+                    visits.push({
+                        tipo: tiposVisita[j % tiposVisita.length] as any,
+                        observacion: `Visita ${j + 1} a ${descripcionesLocaciones[i][j % 3]}`,
+                        fechaHora: new Date(2024, 0, 15 + j * 7, 10 + j, 0),
+                        beneficiariosDirectos: 10 + j * 2,
+                        beneficiariosIndirectos: 20 + j * 3,
+                        cantPersonalDeSalud: 2 + (j % 2),
+                        idLocacion: baseLocationId + (j % 3),
+                    })
+                }
+            }
+            await tx.insert(Visitas).values(visits).returning()
+            console.log('Visits inserted successfully.')
+            //#end region
+
+            //#region Realizan
+            console.log('Linking volunteers to visits...')
+            const realizan = []
+            const responsabilidades = responsabilitiesEnum.enumValues
+            let visitIndex = 0
+            for (let i = 0; i < 4; i++) {
+                const baseVolunteerId = i * 6 + 1
+                for (let j = 0; j < 5; j++) {
+                    const visitId = visitIndex + 1
+                    // 2-3 voluntarios por visita
+                    const numVolunteers = 2 + (j % 2)
+                    for (let k = 0; k < numVolunteers; k++) {
+                        realizan.push({
+                            idVisita: visitId,
+                            idVoluntario: baseVolunteerId + (k % 6),
+                            responsabilidad: responsabilidades[k % responsabilidades.length] as any,
+                        })
+                    }
+                    visitIndex++
+                }
+            }
+            await tx.insert(Realizan).values(realizan).returning()
+            console.log('Volunteers linked to visits successfully.')
+            //#end region
+
+            //#region ReunionesDeComite
+            console.log('Inserting committee meetings...')
+            const meetings = []
+            const tiposReunion = tipoReunionComiteEnum.enumValues
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const fecha = new Date(2024, 0, 10 + j * 7)
+                    meetings.push({
+                        fecha: fecha.toISOString().split('T')[0], // Convert to date string
+                        tipoDeReunionComite: tiposReunion[j % tiposReunion.length] as any,
+                        observacion: `Reunión ${j + 1} del comité`,
+                        idResponsable: i * 6 + 1, // Coordinador
+                        idFranquicia: i + 1,
+                    })
+                }
+            }
+            await tx.insert(ReunionesDeComite).values(meetings).returning()
+            console.log('Committee meetings inserted successfully.')
+            //#end region
+
+            //#region Asisten
+            console.log('Linking volunteers to meetings...')
+            const asisten = []
+            let meetingIndex = 0
+            for (let i = 0; i < 4; i++) {
+                const baseVolunteerId = i * 6 + 1
+                for (let j = 0; j < 4; j++) {
+                    const meetingId = meetingIndex + 1
+                    // 3-5 voluntarios por reunión
+                    const numAttendees = 3 + (j % 3)
+                    for (let k = 0; k < numAttendees; k++) {
+                        asisten.push({
+                            idReunionComite: meetingId,
+                            idVoluntario: baseVolunteerId + (k % 6),
+                        })
+                    }
+                    meetingIndex++
+                }
+            }
+            await tx.insert(Asisten).values(asisten).returning()
+            console.log('Volunteers linked to meetings successfully.')
+            //#end region
+
+            //#region CajasChicas
+            console.log('Inserting petty cash accounts...')
+            const pettyCashAccounts = []
+            const monedas = tipoMonedaEnum.enumValues
+            for (let i = 0; i < 4; i++) {
+                pettyCashAccounts.push({
+                    codCaja: `CC-${String(i + 1).padStart(3, '0')}`,
+                    nombre: `Caja Chica ${['Maracaibo', 'Caracas', 'Valencia', 'Barquisimeto'][i]}`,
+                    saldo: '500.00',
+                    tipoMoneda: monedas[i % monedas.length] as any,
+                    idFranquicia: i + 1,
+                    idResponsable: i * 6 + 1, // Coordinador
+                })
+            }
+            await tx.insert(CajasChicas).values(pettyCashAccounts).returning()
+            console.log('Petty cash accounts inserted successfully.')
+            //#end region
+
+            //#region MovimientosCaja
+            console.log('Inserting petty cash movements...')
+            const cashMovements = []
+            for (let i = 0; i < 4; i++) {
+                const cajaId = i + 1
+                let saldoActual = 500.00
+                for (let j = 0; j < 5; j++) {
+                    const esIngreso = j % 2 === 0
+                    const monto = 50 + j * 25
+                    if (esIngreso) {
+                        saldoActual += monto
+                    } else {
+                        saldoActual -= monto
+                    }
+                    cashMovements.push({
+                        fecha: new Date(2024, 0, 5 + j * 5, 9, 0),
+                        observacion: esIngreso ? `Ingreso ${j + 1}` : `Egreso ${j + 1}`,
+                        ingresos: esIngreso ? monto.toString() : '0',
+                        egresos: esIngreso ? '0' : monto.toString(),
+                        saldoPosterior: saldoActual.toFixed(2),
+                        idCaja: cajaId,
+                    })
+                }
+            }
+            await tx.insert(MovimientosCaja).values(cashMovements).returning()
+            console.log('Petty cash movements inserted successfully.')
+            //#end region
+
+            //#region ResponsablesCuentas
+            console.log('Inserting account responsibles...')
+            const accountResponsibles = []
+            for (let i = 0; i < 4; i++) {
+                accountResponsibles.push({
+                    tipoDocumento: tipoDocumentoEnum.enumValues[0],
+                    numeroDocumento: `V${String(20000000 + i).padStart(8, '0')}`,
+                    nombres: ['Roberto', 'Patricia', 'Andrés', 'Javier'][i],
+                    apellidos: ['Sánchez', 'Fernández', 'Jiménez', 'Silva'][i],
+                })
+            }
+            await tx.insert(ResponsablesCuentas).values(accountResponsibles).returning()
+            console.log('Account responsibles inserted successfully.')
+            //#end region
+
+            //#region CuentasBancarias
+            console.log('Inserting bank accounts...')
+            const bankAccounts = []
+            const codigosBancos = ['0102', '0105', '0108', '0134'] // Bancos venezolanos
+            for (let i = 0; i < 4; i++) {
+                bankAccounts.push({
+                    codCuenta: `CB-${String(i + 1).padStart(3, '0')}`,
+                    tipoMoneda: monedas[i % monedas.length] as any,
+                    saldo: '10000.00',
+                    idResponsable: i + 1,
+                    codBanco: codigosBancos[i],
+                    idFranquicia: i + 1,
+                })
+            }
+            await tx.insert(CuentasBancarias).values(bankAccounts).returning()
+            console.log('Bank accounts inserted successfully.')
+            //#end region
+
+            //#region MovimientosCuentas
+            console.log('Inserting bank account movements...')
+            const accountMovements = []
+            const tiposMovimiento = tipoMovimientoEnum.enumValues
+            for (let i = 0; i < 4; i++) {
+                const cuentaId = i + 1
+                let saldoActual = 10000.00
+                for (let j = 0; j < 5; j++) {
+                    const esIngreso = j % 2 === 0
+                    const monto = 200 + j * 100
+                    if (esIngreso) {
+                        saldoActual += monto
+                    } else {
+                        saldoActual -= monto
+                    }
+                    accountMovements.push({
+                        fecha: new Date(2024, 0, 3 + j * 6, 14, 0),
+                        nroReferencia: `REF-${String(i + 1).padStart(2, '0')}-${String(j + 1).padStart(3, '0')}`,
+                        tipoMovimiento: tiposMovimiento[j % tiposMovimiento.length] as any,
+                        observacion: esIngreso ? `Depósito ${j + 1}` : `Pago ${j + 1}`,
+                        ingresos: esIngreso ? monto.toString() : '0',
+                        egresos: esIngreso ? '0' : monto.toString(),
+                        saldoPosterior: saldoActual.toFixed(2),
+                        idCuenta: cuentaId,
+                    })
+                }
+            }
+            await tx.insert(MovimientosCuentas).values(accountMovements).returning()
+            console.log('Bank account movements inserted successfully.')
+            //#end region
+
+            //#region Productos
+            console.log('Inserting products...')
+            const productos = []
+            const nombresProductos = [
+                'Pelota de Fútbol', 'Muñeca', 'Carro de Juguete', 'Rompecabezas', 'Libro de Colorear',
+                'Crayones', 'Lápices de Colores', 'Juego de Mesa', 'Títere', 'Globos',
+                'Pinturas', 'Plastilina', 'Bloques de Construcción', 'Juego de Cartas', 'Yoyo',
+                'Cometa', 'Trompo', 'Marioneta', 'Instrumento Musical', 'Juguetes Educativos'
+            ]
+            for (let i = 0; i < 20; i++) {
+                productos.push({
+                    nombre: nombresProductos[i],
+                    descripcion: `Producto ${i + 1}: ${nombresProductos[i]} para actividades infantiles`,
+                })
+            }
+            await tx.insert(Productos).values(productos).returning()
+            console.log('Products inserted successfully.')
+            //#end region
+
+            //#region TienenStock
+            console.log('Linking products to franchises...')
+            const stock = []
+            for (let i = 0; i < 4; i++) {
+                // 5 productos por franquicia
+                for (let j = 0; j < 5; j++) {
+                    stock.push({
+                        idProducto: i * 5 + j + 1,
+                        idFranquicia: i + 1,
+                        stockActual: 10 + j * 5,
+                    })
+                }
+            }
+            await tx.insert(TienenStock).values(stock).returning()
+            console.log('Product stock linked to franchises successfully.')
             //#end region
         } catch (error) {
             console.error('Transaction failed', error)
