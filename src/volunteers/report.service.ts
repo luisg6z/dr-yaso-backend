@@ -96,9 +96,11 @@ export const getVolunteerAttendanceReportData = async (
 
     const items = franchiseVolunteers.map(vol => {
         const attended = attendanceMap.get(vol.id) || 0
+        // If there are no visits matching the filters (franchise/dateRange/visitTypes),
+        // attendance should be considered 100% (nothing to attend).
         const percentage = totalFranchiseVisits > 0
             ? (attended / totalFranchiseVisits) * 100
-            : 0
+            : 100
 
         return {
             id: vol.id,
