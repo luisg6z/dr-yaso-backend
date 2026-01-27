@@ -115,7 +115,9 @@ export const getBankReportData = async (filters: BankReportFilters) => {
     if (bankAccountId) {
         accountQuery.where(eq(CuentasBancarias.id, bankAccountId as number))
     } else if (franchiseId) {
-        accountQuery.where(eq(CuentasBancarias.idFranquicia, franchiseId as number))
+        accountQuery.where(
+            eq(CuentasBancarias.idFranquicia, franchiseId as number),
+        )
     } else {
         // If neither is provided, don't show account-specific header info
     }
@@ -186,18 +188,18 @@ export const generateExcelBankReport = async (
 
     data.items.forEach((it) => {
         const row = ws.addRow(it)
-            ;['income', 'expense', 'balance'].forEach((k) => {
-                const c = row.getCell(
-                    ws.columns!.findIndex((col: any) => col.key === k) + 1,
-                )
-                c.numFmt = '#,##0.00'
-                c.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' },
-                }
-            })
+        ;['income', 'expense', 'balance'].forEach((k) => {
+            const c = row.getCell(
+                ws.columns!.findIndex((col: any) => col.key === k) + 1,
+            )
+            c.numFmt = '#,##0.00'
+            c.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            }
+        })
     })
 
     ws.addRow([''])
