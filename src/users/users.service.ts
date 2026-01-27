@@ -3,7 +3,7 @@ import { hash } from 'bcrypt'
 import { UserCreate, UserRole, UserUpdate } from './users.schema'
 import { db } from '../db/db'
 import { tipoUsuarioEnum, Usuarios } from '../db/schemas/Usuarios'
-import { eq, ne } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { Pagination } from '../types/types'
 import { AppError } from '../common/errors/errors'
 import { envs } from '../config/envs'
@@ -95,6 +95,85 @@ export const getAllUsersNoSudo = async (pagination: Pagination) => {
         .offset(offset)
 
     const totalItems = await db.$count(Usuarios)
+    const totalPages = Math.ceil(totalItems / limit)
+
+    return {
+        items: users,
+        paginate: {
+            page,
+            limit,
+            totalItems,
+            totalPages,
+        },
+    }
+}
+
+export const getAllUsersForFranchise = async (
+    pagination: Pagination,
+    franchiseId: number,
+) => {
+    const whereCondition = eq(Usuarios.idFranquicia, franchiseId)
+    const { page, limit } = pagination
+    const offset = (page - 1) * limit
+    const users = await db
+        .select({
+            id: Usuarios.id,
+            name: Usuarios.nombre,
+            type: Usuarios.tipo,
+            email: Usuarios.correo,
+            franchise: {
+                id: Usuarios.idFranquicia,
+                name: Franquicias.nombre,
+            },
+        })
+        .from(Usuarios)
+        .leftJoin(Franquicias, eq(Usuarios.idFranquicia, Franquicias.id))
+        .where(whereCondition)
+        .limit(limit)
+        .offset(offset)
+
+    const totalItems = await db.$count(Usuarios, whereCondition)
+    const totalPages = Math.ceil(totalItems / limit)
+
+    return {
+        items: users,
+        paginate: {
+            page,
+            limit,
+            totalItems,
+            totalPages,
+        },
+    }
+}
+
+export const getAllUsersForFranchiseNoSudo = async (
+    pagination: Pagination,
+    franchiseId: number,
+) => {
+    const whereCondition = and(
+        eq(Usuarios.idFranquicia, franchiseId),
+        ne(Usuarios.tipo, tipoUsuarioEnum.enumValues[0]),
+    )
+    const { page, limit } = pagination
+    const offset = (page - 1) * limit
+    const users = await db
+        .select({
+            id: Usuarios.id,
+            name: Usuarios.nombre,
+            type: Usuarios.tipo,
+            email: Usuarios.correo,
+            franchise: {
+                id: Usuarios.idFranquicia,
+                name: Franquicias.nombre,
+            },
+        })
+        .from(Usuarios)
+        .leftJoin(Franquicias, eq(Usuarios.idFranquicia, Franquicias.id))
+        .where(whereCondition)
+        .limit(limit)
+        .offset(offset)
+
+    const totalItems = await db.$count(Usuarios, whereCondition)
     const totalPages = Math.ceil(totalItems / limit)
 
     return {
