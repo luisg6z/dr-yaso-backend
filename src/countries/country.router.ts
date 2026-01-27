@@ -9,13 +9,13 @@ const countriesRouter = Router()
 countriesRouter.get(
     '/',
     authenticate,
-    authorize([tipoUsuarioEnum.enumValues[0]]),
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
     getAllCountriesHandler,
 )
 countriesRouter.get(
     '/:id',
     authenticate,
-    authorize([tipoUsuarioEnum.enumValues[0]]),
+    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
     getAllCountriesHandler,
 )
 
