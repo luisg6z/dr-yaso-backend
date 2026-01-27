@@ -31,7 +31,9 @@ export const getVolunteerAttendanceReportData = async (
     ]
 
     if (franchiseId) {
-        visitsConditions.push(eq(Locaciones.idFranquicia, franchiseId as number))
+        visitsConditions.push(
+            eq(Locaciones.idFranquicia, franchiseId as number),
+        )
     }
 
     if (visitTypes && visitTypes.length > 0) {
@@ -55,7 +57,9 @@ export const getVolunteerAttendanceReportData = async (
     const volunteerConditions = [isNull(Pertenecen.fechaHoraEgreso)]
 
     if (franchiseId) {
-        volunteerConditions.push(eq(Pertenecen.idFranquicia, franchiseId as number))
+        volunteerConditions.push(
+            eq(Pertenecen.idFranquicia, franchiseId as number),
+        )
     }
 
     const franchiseVolunteers = await db
@@ -84,23 +88,27 @@ export const getVolunteerAttendanceReportData = async (
             .where(
                 and(
                     inArray(Realizan.idVisita, franchiseVisitIds),
-                    inArray(Realizan.idVoluntario, franchiseVolunteers.map(v => v.id))
-                )
+                    inArray(
+                        Realizan.idVoluntario,
+                        franchiseVolunteers.map((v) => v.id),
+                    ),
+                ),
             )
             .groupBy(Realizan.idVoluntario)
 
-        attendanceCounts.forEach(ac => {
+        attendanceCounts.forEach((ac) => {
             attendanceMap.set(ac.volunteerId!, ac.count)
         })
     }
 
-    const items = franchiseVolunteers.map(vol => {
+    const items = franchiseVolunteers.map((vol) => {
         const attended = attendanceMap.get(vol.id) || 0
         // If there are no visits matching the filters (franchise/dateRange/visitTypes),
         // attendance should be considered 100% (nothing to attend).
-        const percentage = totalFranchiseVisits > 0
-            ? (attended / totalFranchiseVisits) * 100
-            : 100
+        const percentage =
+            totalFranchiseVisits > 0
+                ? (attended / totalFranchiseVisits) * 100
+                : 100
 
         return {
             id: vol.id,
@@ -109,7 +117,7 @@ export const getVolunteerAttendanceReportData = async (
             idNumber: vol.idNumber,
             attendedVisits: attended,
             percentage: Number(percentage.toFixed(2)),
-            isLowAttendance: percentage < 25
+            isLowAttendance: percentage < 25,
         }
     })
 
@@ -120,7 +128,7 @@ export const getVolunteerAttendanceReportData = async (
         filters,
         franchiseName,
         totalFranchiseVisits,
-        items
+        items,
     }
 }
 

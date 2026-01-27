@@ -254,7 +254,10 @@ export const generatePdfBankReport = async (
     const printer = new PdfPrinter(fonts)
 
     const docDef: any = {
-        defaultStyle: { font: 'Helvetica' },
+        pageSize: 'A4',
+        pageOrientation: 'landscape',
+        pageMargins: [24, 28, 24, 28],
+        defaultStyle: { font: 'Helvetica', fontSize: 8 },
         content: [
             {
                 text: `Reporte de Movimientos - Cuenta ${data.account?.codCuenta ?? ''} (${data.account?.tipoMoneda ?? ''})`,
@@ -267,16 +270,9 @@ export const generatePdfBankReport = async (
             {
                 table: {
                     headerRows: 1,
-                    widths: [
-                        'auto',
-                        'auto',
-                        'auto',
-                        '*',
-                        '*',
-                        'auto',
-                        'auto',
-                        'auto',
-                    ],
+                    // Avoid 'auto' widths that can overflow and get cut.
+                    // Fixed widths for compact columns + flexible for observation.
+                    widths: [28, 54, 70, 62, '*', 78, 78, 80],
                     body: [
                         [
                             'ID',
@@ -294,13 +290,33 @@ export const generatePdfBankReport = async (
                             it.reference,
                             it.movementType,
                             it.observation,
-                            `${currencySymbol(data.account?.tipoMoneda)} ${it.income.toFixed(2)}`,
-                            `${currencySymbol(data.account?.tipoMoneda)} ${it.expense.toFixed(2)}`,
-                            `${currencySymbol(data.account?.tipoMoneda)} ${it.balance.toFixed(2)}`,
+                            {
+                                text: `${currencySymbol(data.account?.tipoMoneda)} ${it.income.toFixed(2)}`,
+                                alignment: 'right',
+                                noWrap: true,
+                            },
+                            {
+                                text: `${currencySymbol(data.account?.tipoMoneda)} ${it.expense.toFixed(2)}`,
+                                alignment: 'right',
+                                noWrap: true,
+                            },
+                            {
+                                text: `${currencySymbol(data.account?.tipoMoneda)} ${it.balance.toFixed(2)}`,
+                                alignment: 'right',
+                                noWrap: true,
+                            },
                         ]),
                     ],
                 },
-                layout: 'lightHorizontalLines',
+                layout: {
+                    hLineWidth: () => 0.5,
+                    vLineWidth: () => 0,
+                    hLineColor: () => '#CCCCCC',
+                    paddingLeft: () => 2,
+                    paddingRight: () => 2,
+                    paddingTop: () => 2,
+                    paddingBottom: () => 2,
+                },
             },
             { text: ' ', margin: [0, 0, 0, 6] },
             {
@@ -313,7 +329,7 @@ export const generatePdfBankReport = async (
                 text: `Saldo Final: ${currencySymbol(data.account?.tipoMoneda)} ${data.summary.finalBalance.toFixed(2)}`,
             },
         ],
-        styles: { header: { fontSize: 14, bold: true } },
+        styles: { header: { fontSize: 13, bold: true } },
     }
 
     return new Promise<Buffer>((resolve, reject) => {
