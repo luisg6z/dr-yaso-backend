@@ -15,8 +15,14 @@ export const createPettyCashHandler = async (req: Request, res: Response) => {
         const user = res.locals.user
 
         // Logic to verify if coordinator is creating for their own franchise
-        if (user.role === 'Coordinador' && pettyCash.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Coordinators can only create petty cash for their own franchise')
+        if (
+            user.role === 'Coordinador' &&
+            pettyCash.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Coordinators can only create petty cash for their own franchise',
+            )
         }
 
         res.status(201).json({
@@ -75,8 +81,14 @@ export const getPettyCashByIdHandler = async (req: Request, res: Response) => {
 
         const pettyCash = await getPettyCashById(+id)
 
-        if (user.role === 'Coordinador' && pettyCash.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            pettyCash.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({
@@ -105,8 +117,14 @@ export const updatePettyCashHandler = async (req: Request, res: Response) => {
 
         // First fetch to check permission
         const existingPettyCash = await getPettyCashById(+id)
-        if (user.role === 'Coordinador' && existingPettyCash.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            existingPettyCash.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({
@@ -134,8 +152,14 @@ export const deletePettyCashHandler = async (req: Request, res: Response) => {
 
         // First fetch to check permission
         const existingPettyCash = await getPettyCashById(+id)
-        if (user.role === 'Coordinador' && existingPettyCash.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            existingPettyCash.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({

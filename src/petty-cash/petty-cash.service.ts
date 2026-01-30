@@ -25,7 +25,7 @@ export const createPettyCash = async (pettyCash: PettyCashCreate) => {
         .select()
         .from(Voluntarios)
         .where(eq(Voluntarios.id, pettyCash.responsibleId))
-        .then(rows => rows[0])
+        .then((rows) => rows[0])
 
     if (!responsible) throw new AppError(404, 'Responsible volunteer not found')
 
@@ -73,7 +73,10 @@ const mapPettyCash = (row: {
     }
 }
 
-export const getAllPettyCash = async (pagination: Pagination, franchiseId?: number) => {
+export const getAllPettyCash = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
     const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
@@ -82,8 +85,8 @@ export const getAllPettyCash = async (pagination: Pagination, franchiseId?: numb
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined,
+              ? eq(Franquicias.estaActivo, false)
+              : undefined,
     )
 
     const rows = await db
@@ -131,16 +134,22 @@ export const getPettyCashById = async (id: number) => {
     return mapPettyCash(row)
 }
 
-export const updatePettyCash = async (id: number, pettyCashUpdate: PettyCashUpdate) => {
+export const updatePettyCash = async (
+    id: number,
+    pettyCashUpdate: PettyCashUpdate,
+) => {
     const existingPettyCash = await getPettyCashById(id)
     if (!existingPettyCash) throw new AppError(404, 'Petty Cash not found')
 
     const updateData: any = {}
     if (pettyCashUpdate.code) updateData.codCaja = pettyCashUpdate.code
     if (pettyCashUpdate.name) updateData.nombre = pettyCashUpdate.name
-    if (pettyCashUpdate.currency) updateData.tipoMoneda = pettyCashUpdate.currency
-    if (pettyCashUpdate.franchiseId) updateData.idFranquicia = pettyCashUpdate.franchiseId
-    if (pettyCashUpdate.responsibleId) updateData.idResponsable = pettyCashUpdate.responsibleId
+    if (pettyCashUpdate.currency)
+        updateData.tipoMoneda = pettyCashUpdate.currency
+    if (pettyCashUpdate.franchiseId)
+        updateData.idFranquicia = pettyCashUpdate.franchiseId
+    if (pettyCashUpdate.responsibleId)
+        updateData.idResponsable = pettyCashUpdate.responsibleId
 
     // If no fields to update, return existing
     if (Object.keys(updateData).length === 0) return existingPettyCash

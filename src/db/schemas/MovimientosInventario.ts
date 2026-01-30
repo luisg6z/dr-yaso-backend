@@ -1,4 +1,11 @@
-import { pgTable, serial, integer, varchar, timestamp, pgEnum } from 'drizzle-orm/pg-core'
+import {
+    pgTable,
+    serial,
+    integer,
+    varchar,
+    timestamp,
+    pgEnum,
+} from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import { Productos } from './Productos'
 import { Franquicias } from './Franquicias'
@@ -14,20 +21,28 @@ export const MovimientosInventario = pgTable('MovimientosInventario', {
     tipoMovimiento: tipoMovimientoInventarioEnum('tipoMovimiento').notNull(),
     cantidad: integer('cantidad').notNull(),
     saldoFinal: integer('saldoFinal').notNull(),
-    fechaHora: timestamp('fechaHora', { withTimezone: false }).notNull().default(sql`now()`),
+    fechaHora: timestamp('fechaHora', { withTimezone: false })
+        .notNull()
+        .default(sql`now()`),
     observacion: varchar('observacion', { length: 200 }).notNull(),
-    idProducto: integer('idProducto').notNull().references(() => Productos.id, {
-        onUpdate: 'cascade',
-        onDelete: 'restrict',
-    }),
-    idFranquicia: integer('idFranquicia').notNull().references(() => Franquicias.id, {
-        onUpdate: 'cascade',
-        onDelete: 'restrict',
-    }),
-    idUsuario: integer('idUsuario').notNull().references(() => Usuarios.id, {
-        onUpdate: 'cascade',
-        onDelete: 'restrict',
-    }),
+    idProducto: integer('idProducto')
+        .notNull()
+        .references(() => Productos.id, {
+            onUpdate: 'cascade',
+            onDelete: 'restrict',
+        }),
+    idFranquicia: integer('idFranquicia')
+        .notNull()
+        .references(() => Franquicias.id, {
+            onUpdate: 'cascade',
+            onDelete: 'restrict',
+        }),
+    idUsuario: integer('idUsuario')
+        .notNull()
+        .references(() => Usuarios.id, {
+            onUpdate: 'cascade',
+            onDelete: 'restrict',
+        }),
 })
 
 export type MovimientoInventarioRow = {

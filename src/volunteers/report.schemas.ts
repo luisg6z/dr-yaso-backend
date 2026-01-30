@@ -11,4 +11,6 @@ export const volunteerAttendanceReportFiltersSchema = z.object({
     format: z.enum(['json', 'pdf', 'excel']).default('json'),
 })
 
-export type VolunteerAttendanceReportFilters = z.infer<typeof volunteerAttendanceReportFiltersSchema>
+export type VolunteerAttendanceReportFilters = z.infer<
+    typeof volunteerAttendanceReportFiltersSchema
+>

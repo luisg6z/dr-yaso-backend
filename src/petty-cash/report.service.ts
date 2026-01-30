@@ -84,7 +84,9 @@ export const getPettyCashReportData = async (
     if (pettyCashId) {
         pettyCashQuery.where(eq(CajasChicas.id, pettyCashId as number))
     } else if (franchiseId) {
-        pettyCashQuery.where(eq(CajasChicas.idFranquicia, franchiseId as number))
+        pettyCashQuery.where(
+            eq(CajasChicas.idFranquicia, franchiseId as number),
+        )
     }
 
     const pettyCashResult = await pettyCashQuery
@@ -151,18 +153,18 @@ export const generateExcelPettyCashReport = async (
 
     data.items.forEach((it) => {
         const row = ws.addRow(it)
-            ;['income', 'expense', 'balance'].forEach((k) => {
-                const c = row.getCell(
-                    ws.columns!.findIndex((col: any) => col.key === k) + 1,
-                )
-                c.numFmt = '#,##0.00'
-                c.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' },
-                }
-            })
+        ;['income', 'expense', 'balance'].forEach((k) => {
+            const c = row.getCell(
+                ws.columns!.findIndex((col: any) => col.key === k) + 1,
+            )
+            c.numFmt = '#,##0.00'
+            c.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            }
+        })
     })
 
     ws.addRow([''])

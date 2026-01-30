@@ -12,7 +12,9 @@ export const volunteerAttendanceReportController: RequestHandler = async (
     next,
 ) => {
     try {
-        const parsed = volunteerAttendanceReportFiltersSchema.safeParse(req.body)
+        const parsed = volunteerAttendanceReportFiltersSchema.safeParse(
+            req.body,
+        )
         if (!parsed.success) {
             res.status(400).json({
                 message: 'Invalid body',
@@ -24,14 +26,19 @@ export const volunteerAttendanceReportController: RequestHandler = async (
 
         // Authorization Check
         const user = res.locals.user // Provided by authenticate middleware
-        // types need to be inferred or imported. assuming res.locals.user is populated. 
+        // types need to be inferred or imported. assuming res.locals.user is populated.
         // We need to import tipoUsuarioEnum if we use it, or just check role string if we know it.
         // Better to import tipoUsuarioEnum.
 
         // Let's assume logical check: if user.franchiseId exists and role is Coordinator
-        if (user && user.role === 'Coordinador' && user.franchiseId !== filters.franchiseId) {
+        if (
+            user &&
+            user.role === 'Coordinador' &&
+            user.franchiseId !== filters.franchiseId
+        ) {
             res.status(403).json({
-                message: 'No tienes permiso para ver el reporte de esta franquicia',
+                message:
+                    'No tienes permiso para ver el reporte de esta franquicia',
             })
             return
         }

@@ -9,17 +9,29 @@ import {
     updateObservation,
     deleteObservation,
 } from './observations.service'
-import { observationCreateSchema, observationUpdateSchema } from './observations.schemas'
+import {
+    observationCreateSchema,
+    observationUpdateSchema,
+} from './observations.schemas'
 
-export const createObservationController: RequestHandler = async (req, res, next) => {
+export const createObservationController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const parsed = observationCreateSchema.safeParse(req.body)
         if (!parsed.success) {
-            res.status(400).json({ message: 'Invalid body', errors: parsed.error.flatten() })
+            res.status(400).json({
+                message: 'Invalid body',
+                errors: parsed.error.flatten(),
+            })
             return
         }
         const { idVoluntario, observacion } = parsed.data
-        const tokenUser = res.locals.user as { id?: number; email?: string } | undefined
+        const tokenUser = res.locals.user as
+            | { id?: number; email?: string }
+            | undefined
         let idUsuario = tokenUser?.id
         if (!idUsuario) {
             const email = tokenUser?.email
@@ -38,7 +50,11 @@ export const createObservationController: RequestHandler = async (req, res, next
                 return
             }
         }
-        const row = await createObservation(idUsuario, idVoluntario, observacion)
+        const row = await createObservation(
+            idUsuario,
+            idVoluntario,
+            observacion,
+        )
         res.status(201).json(row)
         return
     } catch (err) {
@@ -47,7 +63,11 @@ export const createObservationController: RequestHandler = async (req, res, next
     }
 }
 
-export const getObservationsByVolunteerController: RequestHandler = async (req, res, next) => {
+export const getObservationsByVolunteerController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const idVoluntario = Number(req.params.id)
         const rows = await getObservationsByVolunteer(idVoluntario)
@@ -59,7 +79,11 @@ export const getObservationsByVolunteerController: RequestHandler = async (req, 
     }
 }
 
-export const getObservationsByUserController: RequestHandler = async (req, res, next) => {
+export const getObservationsByUserController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const idUsuario = Number(req.params.id)
         const rows = await getObservationsByUser(idUsuario)
@@ -71,15 +95,24 @@ export const getObservationsByUserController: RequestHandler = async (req, res, 
     }
 }
 
-export const updateObservationController: RequestHandler = async (req, res, next) => {
+export const updateObservationController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const parsed = observationUpdateSchema.safeParse(req.body)
         if (!parsed.success) {
-            res.status(400).json({ message: 'Invalid body', errors: parsed.error.flatten() })
+            res.status(400).json({
+                message: 'Invalid body',
+                errors: parsed.error.flatten(),
+            })
             return
         }
         const { idVoluntario, fechaHoraRegistro, observacion } = parsed.data
-        const tokenUser = res.locals.user as { id?: number; email?: string } | undefined
+        const tokenUser = res.locals.user as
+            | { id?: number; email?: string }
+            | undefined
         let idUsuario = tokenUser?.id
         if (!idUsuario) {
             const email = tokenUser?.email
@@ -112,10 +145,16 @@ export const updateObservationController: RequestHandler = async (req, res, next
     }
 }
 
-export const deleteObservationController: RequestHandler = async (req, res, next) => {
+export const deleteObservationController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const { idVoluntario, fechaHoraRegistro } = req.query
-        const tokenUser = res.locals.user as { id?: number; email?: string } | undefined
+        const tokenUser = res.locals.user as
+            | { id?: number; email?: string }
+            | undefined
         let idUsuario = tokenUser?.id
         if (!idUsuario) {
             const email = tokenUser?.email

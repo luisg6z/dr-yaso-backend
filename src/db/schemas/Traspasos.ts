@@ -1,4 +1,11 @@
-import { pgTable, serial, integer, date, varchar, pgEnum } from 'drizzle-orm/pg-core'
+import {
+    pgTable,
+    serial,
+    integer,
+    date,
+    varchar,
+    pgEnum,
+} from 'drizzle-orm/pg-core'
 import { Voluntarios } from './Voluntarios'
 import { Franquicias } from './Franquicias'
 

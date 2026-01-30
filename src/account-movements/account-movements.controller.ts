@@ -10,7 +10,10 @@ import { db } from '../db/db'
 import { CuentasBancarias } from '../db/schemas/CuentasBancarias'
 import { eq } from 'drizzle-orm'
 
-export const createAccountMovementHandler = async (req: Request, res: Response) => {
+export const createAccountMovementHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const movement = req.body
         const user = res.locals.user
@@ -21,14 +24,17 @@ export const createAccountMovementHandler = async (req: Request, res: Response) 
                 .select({ franchiseId: CuentasBancarias.idFranquicia })
                 .from(CuentasBancarias)
                 .where(eq(CuentasBancarias.id, movement.accountId))
-                .then(rows => rows[0])
+                .then((rows) => rows[0])
 
             if (!account) {
                 throw new AppError(404, 'Bank Account not found')
             }
 
             if (account.franchiseId !== user.franchiseId) {
-                throw new AppError(403, 'Unauthorized access to this franchise data')
+                throw new AppError(
+                    403,
+                    'Unauthorized access to this franchise data',
+                )
             }
         }
 
@@ -50,7 +56,10 @@ export const createAccountMovementHandler = async (req: Request, res: Response) 
     }
 }
 
-export const getAllAccountMovementsHandler = async (req: Request, res: Response) => {
+export const getAllAccountMovementsHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
@@ -64,7 +73,9 @@ export const getAllAccountMovementsHandler = async (req: Request, res: Response)
             franchiseId = user.franchiseId
         }
 
-        res.status(200).json(await getAllAccountMovements(pagination, franchiseId))
+        res.status(200).json(
+            await getAllAccountMovements(pagination, franchiseId),
+        )
     } catch (error) {
         if (error instanceof AppError) {
             res.status(error.statusCode).json({
@@ -80,15 +91,24 @@ export const getAllAccountMovementsHandler = async (req: Request, res: Response)
     }
 }
 
-export const getAccountMovementByIdHandler = async (req: Request, res: Response) => {
+export const getAccountMovementByIdHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const { id } = req.params
         const user = res.locals.user
 
         const movement = await getAccountMovementById(+id)
 
-        if (user.role === 'Coordinador' && movement.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            movement.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({

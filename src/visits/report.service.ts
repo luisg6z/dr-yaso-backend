@@ -11,7 +11,7 @@ const formatDate = (d: Date) => {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
     })
 }
 
@@ -164,7 +164,15 @@ export const generatePdfVisitsReport = async (
             {
                 table: {
                     headerRows: 1,
-                    widths: ['auto', 'auto', 'auto', '*', 'auto', 'auto', 'auto'],
+                    widths: [
+                        'auto',
+                        'auto',
+                        'auto',
+                        '*',
+                        'auto',
+                        'auto',
+                        'auto',
+                    ],
                     body: [
                         [
                             'ID',

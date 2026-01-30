@@ -9,7 +9,12 @@ const CityRouter = Router()
 CityRouter.get(
     '/:id',
     authenticate,
-    authorize([tipoUsuarioEnum.enumValues[0], tipoUsuarioEnum.enumValues[1], tipoUsuarioEnum.enumValues[2], tipoUsuarioEnum.enumValues[3]]),
+    authorize([
+        tipoUsuarioEnum.enumValues[0],
+        tipoUsuarioEnum.enumValues[1],
+        tipoUsuarioEnum.enumValues[2],
+        tipoUsuarioEnum.enumValues[3],
+    ]),
     getCitiesByStateIdHandler,
 )
 

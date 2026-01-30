@@ -20,7 +20,11 @@ export const createBankAccount = async (data: BankAccountCreate) => {
     }
 
     // Verify Bank exists
-    const bank = await db.select().from(Bancos).where(eq(Bancos.cod, data.bankCode)).then(rows => rows[0])
+    const bank = await db
+        .select()
+        .from(Bancos)
+        .where(eq(Bancos.cod, data.bankCode))
+        .then((rows) => rows[0])
     if (!bank) throw new AppError(404, 'Bank not found')
 
     return await db.transaction(async (tx) => {
@@ -30,8 +34,13 @@ export const createBankAccount = async (data: BankAccountCreate) => {
         const existingResponsible = await tx
             .select()
             .from(ResponsablesCuentas)
-            .where(eq(ResponsablesCuentas.numeroDocumento, data.responsible.documentNumber))
-            .then(rows => rows[0])
+            .where(
+                eq(
+                    ResponsablesCuentas.numeroDocumento,
+                    data.responsible.documentNumber,
+                ),
+            )
+            .then((rows) => rows[0])
 
         if (existingResponsible) {
             responsibleId = existingResponsible.id
@@ -47,7 +56,8 @@ export const createBankAccount = async (data: BankAccountCreate) => {
                 })
                 .returning()
 
-            if (!newResponsible) throw new AppError(500, 'Error creating responsible')
+            if (!newResponsible)
+                throw new AppError(500, 'Error creating responsible')
             responsibleId = newResponsible.id
         }
 
@@ -104,25 +114,36 @@ const mapBankAccount = (row: {
     }
 }
 
-export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: number) => {
+export const getAllBankAccounts = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
     const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
     const whereCondition = and(
-        franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined,
+        franchiseId
+            ? eq(CuentasBancarias.idFranquicia, franchiseId)
+            : undefined,
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined,
+              ? eq(Franquicias.estaActivo, false)
+              : undefined,
     )
 
     const rows = await db
         .select()
         .from(CuentasBancarias)
         .innerJoin(Bancos, eq(Bancos.cod, CuentasBancarias.codBanco))
-        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
-        .innerJoin(ResponsablesCuentas, eq(ResponsablesCuentas.id, CuentasBancarias.idResponsable))
+        .innerJoin(
+            Franquicias,
+            eq(Franquicias.id, CuentasBancarias.idFranquicia),
+        )
+        .innerJoin(
+            ResponsablesCuentas,
+            eq(ResponsablesCuentas.id, CuentasBancarias.idResponsable),
+        )
         .where(whereCondition)
         .limit(limit)
         .offset(offset)
@@ -132,7 +153,10 @@ export const getAllBankAccounts = async (pagination: Pagination, franchiseId?: n
     const totalItems = await db
         .select({ count: sql<number>`count(*)` })
         .from(CuentasBancarias)
-        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .innerJoin(
+            Franquicias,
+            eq(Franquicias.id, CuentasBancarias.idFranquicia),
+        )
         .where(whereCondition)
         .then((rows) => Number(rows[0].count))
 
@@ -154,17 +178,26 @@ export const getBankAccountById = async (id: number) => {
         .select()
         .from(CuentasBancarias)
         .innerJoin(Bancos, eq(Bancos.cod, CuentasBancarias.codBanco))
-        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
-        .innerJoin(ResponsablesCuentas, eq(ResponsablesCuentas.id, CuentasBancarias.idResponsable))
+        .innerJoin(
+            Franquicias,
+            eq(Franquicias.id, CuentasBancarias.idFranquicia),
+        )
+        .innerJoin(
+            ResponsablesCuentas,
+            eq(ResponsablesCuentas.id, CuentasBancarias.idResponsable),
+        )
         .where(eq(CuentasBancarias.id, id))
-        .then(rows => rows[0])
+        .then((rows) => rows[0])
 
     if (!row) throw new AppError(404, 'Bank Account not found')
 
     return mapBankAccount(row)
 }
 
-export const updateBankAccount = async (id: number, data: BankAccountUpdate) => {
+export const updateBankAccount = async (
+    id: number,
+    data: BankAccountUpdate,
+) => {
     const existingAccount = await getBankAccountById(id)
     if (!existingAccount) throw new AppError(404, 'Bank Account not found')
 
@@ -190,7 +223,9 @@ export const updateBankAccount = async (id: number, data: BankAccountUpdate) => 
                     nombres: data.responsible.firstName,
                     apellidos: data.responsible.lastName,
                 })
-                .where(eq(ResponsablesCuentas.id, existingAccount.responsibleId))
+                .where(
+                    eq(ResponsablesCuentas.id, existingAccount.responsibleId),
+                )
         }
 
         return await getBankAccountById(id) // Return updated full object

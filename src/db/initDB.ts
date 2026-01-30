@@ -28,9 +28,15 @@ import { CajasChicas } from './schemas/CajasChicas'
 import { MovimientosCaja } from './schemas/MovimientosCaja'
 import { ResponsablesCuentas } from './schemas/ResponsablesCuentas'
 import { CuentasBancarias, tipoMonedaEnum } from './schemas/CuentasBancarias'
-import { MovimientosCuentas, tipoMovimientoEnum } from './schemas/MovimientosCuentas'
+import {
+    MovimientosCuentas,
+    tipoMovimientoEnum,
+} from './schemas/MovimientosCuentas'
 import { Visitas, tiposVisitasEnum } from './schemas/Visitas'
-import { ReunionesDeComite, tipoReunionComiteEnum } from './schemas/ReunionesDeComite'
+import {
+    ReunionesDeComite,
+    tipoReunionComiteEnum,
+} from './schemas/ReunionesDeComite'
 import { Realizan, responsabilitiesEnum } from './schemas/Realizan'
 import { Asisten } from './schemas/Asisten'
 
@@ -719,12 +725,30 @@ const initDB = async () => {
             //#region DetallesVoluntarios
             console.log('Inserting volunteer details...')
             const nombresPayasos = [
-                'Payaso Feliz', 'Payaso Sonrisa', 'Payaso Alegría', 'Payaso Risitas',
-                'Payaso Chispa', 'Payaso Burbuja', 'Payaso Estrella', 'Payaso Arcoíris',
-                'Payaso Sol', 'Payaso Luna', 'Payaso Estrella', 'Payaso Magia',
-                'Payaso Corazón', 'Payaso Rayo', 'Payaso Nube', 'Payaso Flor',
-                'Payaso Mariposa', 'Payaso Delfín', 'Payaso Tigre', 'Payaso León',
-                'Payaso Elefante', 'Payaso Mono', 'Payaso Oso', 'Payaso Panda'
+                'Payaso Feliz',
+                'Payaso Sonrisa',
+                'Payaso Alegría',
+                'Payaso Risitas',
+                'Payaso Chispa',
+                'Payaso Burbuja',
+                'Payaso Estrella',
+                'Payaso Arcoíris',
+                'Payaso Sol',
+                'Payaso Luna',
+                'Payaso Estrella',
+                'Payaso Magia',
+                'Payaso Corazón',
+                'Payaso Rayo',
+                'Payaso Nube',
+                'Payaso Flor',
+                'Payaso Mariposa',
+                'Payaso Delfín',
+                'Payaso Tigre',
+                'Payaso León',
+                'Payaso Elefante',
+                'Payaso Mono',
+                'Payaso Oso',
+                'Payaso Panda',
             ]
             const tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
             const tiposSangre = tipoSangreEnum.enumValues
@@ -885,10 +909,26 @@ const initDB = async () => {
             console.log('Inserting locations...')
             const locations = []
             const descripcionesLocaciones = [
-                ['Hospital Central', 'Clínica San José', 'Centro de Salud Norte'],
-                ['Hospital Universitario', 'Clínica Los Rosales', 'Centro Médico Este'],
-                ['Hospital del Sur', 'Clínica La Victoria', 'Centro de Salud Oeste'],
-                ['Hospital Regional', 'Clínica El Paraíso', 'Centro Médico Central'],
+                [
+                    'Hospital Central',
+                    'Clínica San José',
+                    'Centro de Salud Norte',
+                ],
+                [
+                    'Hospital Universitario',
+                    'Clínica Los Rosales',
+                    'Centro Médico Este',
+                ],
+                [
+                    'Hospital del Sur',
+                    'Clínica La Victoria',
+                    'Centro de Salud Oeste',
+                ],
+                [
+                    'Hospital Regional',
+                    'Clínica El Paraíso',
+                    'Centro Médico Central',
+                ],
             ]
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 3; j++) {
@@ -939,7 +979,9 @@ const initDB = async () => {
                         realizan.push({
                             idVisita: visitId,
                             idVoluntario: baseVolunteerId + (k % 6),
-                            responsabilidad: responsabilidades[k % responsabilidades.length] as any,
+                            responsabilidad: responsabilidades[
+                                k % responsabilidades.length
+                            ] as any,
                         })
                     }
                     visitIndex++
@@ -958,7 +1000,9 @@ const initDB = async () => {
                     const fecha = new Date(2024, 0, 10 + j * 7)
                     meetings.push({
                         fecha: fecha.toISOString().split('T')[0], // Convert to date string
-                        tipoDeReunionComite: tiposReunion[j % tiposReunion.length] as any,
+                        tipoDeReunionComite: tiposReunion[
+                            j % tiposReunion.length
+                        ] as any,
                         observacion: `Reunión ${j + 1} del comité`,
                         idResponsable: i * 6 + 1, // Coordinador
                         idFranquicia: i + 1,
@@ -1015,7 +1059,7 @@ const initDB = async () => {
             const cashMovements = []
             for (let i = 0; i < 4; i++) {
                 const cajaId = i + 1
-                let saldoActual = 500.00
+                let saldoActual = 500.0
                 for (let j = 0; j < 5; j++) {
                     const esIngreso = j % 2 === 0
                     const monto = 50 + j * 25
@@ -1026,7 +1070,9 @@ const initDB = async () => {
                     }
                     cashMovements.push({
                         fecha: new Date(2024, 0, 5 + j * 5, 9, 0),
-                        observacion: esIngreso ? `Ingreso ${j + 1}` : `Egreso ${j + 1}`,
+                        observacion: esIngreso
+                            ? `Ingreso ${j + 1}`
+                            : `Egreso ${j + 1}`,
                         ingresos: esIngreso ? monto.toString() : '0',
                         egresos: esIngreso ? '0' : monto.toString(),
                         saldoPosterior: saldoActual.toFixed(2),
@@ -1049,7 +1095,10 @@ const initDB = async () => {
                     apellidos: ['Sánchez', 'Fernández', 'Jiménez', 'Silva'][i],
                 })
             }
-            await tx.insert(ResponsablesCuentas).values(accountResponsibles).returning()
+            await tx
+                .insert(ResponsablesCuentas)
+                .values(accountResponsibles)
+                .returning()
             console.log('Account responsibles inserted successfully.')
             //#end region
 
@@ -1077,7 +1126,7 @@ const initDB = async () => {
             const tiposMovimiento = tipoMovimientoEnum.enumValues
             for (let i = 0; i < 4; i++) {
                 const cuentaId = i + 1
-                let saldoActual = 10000.00
+                let saldoActual = 10000.0
                 for (let j = 0; j < 5; j++) {
                     const esIngreso = j % 2 === 0
                     const monto = 200 + j * 100
@@ -1089,8 +1138,12 @@ const initDB = async () => {
                     accountMovements.push({
                         fecha: new Date(2024, 0, 3 + j * 6, 14, 0),
                         nroReferencia: `REF-${String(i + 1).padStart(2, '0')}-${String(j + 1).padStart(3, '0')}`,
-                        tipoMovimiento: tiposMovimiento[j % tiposMovimiento.length] as any,
-                        observacion: esIngreso ? `Depósito ${j + 1}` : `Pago ${j + 1}`,
+                        tipoMovimiento: tiposMovimiento[
+                            j % tiposMovimiento.length
+                        ] as any,
+                        observacion: esIngreso
+                            ? `Depósito ${j + 1}`
+                            : `Pago ${j + 1}`,
                         ingresos: esIngreso ? monto.toString() : '0',
                         egresos: esIngreso ? '0' : monto.toString(),
                         saldoPosterior: saldoActual.toFixed(2),
@@ -1098,7 +1151,10 @@ const initDB = async () => {
                     })
                 }
             }
-            await tx.insert(MovimientosCuentas).values(accountMovements).returning()
+            await tx
+                .insert(MovimientosCuentas)
+                .values(accountMovements)
+                .returning()
             console.log('Bank account movements inserted successfully.')
             //#end region
 
@@ -1106,10 +1162,26 @@ const initDB = async () => {
             console.log('Inserting products...')
             const productos = []
             const nombresProductos = [
-                'Pelota de Fútbol', 'Muñeca', 'Carro de Juguete', 'Rompecabezas', 'Libro de Colorear',
-                'Crayones', 'Lápices de Colores', 'Juego de Mesa', 'Títere', 'Globos',
-                'Pinturas', 'Plastilina', 'Bloques de Construcción', 'Juego de Cartas', 'Yoyo',
-                'Cometa', 'Trompo', 'Marioneta', 'Instrumento Musical', 'Juguetes Educativos'
+                'Pelota de Fútbol',
+                'Muñeca',
+                'Carro de Juguete',
+                'Rompecabezas',
+                'Libro de Colorear',
+                'Crayones',
+                'Lápices de Colores',
+                'Juego de Mesa',
+                'Títere',
+                'Globos',
+                'Pinturas',
+                'Plastilina',
+                'Bloques de Construcción',
+                'Juego de Cartas',
+                'Yoyo',
+                'Cometa',
+                'Trompo',
+                'Marioneta',
+                'Instrumento Musical',
+                'Juguetes Educativos',
             ]
             for (let i = 0; i < 20; i++) {
                 productos.push({

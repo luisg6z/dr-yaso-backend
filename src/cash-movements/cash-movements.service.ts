@@ -14,13 +14,14 @@ export const createCashMovement = async (movement: CashMovementCreate) => {
             .select()
             .from(CajasChicas)
             .where(eq(CajasChicas.id, movement.pettyCashId))
-            .then(rows => rows[0])
+            .then((rows) => rows[0])
 
         if (!pettyCash) throw new AppError(404, 'Petty Cash not found')
 
         // 2. Calculate new balance
         const currentBalance = Number(pettyCash.saldo)
-        const newBalance = currentBalance + Number(movement.income) - Number(movement.expense)
+        const newBalance =
+            currentBalance + Number(movement.income) - Number(movement.expense)
 
         // 3. Create Movement
         const [newMovement] = await tx
@@ -51,12 +52,13 @@ export const createCashMovement = async (movement: CashMovementCreate) => {
             expense: movement.expense,
             pettyCashId: movement.pettyCashId,
         }
-
     })
-
 }
 
-export const getAllCashMovements = async (pagination: Pagination, franchiseId?: number) => {
+export const getAllCashMovements = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
     const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
@@ -65,8 +67,8 @@ export const getAllCashMovements = async (pagination: Pagination, franchiseId?: 
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined,
+              ? eq(Franquicias.estaActivo, false)
+              : undefined,
     )
 
     const movements = await db
@@ -124,7 +126,7 @@ export const getCashMovementById = async (id: number) => {
         .from(MovimientosCaja)
         .innerJoin(CajasChicas, eq(CajasChicas.id, MovimientosCaja.idCaja))
         .where(eq(MovimientosCaja.id, id))
-        .then(rows => rows[0])
+        .then((rows) => rows[0])
 
     if (!movement) throw new AppError(404, 'Movement not found')
 

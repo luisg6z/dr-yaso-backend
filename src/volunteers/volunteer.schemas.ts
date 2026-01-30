@@ -86,49 +86,51 @@ import { z } from 'zod'
  *               type: string
  *             country:
  *               type: string
- * 
+ *
  */
 export const VolunteerSchema = z.object({
-  id: z.number().int().positive(),
-  firstName: z.string().min(1).max(100),
-  lastName: z.string().min(1).max(100),
-  idType: z.enum(['V', 'E']),
-  idNumber: z.string().min(1).max(12),
-  birthDate: z.string().min(1).max(30),
-  profession: z.string().min(1).max(60),
-  franchiseId: z.number().int().positive(),
-  franchiseName: z.string().min(1).max(100),
-  status: z.enum(['Activo', 'Desvinculado', 'De permiso']),
-  gender: z.enum(['Masculino', 'Femenino', 'Otro']),
-  bloodType: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
-  maritalStatus: z.enum([
-    'Soltero/a',
-    'Casado/a',
-    'Divorciado/a',
-    'Viudo/a',
-    'Unión Libre',
-  ]),
-  phoneNumbers: z.array(z.string().min(1).max(20)),
-  clownName: z.string().min(1).max(120),
-  shirtSize: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL']),
-  hasShirtWithLogo: z.boolean(),
-  hasCoatWithLogo: z.boolean(),
-  allergies: z.string().min(1).max(200).optional(),
-  disability: z.string().min(1).max(200).optional(),
-  facebook: z.string().min(1).max(200).optional(),
-  x: z.string().min(1).max(200).optional(),
-  instagram: z.string().min(1).max(200).optional(),
-  tikTok: z.string().min(1).max(200).optional(),
-  emergencyContactName: z.string().min(1).max(60).optional(),
-  emergencyContactPhone: z.string().min(1).max(20).optional(),
-  occupations: z.array(
-    z.object({
-      id: z.number().int().positive(),
-      isMain: z.boolean(), // true si es cargo principal
-    })
-  ).optional(),
-  direction: z.string().min(1).max(200).optional(),
-  cityId: z.number().int().positive().optional(),
+    id: z.number().int().positive(),
+    firstName: z.string().min(1).max(100),
+    lastName: z.string().min(1).max(100),
+    idType: z.enum(['V', 'E']),
+    idNumber: z.string().min(1).max(12),
+    birthDate: z.string().min(1).max(30),
+    profession: z.string().min(1).max(60),
+    franchiseId: z.number().int().positive(),
+    franchiseName: z.string().min(1).max(100),
+    status: z.enum(['Activo', 'Desvinculado', 'De permiso']),
+    gender: z.enum(['Masculino', 'Femenino', 'Otro']),
+    bloodType: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
+    maritalStatus: z.enum([
+        'Soltero/a',
+        'Casado/a',
+        'Divorciado/a',
+        'Viudo/a',
+        'Unión Libre',
+    ]),
+    phoneNumbers: z.array(z.string().min(1).max(20)),
+    clownName: z.string().min(1).max(120),
+    shirtSize: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL']),
+    hasShirtWithLogo: z.boolean(),
+    hasCoatWithLogo: z.boolean(),
+    allergies: z.string().min(1).max(200).optional(),
+    disability: z.string().min(1).max(200).optional(),
+    facebook: z.string().min(1).max(200).optional(),
+    x: z.string().min(1).max(200).optional(),
+    instagram: z.string().min(1).max(200).optional(),
+    tikTok: z.string().min(1).max(200).optional(),
+    emergencyContactName: z.string().min(1).max(60).optional(),
+    emergencyContactPhone: z.string().min(1).max(20).optional(),
+    occupations: z
+        .array(
+            z.object({
+                id: z.number().int().positive(),
+                isMain: z.boolean(), // true si es cargo principal
+            }),
+        )
+        .optional(),
+    direction: z.string().min(1).max(200).optional(),
+    cityId: z.number().int().positive().optional(),
 })
 /**
  * @swagger
@@ -259,12 +261,12 @@ export const VolunteerSchema = z.object({
  *         cityId: 1
  */
 export const createVolunteerSchema = VolunteerSchema.omit({
-  id: true,
-  franchiseName: true,
-  franchiseId: true, // Omit first allowing re-definition or just optional? 
-  // Wait, omit removes it. I want it optional.
+    id: true,
+    franchiseName: true,
+    franchiseId: true, // Omit first allowing re-definition or just optional?
+    // Wait, omit removes it. I want it optional.
 }).extend({
-  franchiseId: z.number().int().positive().optional(),
+    franchiseId: z.number().int().positive().optional(),
 })
 
 /**
@@ -375,7 +377,7 @@ export const createVolunteerSchema = VolunteerSchema.omit({
  *         direction: "Calle Falsa 123, Ciudad"
  *         cityId: 1
  */
-// 
+//
 export const updateVolunteerSchema = createVolunteerSchema.partial()
 
 export type Volunteer = z.infer<typeof VolunteerSchema>

@@ -10,7 +10,10 @@ import { db } from '../db/db'
 import { CajasChicas } from '../db/schemas/CajasChicas'
 import { eq } from 'drizzle-orm'
 
-export const createCashMovementHandler = async (req: Request, res: Response) => {
+export const createCashMovementHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const movement = req.body
         const user = res.locals.user
@@ -21,14 +24,17 @@ export const createCashMovementHandler = async (req: Request, res: Response) => 
                 .select({ franchiseId: CajasChicas.idFranquicia })
                 .from(CajasChicas)
                 .where(eq(CajasChicas.id, movement.pettyCashId))
-                .then(rows => rows[0])
+                .then((rows) => rows[0])
 
             if (!pettyCash) {
                 throw new AppError(404, 'Petty Cash not found')
             }
 
             if (pettyCash.franchiseId !== user.franchiseId) {
-                throw new AppError(403, 'Unauthorized access to this franchise data')
+                throw new AppError(
+                    403,
+                    'Unauthorized access to this franchise data',
+                )
             }
         }
 
@@ -50,7 +56,10 @@ export const createCashMovementHandler = async (req: Request, res: Response) => 
     }
 }
 
-export const getAllCashMovementsHandler = async (req: Request, res: Response) => {
+export const getAllCashMovementsHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
@@ -80,15 +89,24 @@ export const getAllCashMovementsHandler = async (req: Request, res: Response) =>
     }
 }
 
-export const getCashMovementByIdHandler = async (req: Request, res: Response) => {
+export const getCashMovementByIdHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const { id } = req.params
         const user = res.locals.user
 
         const movement = await getCashMovementById(+id)
 
-        if (user.role === 'Coordinador' && movement.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            movement.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({

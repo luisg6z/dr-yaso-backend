@@ -14,8 +14,14 @@ export const createBankAccountHandler = async (req: Request, res: Response) => {
         const data = req.body
         const user = res.locals.user
 
-        if (user.role === 'Coordinador' && data.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Coordinators can only create accounts for their own franchise')
+        if (
+            user.role === 'Coordinador' &&
+            data.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Coordinators can only create accounts for their own franchise',
+            )
         }
 
         res.status(201).json({
@@ -36,7 +42,10 @@ export const createBankAccountHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllBankAccountsHandler = async (req: Request, res: Response) => {
+export const getAllBankAccountsHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const pagination: Pagination = {
             page: +(req.query.page || 1),
@@ -66,15 +75,24 @@ export const getAllBankAccountsHandler = async (req: Request, res: Response) => 
     }
 }
 
-export const getBankAccountByIdHandler = async (req: Request, res: Response) => {
+export const getBankAccountByIdHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const { id } = req.params
         const user = res.locals.user
 
         const account = await getBankAccountById(+id)
 
-        if (user.role === 'Coordinador' && account.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            account.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({
@@ -102,8 +120,14 @@ export const updateBankAccountHandler = async (req: Request, res: Response) => {
         const user = res.locals.user
 
         const existingAccount = await getBankAccountById(+id)
-        if (user.role === 'Coordinador' && existingAccount.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            existingAccount.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({
@@ -130,8 +154,14 @@ export const deleteBankAccountHandler = async (req: Request, res: Response) => {
         const user = res.locals.user
 
         const existingAccount = await getBankAccountById(+id)
-        if (user.role === 'Coordinador' && existingAccount.franchiseId !== user.franchiseId) {
-            throw new AppError(403, 'Unauthorized access to this franchise data')
+        if (
+            user.role === 'Coordinador' &&
+            existingAccount.franchiseId !== user.franchiseId
+        ) {
+            throw new AppError(
+                403,
+                'Unauthorized access to this franchise data',
+            )
         }
 
         res.status(200).json({

@@ -1,6 +1,12 @@
-import { integer, numeric, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
-import { CajasChicas } from "./CajasChicas";
-
+import {
+    integer,
+    numeric,
+    pgTable,
+    serial,
+    timestamp,
+    varchar,
+} from 'drizzle-orm/pg-core'
+import { CajasChicas } from './CajasChicas'
 
 export const MovimientosCaja = pgTable('MovimientosCaja', {
     id: serial().primaryKey(),
@@ -9,8 +15,10 @@ export const MovimientosCaja = pgTable('MovimientosCaja', {
     ingresos: numeric({ precision: 10, scale: 2 }).notNull().default('0'),
     egresos: numeric({ precision: 10, scale: 2 }).notNull().default('0'),
     saldoPosterior: numeric({ precision: 10, scale: 2 }).notNull().default('0'),
-    idCaja: integer().notNull().references(() => CajasChicas.id, {
-        onUpdate: 'cascade',
-        onDelete: 'restrict',
-    }),
+    idCaja: integer()
+        .notNull()
+        .references(() => CajasChicas.id, {
+            onUpdate: 'cascade',
+            onDelete: 'restrict',
+        }),
 })

@@ -37,8 +37,8 @@ export const getAllLocationsForFranchise = async (
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined,
+              ? eq(Franquicias.estaActivo, false)
+              : undefined,
     )
 
     const locations = await db
@@ -85,8 +85,8 @@ export const getAllLocations = async (pagination: Pagination) => {
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined
+              ? eq(Franquicias.estaActivo, false)
+              : undefined
 
     const locations = await db
         .select({

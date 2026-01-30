@@ -45,12 +45,12 @@ export const getAllMeetingsHandler = async (req: Request, res: Response) => {
         const meetings =
             res.locals.user.role === tipoUsuarioEnum.enumValues[1]
                 ? await getDisciplineMeetings(
-                    pagination,
-                    res.locals.user.franchiseId,
-                )
+                      pagination,
+                      res.locals.user.franchiseId,
+                  )
                 : res.locals.user.role === tipoUsuarioEnum.enumValues[0]
-                    ? await getAllMeetings(pagination)
-                    : await getMeetingsForAFranchise(
+                  ? await getAllMeetings(pagination)
+                  : await getMeetingsForAFranchise(
                         pagination,
                         res.locals.user.franchiseId,
                     )

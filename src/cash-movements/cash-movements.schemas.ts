@@ -52,15 +52,20 @@ export const CashMovementSchema = z.object({
     pettyCashId: z.number().int().positive(),
 })
 
-export const createCashMovementSchema = z.object({
-    date: z.string().datetime().or(z.date().transform(d => d.toISOString())),
-    observation: z.string().min(1).max(30),
-    income: z.number().min(0).default(0),
-    expense: z.number().min(0).default(0),
-    pettyCashId: z.number().int().positive(),
-}).refine(data => data.income > 0 || data.expense > 0, {
-    message: "Either income or expense must be greater than 0",
-})
+export const createCashMovementSchema = z
+    .object({
+        date: z
+            .string()
+            .datetime()
+            .or(z.date().transform((d) => d.toISOString())),
+        observation: z.string().min(1).max(30),
+        income: z.number().min(0).default(0),
+        expense: z.number().min(0).default(0),
+        pettyCashId: z.number().int().positive(),
+    })
+    .refine((data) => data.income > 0 || data.expense > 0, {
+        message: 'Either income or expense must be greater than 0',
+    })
 
 export type CashMovement = z.infer<typeof CashMovementSchema>
 export type CashMovementCreate = z.infer<typeof createCashMovementSchema>

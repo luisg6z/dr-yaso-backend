@@ -7,20 +7,23 @@ import { AppError } from '../common/errors/errors'
 import { AccountMovementCreate } from './account-movements.schemas'
 import { Pagination } from '../types/types'
 
-export const createAccountMovement = async (movement: AccountMovementCreate) => {
+export const createAccountMovement = async (
+    movement: AccountMovementCreate,
+) => {
     return await db.transaction(async (tx) => {
         // 1. Get Bank Account to check existence and current balance
         const account = await tx
             .select()
             .from(CuentasBancarias)
             .where(eq(CuentasBancarias.id, movement.accountId))
-            .then(rows => rows[0])
+            .then((rows) => rows[0])
 
         if (!account) throw new AppError(404, 'Bank Account not found')
 
         // 2. Calculate new balance
         const currentBalance = Number(account.saldo)
-        const newBalance = currentBalance + Number(movement.income) - Number(movement.expense)
+        const newBalance =
+            currentBalance + Number(movement.income) - Number(movement.expense)
 
         // 3. Create Movement
         const [newMovement] = await tx
@@ -78,24 +81,35 @@ const mapAccountMovement = (row: {
     }
 }
 
-export const getAllAccountMovements = async (pagination: Pagination, franchiseId?: number) => {
+export const getAllAccountMovements = async (
+    pagination: Pagination,
+    franchiseId?: number,
+) => {
     const { page, limit, status } = pagination
     const offset = (page - 1) * limit
 
     const whereCondition = and(
-        franchiseId ? eq(CuentasBancarias.idFranquicia, franchiseId) : undefined,
+        franchiseId
+            ? eq(CuentasBancarias.idFranquicia, franchiseId)
+            : undefined,
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined,
+              ? eq(Franquicias.estaActivo, false)
+              : undefined,
     )
 
     const rows = await db
         .select()
         .from(MovimientosCuentas)
-        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
-        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .innerJoin(
+            CuentasBancarias,
+            eq(CuentasBancarias.id, MovimientosCuentas.idCuenta),
+        )
+        .innerJoin(
+            Franquicias,
+            eq(Franquicias.id, CuentasBancarias.idFranquicia),
+        )
         .where(whereCondition)
         .limit(limit)
         .offset(offset)
@@ -105,8 +119,14 @@ export const getAllAccountMovements = async (pagination: Pagination, franchiseId
     const totalItems = await db
         .select({ count: sql<number>`count(*)` })
         .from(MovimientosCuentas)
-        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
-        .innerJoin(Franquicias, eq(Franquicias.id, CuentasBancarias.idFranquicia))
+        .innerJoin(
+            CuentasBancarias,
+            eq(CuentasBancarias.id, MovimientosCuentas.idCuenta),
+        )
+        .innerJoin(
+            Franquicias,
+            eq(Franquicias.id, CuentasBancarias.idFranquicia),
+        )
         .where(whereCondition)
         .then((rows) => Number(rows[0].count))
 
@@ -127,9 +147,12 @@ export const getAccountMovementById = async (id: number) => {
     const result = await db
         .select()
         .from(MovimientosCuentas)
-        .innerJoin(CuentasBancarias, eq(CuentasBancarias.id, MovimientosCuentas.idCuenta))
+        .innerJoin(
+            CuentasBancarias,
+            eq(CuentasBancarias.id, MovimientosCuentas.idCuenta),
+        )
         .where(eq(MovimientosCuentas.id, id))
-        .then(rows => rows[0])
+        .then((rows) => rows[0])
 
     if (!result) throw new AppError(404, 'Movement not found')
 

@@ -67,17 +67,22 @@ export const AccountMovementSchema = z.object({
     accountId: z.number().int().positive(),
 })
 
-export const createAccountMovementSchema = z.object({
-    date: z.string().datetime().or(z.date().transform(d => d.toISOString())),
-    referenceNumber: z.string().min(1).max(20),
-    movementType: z.enum(tipoMovimientoEnum.enumValues),
-    observation: z.string().min(1).max(30),
-    income: z.number().min(0).default(0),
-    expense: z.number().min(0).default(0),
-    accountId: z.number().int().positive(),
-}).refine(data => data.income > 0 || data.expense > 0, {
-    message: "Either income or expense must be greater than 0",
-})
+export const createAccountMovementSchema = z
+    .object({
+        date: z
+            .string()
+            .datetime()
+            .or(z.date().transform((d) => d.toISOString())),
+        referenceNumber: z.string().min(1).max(20),
+        movementType: z.enum(tipoMovimientoEnum.enumValues),
+        observation: z.string().min(1).max(30),
+        income: z.number().min(0).default(0),
+        expense: z.number().min(0).default(0),
+        accountId: z.number().int().positive(),
+    })
+    .refine((data) => data.income > 0 || data.expense > 0, {
+        message: 'Either income or expense must be greater than 0',
+    })
 
 export type AccountMovement = z.infer<typeof AccountMovementSchema>
 export type AccountMovementCreate = z.infer<typeof createAccountMovementSchema>

@@ -6,7 +6,11 @@ import {
     generatePdfVisitsReport,
 } from './report.service'
 
-export const visitsReportController: RequestHandler = async (req, res, next) => {
+export const visitsReportController: RequestHandler = async (
+    req,
+    res,
+    next,
+) => {
     try {
         const parsed = visitsReportFiltersSchema.safeParse(req.body)
         if (!parsed.success) {

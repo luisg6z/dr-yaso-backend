@@ -168,9 +168,9 @@ const mapVisit = (row: {
         healthPersonnelCount: row.Visitas.cantPersonalDeSalud,
         location: row.Locaciones
             ? {
-                id: row.Locaciones.id,
-                name: row.Locaciones.descripcion,
-            }
+                  id: row.Locaciones.id,
+                  name: row.Locaciones.descripcion,
+              }
             : null,
     }
 }
@@ -200,8 +200,8 @@ export const getAllVisits = async (pagination: Pagination) => {
         status === 'active'
             ? eq(Franquicias.estaActivo, true)
             : status === 'inactive'
-                ? eq(Franquicias.estaActivo, false)
-                : undefined
+              ? eq(Franquicias.estaActivo, false)
+              : undefined
 
     const rows = await db
         .select({
